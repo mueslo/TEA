@@ -1,0 +1,811 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWin</class>
+ <widget class="QMainWindow" name="MainWin">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1024</width>
+    <height>810</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Tour Evaluation and Analysis</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>icons/32x32_0320/cup.png</normaloff>icons/32x32_0320/cup.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="0" column="0">
+     <widget class="QTabWidget" name="tabwCentre">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <property name="tabsClosable">
+       <bool>false</bool>
+      </property>
+      <property name="movable">
+       <bool>true</bool>
+      </property>
+      <widget class="QWidget" name="tabMap">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <attribute name="icon">
+        <iconset>
+         <normaloff>icons/16x16_0560/map.png</normaloff>icons/16x16_0560/map.png</iconset>
+       </attribute>
+       <attribute name="title">
+        <string>Map view</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="0" column="1">
+         <layout class="QVBoxLayout" name="layoutZoom">
+          <item>
+           <widget class="QPushButton" name="btnZoomIn">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>23</width>
+              <height>23</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>icons/16x16_0560/magnifier_zoom_in.png</normaloff>icons/16x16_0560/magnifier_zoom_in.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="sldZoom">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="MinimumExpanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>23</width>
+              <height>115</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>23</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="maximum">
+             <number>18</number>
+            </property>
+            <property name="pageStep">
+             <number>1</number>
+            </property>
+            <property name="tracking">
+             <bool>true</bool>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="invertedAppearance">
+             <bool>false</bool>
+            </property>
+            <property name="invertedControls">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnZoomOut">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>23</width>
+              <height>23</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>icons/16x16_0560/magnifier_zoom_out.png</normaloff>icons/16x16_0560/magnifier_zoom_out.png</iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="0" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <property name="sizeConstraint">
+           <enum>QLayout::SetNoConstraint</enum>
+          </property>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <widget class="TEAView" name="graphicsView">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>400</width>
+                <height>300</height>
+               </size>
+              </property>
+              <property name="cursor" stdset="0">
+               <cursorShape>CrossCursor</cursorShape>
+              </property>
+              <property name="mouseTracking">
+               <bool>true</bool>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::StyledPanel</enum>
+              </property>
+              <property name="verticalScrollBarPolicy">
+               <enum>Qt::ScrollBarAlwaysOff</enum>
+              </property>
+              <property name="horizontalScrollBarPolicy">
+               <enum>Qt::ScrollBarAlwaysOff</enum>
+              </property>
+              <property name="renderHints">
+               <set>QPainter::Antialiasing|QPainter::HighQualityAntialiasing|QPainter::SmoothPixmapTransform|QPainter::TextAntialiasing</set>
+              </property>
+              <property name="dragMode">
+               <enum>QGraphicsView::ScrollHandDrag</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <item>
+               <widget class="QCommandLinkButton" name="cbtnRotateCClockwise">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>36</width>
+                  <height>36</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset>
+                  <normaloff>icons/32x32_0060/arrow_rotate_anticlockwise.png</normaloff>icons/32x32_0060/arrow_rotate_anticlockwise.png</iconset>
+                </property>
+                <property name="checkable">
+                 <bool>false</bool>
+                </property>
+                <property name="autoRepeat">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCommandLinkButton" name="cbtnRotateClockwise">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>36</width>
+                  <height>36</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset>
+                  <normaloff>icons/32x32_0060/arrow_rotate_clockwise.png</normaloff>icons/32x32_0060/arrow_rotate_clockwise.png</iconset>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tabTrainer">
+       <attribute name="icon">
+        <iconset>
+         <normaloff>icons/16x16_0220/chart_curve.png</normaloff>icons/16x16_0220/chart_curve.png</iconset>
+       </attribute>
+       <attribute name="title">
+        <string>Trainer view</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_6">
+        <item row="0" column="0">
+         <layout class="QGridLayout" name="gridLayout_5">
+          <item row="1" column="0">
+           <widget class="TEAView" name="graphicsViewTrainer">
+            <property name="dragMode">
+             <enum>QGraphicsView::ScrollHandDrag</enum>
+            </property>
+            <property name="resizeAnchor">
+             <enum>QGraphicsView::AnchorUnderMouse</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QComboBox" name="cboxY">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QComboBox" name="cboxX">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1024</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuRoute">
+    <property name="title">
+     <string>Route</string>
+    </property>
+    <addaction name="loadFromFileAction"/>
+    <addaction name="loadFromDatabaseAction"/>
+    <addaction name="separator"/>
+    <addaction name="saveAction"/>
+    <addaction name="saveAllAction"/>
+    <addaction name="kmlExportAction"/>
+    <addaction name="actionExport_as_tea"/>
+    <addaction name="separator"/>
+    <addaction name="actionEdit_metadata"/>
+    <addaction name="separator"/>
+    <addaction name="actionClose_route"/>
+    <addaction name="actionDelete_route_from_database"/>
+    <addaction name="separator"/>
+    <addaction name="exitAction"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="aboutAction"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="consoleAction"/>
+    <addaction name="separator"/>
+    <addaction name="refreshMapAction"/>
+   </widget>
+   <addaction name="menuRoute"/>
+   <addaction name="menuView"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="tbMain">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="windowTitle">
+    <string>Main toolbar</string>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::AllToolBarAreas</set>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>24</width>
+     <height>24</height>
+    </size>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QDockWidget" name="dwBottom">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>406</width>
+     <height>236</height>
+    </size>
+   </property>
+   <property name="windowIcon">
+    <iconset>
+     <normaloff>icons/32x32_0040/application_xp_terminal.png</normaloff>icons/32x32_0040/application_xp_terminal.png</iconset>
+   </property>
+   <property name="features">
+    <set>QDockWidget::AllDockWidgetFeatures</set>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::BottomDockWidgetArea</set>
+   </property>
+   <property name="windowTitle">
+    <string>Console</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_18">
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <layout class="QGridLayout" name="gridLayout">
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <item row="0" column="0">
+      <widget class="QTextEdit" name="textInformation">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>384</width>
+         <height>128</height>
+        </size>
+       </property>
+       <property name="sizeIncrement">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Information</string>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Sunken</enum>
+       </property>
+       <property name="lineWidth">
+        <number>1</number>
+       </property>
+       <property name="midLineWidth">
+        <number>0</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dwActiveRoutes">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>256</width>
+     <height>442</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>300</width>
+     <height>524287</height>
+    </size>
+   </property>
+   <property name="floating">
+    <bool>false</bool>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="windowTitle">
+    <string>Currently loaded routes</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_14">
+    <layout class="QGridLayout" name="gridLayout_2">
+     <property name="horizontalSpacing">
+      <number>0</number>
+     </property>
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <item row="0" column="0">
+      <widget class="QListWidget" name="listWidget">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="dragEnabled">
+        <bool>true</bool>
+       </property>
+       <property name="alternatingRowColors">
+        <bool>true</bool>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::ExtendedSelection</enum>
+       </property>
+       <property name="isWrapping" stdset="0">
+        <bool>true</bool>
+       </property>
+       <property name="viewMode">
+        <enum>QListView::ListMode</enum>
+       </property>
+       <property name="modelColumn">
+        <number>0</number>
+       </property>
+       <property name="wordWrap">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dwSettingsControls">
+   <property name="minimumSize">
+    <size>
+     <width>155</width>
+     <height>198</height>
+    </size>
+   </property>
+   <property name="windowIcon">
+    <iconset>
+     <normaloff>icons/32x32_1000/wrench_orange.png</normaloff>icons/32x32_1000/wrench_orange.png</iconset>
+   </property>
+   <property name="features">
+    <set>QDockWidget::AllDockWidgetFeatures</set>
+   </property>
+   <property name="windowTitle">
+    <string>Settings and properties</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <widget class="QGroupBox" name="grpbMapSource">
+       <property name="title">
+        <string>Map source</string>
+       </property>
+       <layout class="QFormLayout" name="formLayout">
+        <item row="0" column="0">
+         <widget class="QRadioButton" name="rbMapnik">
+          <property name="text">
+           <string>Mapnik</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string>btngrpMapSource</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QRadioButton" name="rbCycleMap">
+          <property name="text">
+           <string>CycleMap</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string>btngrpMapSource</string>
+          </attribute>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="grpbTrainerMode">
+       <property name="title">
+        <string>Trainer mode</string>
+       </property>
+       <layout class="QFormLayout" name="formLayout_2">
+        <item row="0" column="0">
+         <widget class="QRadioButton" name="rbNode">
+          <property name="text">
+           <string>Node comparison</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string>btngrpTrainerMode</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QRadioButton" name="rbRoute">
+          <property name="text">
+           <string>Route comparison</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string>btngrpTrainerMode</string>
+          </attribute>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <action name="loadFromFileAction">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/32x32_0320/cup_add.png</normaloff>icons/32x32_0320/cup_add.png</iconset>
+   </property>
+   <property name="text">
+    <string>Load from TEA file</string>
+   </property>
+   <property name="statusTip">
+    <string>Load route from TEA file</string>
+   </property>
+  </action>
+  <action name="loadFromDatabaseAction">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/32x32_0320/database_add.png</normaloff>icons/32x32_0320/database_add.png</iconset>
+   </property>
+   <property name="text">
+    <string>Load from database</string>
+   </property>
+   <property name="statusTip">
+    <string>Load route from database</string>
+   </property>
+  </action>
+  <action name="exitAction">
+   <property name="icon">
+    <iconset>
+     <normaloff>release/icons/32x32_0340/door.png</normaloff>release/icons/32x32_0340/door.png</iconset>
+   </property>
+   <property name="text">
+    <string>Exit</string>
+   </property>
+   <property name="statusTip">
+    <string>Exit TEA</string>
+   </property>
+  </action>
+  <action name="aboutAction">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/32x32_0480/help.png</normaloff>icons/32x32_0480/help.png</iconset>
+   </property>
+   <property name="text">
+    <string>About</string>
+   </property>
+   <property name="statusTip">
+    <string>About the TEA program</string>
+   </property>
+  </action>
+  <action name="consoleAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/icons/16x16_0040/application_xp_terminal.png</normaloff>:/icons/icons/16x16_0040/application_xp_terminal.png</iconset>
+   </property>
+   <property name="text">
+    <string>Console</string>
+   </property>
+   <property name="statusTip">
+    <string>Display the TEA console</string>
+   </property>
+   <property name="visible">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="saveAction">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/32x32_0340/disk.png</normaloff>icons/32x32_0340/disk.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save</string>
+   </property>
+   <property name="statusTip">
+    <string>Save currently selected route</string>
+   </property>
+  </action>
+  <action name="saveAllAction">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/32x32_0340/disk_multiple.png</normaloff>icons/32x32_0340/disk_multiple.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save all</string>
+   </property>
+   <property name="statusTip">
+    <string>Save all currently loaded routes</string>
+   </property>
+  </action>
+  <action name="refreshMapAction">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/32x32_0560/map.png</normaloff>icons/32x32_0560/map.png</iconset>
+   </property>
+   <property name="text">
+    <string>Refresh Map</string>
+   </property>
+  </action>
+  <action name="kmlExportAction">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/32x32_0640/page_save.png</normaloff>icons/32x32_0640/page_save.png</iconset>
+   </property>
+   <property name="text">
+    <string>Export as .kml</string>
+   </property>
+   <property name="statusTip">
+    <string>Export currently selected route as .kml</string>
+   </property>
+  </action>
+  <action name="actionClose_route">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/32x32_0320/cup_delete.png</normaloff>icons/32x32_0320/cup_delete.png</iconset>
+   </property>
+   <property name="text">
+    <string>Close route</string>
+   </property>
+   <property name="statusTip">
+    <string>Close the selected route</string>
+   </property>
+  </action>
+  <action name="actionDelete_route_from_database">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/32x32_0320/database_delete.png</normaloff>icons/32x32_0320/database_delete.png</iconset>
+   </property>
+   <property name="text">
+    <string>Delete route</string>
+   </property>
+   <property name="statusTip">
+    <string>Delete route from database</string>
+   </property>
+  </action>
+  <action name="actionEdit_metadata">
+   <property name="text">
+    <string>Edit metadata</string>
+   </property>
+  </action>
+  <action name="actionExport_as_tea">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/32x32_0640/page_white_cup.png</normaloff>icons/32x32_0640/page_white_cup.png</iconset>
+   </property>
+   <property name="text">
+    <string>Export as .tea</string>
+   </property>
+   <property name="statusTip">
+    <string>Export currently selected route as .tea</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TEAView</class>
+   <extends>QGraphicsView</extends>
+   <header location="global">teaview.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
+ <connections/>
+ <buttongroups>
+  <buttongroup name="btngrpMapSource"/>
+  <buttongroup name="btngrpTrainerMode"/>
+ </buttongroups>
+</ui>

@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>icons/16x16_0040/application_xp_terminal.png</file>
+        <file>icons/32x32_0340/database_save.png</file>
+    </qresource>
+</RCC>
