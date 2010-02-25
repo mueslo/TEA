@@ -618,10 +618,6 @@ inline void saveRoute(QString auid)
 		cout << "new" << endl;
 		}
 
-	if (!rdbquery.isActive())
-		QMessageBox::warning(0, "rDatabase Error5",
-	                         rdbquery.lastError().text());
-
 }
 
 inline void setMetadata(QString auid, QString data, QString type)

@@ -394,6 +394,7 @@ void TEA::zoomOut()
 
 void TEA::sldChanged(int value)
 {
+
 	int zoomNew = ui.sldZoom->value();
 	int dZoom = zoomNew-zoomOld;
 	QRectF oldSceneRect = scene->sceneRect();
@@ -522,6 +523,7 @@ void TEA::ActionLoadFromDatabase()
 
 void TEA::drawRoute(QString auid)
 {
+        //remove all objects residing above the current zoom strata
 	int i = 0;
 	while (scene->items().size()>i)
 	{
@@ -530,6 +532,7 @@ void TEA::drawRoute(QString auid)
 		else i++;
 
 	}
+
 
 	QSqlQuery routeData = getRouteData(auid, "adb");
 	QSqlRecord metadata = getRouteMetadata(auid, "adb");
