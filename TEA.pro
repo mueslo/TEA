@@ -4,7 +4,7 @@
 DEPENDPATH += .
 TARGET = 
 CONFIG += static
-INCLUDEPATH += C:\Qwt\src
+INCLUDEPATH += C:/Qwt/src
 
 # Input
 HEADERS += teaview.h \
@@ -29,6 +29,6 @@ QT += core \
     qt3support \
     network
 LIBS += -lqwt5 \
-    -LC:\Qwt\lib
+    -LC:/Qwt/lib
 DEFINES += QWT_DLL
 RESOURCES += icons.qrc

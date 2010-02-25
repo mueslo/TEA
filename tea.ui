@@ -28,7 +28,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -258,7 +258,7 @@
        <layout class="QGridLayout" name="gridLayout_6">
         <item row="0" column="0">
          <layout class="QGridLayout" name="gridLayout_5">
-          <item row="1" column="0">
+          <item row="2" column="0">
            <widget class="TEAView" name="graphicsViewTrainer">
             <property name="dragMode">
              <enum>QGraphicsView::ScrollHandDrag</enum>
@@ -278,7 +278,7 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
+          <item row="3" column="0">
            <layout class="QHBoxLayout" name="horizontalLayout_3">
             <item>
              <spacer name="horizontalSpacer">
@@ -304,6 +304,9 @@
              </widget>
             </item>
            </layout>
+          </item>
+          <item row="1" column="0">
+           <widget class="QwtPlot" name="qwtPlot"/>
           </item>
          </layout>
         </item>
@@ -693,7 +696,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/icons/16x16_0040/application_xp_terminal.png</normaloff>:/icons/icons/16x16_0040/application_xp_terminal.png</iconset>
    </property>
    <property name="text">
@@ -795,14 +798,17 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>QwtPlot</class>
+   <extends>QFrame</extends>
+   <header>qwt_plot.h</header>
+  </customwidget>
+  <customwidget>
    <class>TEAView</class>
    <extends>QGraphicsView</extends>
    <header location="global">teaview.h</header>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="icons.qrc"/>
- </resources>
+ <resources/>
  <connections/>
  <buttongroups>
   <buttongroup name="btngrpMapSource"/>

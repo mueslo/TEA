@@ -20,6 +20,8 @@
 #include "db.h"
 #include "metadatadialog.h"
 #include "finddialog.h"
+#include "qwt_plot.h"
+
 
 #define PI 3.1415926535897932384626433832795
 
@@ -52,6 +54,11 @@ TEA::TEA(QWidget *parent) :
 	createToolBar();
 	createStatusBar();
 	fillTrainerViewCBoxes();
+
+        QwtPlot *trainer = new QwtPlot;
+        trainer->setAxisAutoScale(true);
+        trainer->setAxisTitle(0,"test");
+
 	/*
 	QProgressBar *progress = new QProgressBar(ui.statusbar);
 	progress->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);

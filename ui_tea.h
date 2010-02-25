@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'tea.ui'
 **
-** Created: Thu 14. Jan 22:07:36 2010
+** Created: Thu 25. Feb 23:07:18 2010
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -37,6 +37,7 @@
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QWidget>
 #include <teaview.h>
+#include "qwt_plot.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -79,6 +80,7 @@ public:
     QHBoxLayout *horizontalLayout_3;
     QSpacerItem *horizontalSpacer;
     QComboBox *cboxX;
+    QwtPlot *qwtPlot;
     QMenuBar *menubar;
     QMenu *menuRoute;
     QMenu *menuHelp;
@@ -316,7 +318,7 @@ public:
         graphicsViewTrainer->setDragMode(QGraphicsView::ScrollHandDrag);
         graphicsViewTrainer->setResizeAnchor(QGraphicsView::AnchorUnderMouse);
 
-        gridLayout_5->addWidget(graphicsViewTrainer, 1, 0, 1, 1);
+        gridLayout_5->addWidget(graphicsViewTrainer, 2, 0, 1, 1);
 
         cboxY = new QComboBox(tabTrainer);
         cboxY->setObjectName(QString::fromUtf8("cboxY"));
@@ -339,7 +341,12 @@ public:
         horizontalLayout_3->addWidget(cboxX);
 
 
-        gridLayout_5->addLayout(horizontalLayout_3, 2, 0, 1, 1);
+        gridLayout_5->addLayout(horizontalLayout_3, 3, 0, 1, 1);
+
+        qwtPlot = new QwtPlot(tabTrainer);
+        qwtPlot->setObjectName(QString::fromUtf8("qwtPlot"));
+
+        gridLayout_5->addWidget(qwtPlot, 1, 0, 1, 1);
 
 
         gridLayout_6->addLayout(gridLayout_5, 0, 0, 1, 1);
@@ -524,7 +531,7 @@ public:
 
         retranslateUi(MainWin);
 
-        tabwCentre->setCurrentIndex(0);
+        tabwCentre->setCurrentIndex(1);
 
 
         QMetaObject::connectSlotsByName(MainWin);
