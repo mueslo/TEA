@@ -21,6 +21,9 @@
 #include "metadatadialog.h"
 #include "finddialog.h"
 #include "qwt_plot.h"
+#include "qwt_data.h"
+#include "qwt_plot_curve.h"
+#include <vector>
 
 
 #define PI 3.1415926535897932384626433832795
@@ -40,7 +43,6 @@ TEA::TEA(QWidget *parent) :
 	ui.setupUi(this);
 	ui.textInformation->append("<b>TEA console</b>");
 	scene = new QGraphicsScene;
-	trainerScene = new QGraphicsScene;
 
 	//tile size: 256px x 256px, in coordinates: 2*PI x 2*PI
 	ui.graphicsView->scale(128/PI,128/PI);
@@ -49,7 +51,6 @@ TEA::TEA(QWidget *parent) :
 	//initially zoom always = 0
 	zoomOld = 0;
 	ui.graphicsView->setScene(scene);
-	ui.graphicsViewTrainer->setScene(trainerScene);
 	connectSignalsAndSlots();
 	createToolBar();
 	createStatusBar();
@@ -99,10 +100,6 @@ void TEAView::wheelEvent(QWheelEvent *event)
 	}
 }
 
-void TEA::trainerZoom(int steps)
-{
-	ui.graphicsViewTrainer->scale(pow(2.0,steps),pow(2.0,steps));
-}
 
 void TEA::createStatusBar()
 {
@@ -281,7 +278,6 @@ void TEA::connectSignalsAndSlots()
 	connect(ui.cboxY, SIGNAL(currentIndexChanged(int)), this, SLOT(trainerSelectionChange()));
 	connect(ui.rbNode, SIGNAL(toggled(bool)), this, SLOT(trainerModeChanged()));
 	connect(ui.graphicsView, SIGNAL(wheelZoom(int)), this, SLOT(zoom(int)));
-	connect(ui.graphicsViewTrainer, SIGNAL(wheelZoom(int)), this, SLOT(trainerZoom(int)));
 	//connect(ui.graphicsView, SIGNAL(resizeEvent()), this, SLOT(graphicsViewResized()));
 	//connect(ui.graphicsView, SIGNAL(mousePressed()), this, SLOT(grphPressed()));
 	//ui.tbMain->addAction(QIcon("icons/32x32_0560/map.png"), "Something with maps", this, "mapAction");
@@ -289,60 +285,70 @@ void TEA::connectSignalsAndSlots()
 
 void TEA::trainerModeChanged()
 {
-	trainerScene->clear();
 	fillTrainerViewCBoxes();
 }
 
 void TEA::trainerSelectionChange()
 {
-	trainerScene->clear();
 	drawTrainer(ui.cboxX->currentIndex(),ui.cboxY->currentIndex());
 }
 
 void TEA::drawTrainer(int indexX, int indexY)
 {
 	//get auids
-	int value;
+
+        QwtArray<double> x,y;
+        int value,routeNum = 0; double factor = 1.0;
 	switch (ui.cboxY->currentIndex()) {
-		//case 0: todo:
-		case 1: value = 6; break;
-		case 2:	value = 1; break;
-		case 3: value = 3; break;
-		default: value = 1; break;
+                case 1: value = 6; ui.qwtPlot->setAxisTitle(0,"Altitude in m"); factor = 0.1; break;
+                case 2:	value = 1; ui.qwtPlot->setAxisTitle(0,"Velocity in km/h"); factor = 0.01; break;
+                case 3: value = 2; ui.qwtPlot->setAxisTitle(0,"Pedal frequency in RPM"); factor = 1; break;
+                default: value = 1; ui.qwtPlot->setAxisTitle(0,"NYI"); break;
 	}
+
+        switch (ui.cboxX->currentIndex()) {
+                case 0: ui.qwtPlot->setAxisTitle(2,"Time in s"); break;
+                default: ui.qwtPlot->setAxisTitle(2,"NYI"); break;
+        }
+
 	QSqlQuery auidQuery = getCurrentlyLoadedRoutes();
-	QPen pen; pen.setColor(QColor::fromRgb(0,0,0,127));
-	QGraphicsTextItem 	*x5,*x4,*x3,*x2,*x1,*x0,
-						*y5,*y4,*y3,*y2,*y1,*y0	= new QGraphicsTextItem;
-	trainerScene->setSceneRect(0,0,ui.graphicsViewTrainer->width(),ui.graphicsViewTrainer->height());
+
+        QwtPlotCurve *curve = new QwtPlotCurve;
 
 
 	if (ui.rbNode->isChecked()){
-
+                ui.qwtPlot->clear();
 		while (auidQuery.next())
 		{
 
 			QString auid = auidQuery.record().value(0).toString();
 
 			QSqlQuery route = getRouteData(auid, "adb");
-			QPainterPath path; path.moveTo(0.0,0.0);
-			QGraphicsPathItem *pathItem = new QGraphicsPathItem; pathItem->setPen(pen);
 
 			int i=0;
-			while (route.next() && route.next())
+                        //x.clear(); y.clear();
+                        while (route.next())
 			{
-				path.lineTo((double)i,-route.record().value(value).toDouble()/100);
+                                x << (double)i; y << (factor * route.record().value(value).toDouble());
 				i++;
 			}
 
-			//pathItem->scale();
-			pathItem->setPath(path);
-			trainerScene->addItem(pathItem);
+                        //curveList.at(routeNum)->setData(x,y);
+                        //curveList.at(routeNum)->attach(ui.qwtPlot);
+                        //plotList.at(routeNum)->attach(ui.qwtPlot);
+
+
+                        curve->setData(x,y);
+                        //curve->setStyle()
+                        curve->attach(ui.qwtPlot);
+                        ui.qwtPlot->replot();
+
 
 
 			//todo use largest and not last path diagram
 			//trainerScene->setSceneRect(path.boundingRect());
 			//ui.graphicsViewTrainer->fitInView(path.boundingRect(),Qt::IgnoreAspectRatio);
+                        routeNum++;
 
 		}
 

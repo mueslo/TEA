@@ -28,7 +28,6 @@ public slots:
 private slots:
 	void downloaded(QNetworkReply* reply);
 	void zoom(int steps);
-	void trainerZoom(int steps);
 	void zoomIn();
 	void zoomOut();
 	void sldChanged(int value);
@@ -66,7 +65,6 @@ private:
     QFile *file;
     QNetworkAccessManager *networkManager;
     QGraphicsScene *scene;
-    QGraphicsScene *trainerScene;
     bool init;
 
 protected:

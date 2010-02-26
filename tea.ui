@@ -258,16 +258,6 @@
        <layout class="QGridLayout" name="gridLayout_6">
         <item row="0" column="0">
          <layout class="QGridLayout" name="gridLayout_5">
-          <item row="2" column="0">
-           <widget class="TEAView" name="graphicsViewTrainer">
-            <property name="dragMode">
-             <enum>QGraphicsView::ScrollHandDrag</enum>
-            </property>
-            <property name="resizeAnchor">
-             <enum>QGraphicsView::AnchorUnderMouse</enum>
-            </property>
-           </widget>
-          </item>
           <item row="0" column="0">
            <widget class="QComboBox" name="cboxY">
             <property name="sizePolicy">
@@ -278,7 +268,7 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="2" column="0">
            <layout class="QHBoxLayout" name="horizontalLayout_3">
             <item>
              <spacer name="horizontalSpacer">
@@ -322,7 +312,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuRoute">
@@ -548,8 +538,8 @@
   <widget class="QDockWidget" name="dwSettingsControls">
    <property name="minimumSize">
     <size>
-     <width>155</width>
-     <height>198</height>
+     <width>183</width>
+     <height>229</height>
     </size>
    </property>
    <property name="windowIcon">
@@ -696,7 +686,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/icons/16x16_0040/application_xp_terminal.png</normaloff>:/icons/icons/16x16_0040/application_xp_terminal.png</iconset>
    </property>
    <property name="text">
@@ -801,6 +791,7 @@
    <class>QwtPlot</class>
    <extends>QFrame</extends>
    <header>qwt_plot.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>TEAView</class>
@@ -808,7 +799,9 @@
    <header location="global">teaview.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
  <connections/>
  <buttongroups>
   <buttongroup name="btngrpMapSource"/>

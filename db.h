@@ -500,11 +500,12 @@ inline void loadRoute(QString uid)
 	values.prepend(next_auid+",");
 	cout << "values: " << qPrintable(values) << endl;
 	adbquery.exec(qPrintable("INSERT INTO active_metadata VALUES("+values+")"));
-	adbquery.finish();
+
 
 	if (!adbquery.isActive())
 		QMessageBox::warning(0, "aDatabase Error1",
 	                         adbquery.lastError().text());
+                adbquery.finish();
 
 }
 

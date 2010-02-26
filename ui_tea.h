@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'tea.ui'
 **
-** Created: Thu 25. Feb 23:07:18 2010
+** Created: Fri 26. Feb 11:21:46 2010
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -75,7 +75,6 @@ public:
     QWidget *tabTrainer;
     QGridLayout *gridLayout_6;
     QGridLayout *gridLayout_5;
-    TEAView *graphicsViewTrainer;
     QComboBox *cboxY;
     QHBoxLayout *horizontalLayout_3;
     QSpacerItem *horizontalSpacer;
@@ -313,13 +312,6 @@ public:
         gridLayout_6->setObjectName(QString::fromUtf8("gridLayout_6"));
         gridLayout_5 = new QGridLayout();
         gridLayout_5->setObjectName(QString::fromUtf8("gridLayout_5"));
-        graphicsViewTrainer = new TEAView(tabTrainer);
-        graphicsViewTrainer->setObjectName(QString::fromUtf8("graphicsViewTrainer"));
-        graphicsViewTrainer->setDragMode(QGraphicsView::ScrollHandDrag);
-        graphicsViewTrainer->setResizeAnchor(QGraphicsView::AnchorUnderMouse);
-
-        gridLayout_5->addWidget(graphicsViewTrainer, 2, 0, 1, 1);
-
         cboxY = new QComboBox(tabTrainer);
         cboxY->setObjectName(QString::fromUtf8("cboxY"));
         sizePolicy1.setHeightForWidth(cboxY->sizePolicy().hasHeightForWidth());
@@ -341,7 +333,7 @@ public:
         horizontalLayout_3->addWidget(cboxX);
 
 
-        gridLayout_5->addLayout(horizontalLayout_3, 3, 0, 1, 1);
+        gridLayout_5->addLayout(horizontalLayout_3, 2, 0, 1, 1);
 
         qwtPlot = new QwtPlot(tabTrainer);
         qwtPlot->setObjectName(QString::fromUtf8("qwtPlot"));
@@ -360,7 +352,7 @@ public:
         MainWin->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWin);
         menubar->setObjectName(QString::fromUtf8("menubar"));
-        menubar->setGeometry(QRect(0, 0, 1024, 21));
+        menubar->setGeometry(QRect(0, 0, 1024, 23));
         menuRoute = new QMenu(menubar);
         menuRoute->setObjectName(QString::fromUtf8("menuRoute"));
         menuHelp = new QMenu(menubar);
@@ -449,7 +441,7 @@ public:
         MainWin->addDockWidget(static_cast<Qt::DockWidgetArea>(1), dwActiveRoutes);
         dwSettingsControls = new QDockWidget(MainWin);
         dwSettingsControls->setObjectName(QString::fromUtf8("dwSettingsControls"));
-        dwSettingsControls->setMinimumSize(QSize(155, 198));
+        dwSettingsControls->setMinimumSize(QSize(183, 229));
         QIcon icon20;
         icon20.addFile(QString::fromUtf8("icons/32x32_1000/wrench_orange.png"), QSize(), QIcon::Normal, QIcon::Off);
         dwSettingsControls->setWindowIcon(icon20);
