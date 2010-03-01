@@ -23,7 +23,6 @@
 #include "qwt_plot.h"
 #include "qwt_data.h"
 #include "qwt_plot_curve.h"
-#include <vector>
 
 
 #define PI 3.1415926535897932384626433832795
@@ -128,9 +127,17 @@ void TEA::fillTrainerViewCBoxes()
 	ui.cboxY->addItem("Mean velocity");
 	ui.cboxY->addItem("Mean altitude");
 	ui.cboxY->addItem("Duration");
-
+	ui.cboxY->addItem("Altitude gain");
+	ui.cboxY->addItem("Altitude loss");
+	
+	
 	ui.cboxX->addItem("Date");
 	ui.cboxX->addItem("Duration");
+	ui.cboxX->addItem("Mean velocity");
+	ui.cboxX->addItem("Mean altitude");
+	ui.cboxX->addItem("Altitude gain");
+	ui.cboxX->addItem("Altitude loss");
+	
 	}
 }
 
@@ -299,17 +306,6 @@ void TEA::drawTrainer(int indexX, int indexY)
 
         QwtArray<double> x,y;
         int value,routeNum = 0; double factor = 1.0;
-	switch (ui.cboxY->currentIndex()) {
-                case 1: value = 6; ui.qwtPlot->setAxisTitle(0,"Altitude in m"); factor = 0.1; break;
-                case 2:	value = 1; ui.qwtPlot->setAxisTitle(0,"Velocity in km/h"); factor = 0.01; break;
-                case 3: value = 2; ui.qwtPlot->setAxisTitle(0,"Pedal frequency in RPM"); factor = 1; break;
-                default: value = 1; ui.qwtPlot->setAxisTitle(0,"NYI"); break;
-	}
-
-        switch (ui.cboxX->currentIndex()) {
-                case 0: ui.qwtPlot->setAxisTitle(2,"Time in s"); break;
-                default: ui.qwtPlot->setAxisTitle(2,"NYI"); break;
-        }
 
 	QSqlQuery auidQuery = getCurrentlyLoadedRoutes();
 
@@ -318,6 +314,19 @@ void TEA::drawTrainer(int indexX, int indexY)
 
 	if (ui.rbNode->isChecked()){
                 ui.qwtPlot->clear();
+
+                switch (ui.cboxY->currentIndex()) {
+                        case 1: value = 6; ui.qwtPlot->setAxisTitle(0,"Altitude in m"); factor = 0.1; break;
+                        case 2:	value = 1; ui.qwtPlot->setAxisTitle(0,"Velocity in km/h"); factor = 0.01; break;
+                        case 3: value = 2; ui.qwtPlot->setAxisTitle(0,"Pedal frequency in RPM"); factor = 1; break;
+                        default: value = 1; ui.qwtPlot->setAxisTitle(0,"NYI"); break;
+                }
+
+                switch (ui.cboxX->currentIndex()) {
+                        case 0: ui.qwtPlot->setAxisTitle(2,"Time in s"); break;
+                        default: ui.qwtPlot->setAxisTitle(2,"NYI"); break;
+                }
+
 		while (auidQuery.next())
 		{
 
@@ -353,8 +362,35 @@ void TEA::drawTrainer(int indexX, int indexY)
 		}
 
 	} else {
+            ui.qwtPlot->clear();
+            switch (ui.cboxY->currentIndex()) {
+                    case 0: value = 19; ui.qwtPlot->setAxisTitle(0,"Mean velocity in km/h"); factor = 1; break;
+                    case 1: value = 18; ui.qwtPlot->setAxisTitle(0,"Mean altitude in m"); factor = 0.1; break;
+                    case 3: value = 10; ui.qwtPlot->setAxisTitle(0,"Altitude gain in m"); factor = 0.1; break;
+                    case 4: value = 11; ui.qwtPlot->setAxisTitle(0,"Altitude loss in m"); factor = 0.1; break;
+                    default: value = 19; ui.qwtPlot->setAxisTitle(0,"NYI"); factor = 0.0; break;
+            }
 
+            int value2, factor2;
+            switch (ui.cboxX->currentIndex()) {
+                    case 2: value2 = 19; ui.qwtPlot->setAxisTitle(2,"Mean velocity in km/h"); factor2 = 1; break;
+                    case 3: value2 = 18; ui.qwtPlot->setAxisTitle(2,"Mean altitude in m"); factor2 = 0.1; break;
+                    case 4: value2 = 10; ui.qwtPlot->setAxisTitle(2,"Altitude gain in m"); factor2 = 0.1; break;
+                    case 5: value2 = 11; ui.qwtPlot->setAxisTitle(2,"Altitude loss in m"); factor2 = 0.1; break;
+                    default: value2 = 19; ui.qwtPlot->setAxisTitle(2,"NYI"); factor2 = 0.0; break;
+            }
 
+            QSqlQuery metadata = getAllMetadata("adb");
+
+            while (metadata.next()) {
+            x << (factor * metadata.value(value).toDouble());
+            y << (factor2 * metadata.value(value2).toDouble());
+            }
+
+            curve->setData(x,y);
+            curve->setStyle(QwtPlotCurve::Lines);
+            curve->attach(ui.qwtPlot);
+            ui.qwtPlot->replot();
 
 
 	}

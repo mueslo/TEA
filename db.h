@@ -43,28 +43,28 @@ inline bool prepareActiveRoutesDB()
 	if (QSqlDatabase::database("adb").open())
 	{
 		QSqlQuery adbquery(QSqlDatabase::database("adb"));
-		adbquery.exec(	"CREATE TABLE active_metadata ("
-						"auid integer primary key,"
-						"uid integer,"
-						"date text,"
-						"id integer,"
-						"location text,"
-						"tags text,"
-						"name text,"
-						"checksum text,"
-						"distance text," //in kilometres
-						"altitude_gain integer," //in decimetres
-						"altitude_loss integer, " //in decimetres
-						"total_altitude_difference integer, " //in decimetres
-						"duration text," //in format hhmmss
-						"maximum_latitude integer," //in format ddmmmmmm
-						"minimum_latitude integer," // -"-
-						"maximum_longitude integer," //in format dddmmmmmm
-						"minimum_longitude integer," // -"-
-						"average_elevation integer," //in decimetres
-						"average_velocity integer," //in kilometres per hour
-						"picture blob,"
-						"num_nodes integer)");
+		adbquery.exec(	"CREATE TABLE active_metadata (" //0
+						"auid integer primary key," //1
+						"uid integer," //2
+						"date text," //3
+						"id integer," //4
+						"location text," //5
+						"tags text," //6
+						"name text," //7
+						"checksum text," //8
+						"distance text," //9 in kilometres
+						"altitude_gain integer," //10 in decimetres
+						"altitude_loss integer, " //11 in decimetres
+						"total_altitude_difference integer, " //12 in decimetres
+						"duration text," //13 in format hhmmss
+						"maximum_latitude integer," //14 in format ddmmmmmm
+						"minimum_latitude integer," // 15 -"-
+						"maximum_longitude integer," //16 in format dddmmmmmm
+						"minimum_longitude integer," //17 -"-
+						"average_elevation integer," //18 in decimetres
+						"average_velocity integer," //19 in kilometres per hour
+						"picture blob," //20
+						"num_nodes integer)"); //21
 		adbquery.exec(	"CREATE TABLE route("
 						"node integer primary key,"
 						"velocity integer,"
@@ -252,9 +252,9 @@ inline bool routePresentInDBs(QString checksum)
 	if (routePresentInADB(checksum) || routePresentInRDB(checksum)) return true; else return false;
 }
 
-inline QSqlQuery getAllMetadata()
+inline QSqlQuery getAllMetadata(QString database)
 {
-	QSqlQuery rdbquery(QSqlDatabase::database("rdb"));
+        QSqlQuery rdbquery(QSqlDatabase::database(database));
 	rdbquery.exec("SELECT * FROM metadata");
 	return rdbquery;
 }

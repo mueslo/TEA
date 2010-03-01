@@ -10,7 +10,7 @@ FindDialog::FindDialog(QWidget *parent)
 	ui.setupUi(this);
 	connectSignalsAndSlots();
 	fillComboBoxes();
-	metadata = getAllMetadata();
+        metadata = getAllMetadata("rdb");
 	displayResult();
 
 }
@@ -163,7 +163,7 @@ void FindDialog::load()
 
 void FindDialog::queryAll()
 {
-	metadata = getAllMetadata();
+        metadata = getAllMetadata("rdb");
 	displayResult();
 }
 
