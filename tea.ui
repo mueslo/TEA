@@ -296,7 +296,7 @@
            </layout>
           </item>
           <item row="1" column="0">
-           <widget class="QwtPlot" name="qwtPlot"/>
+           <widget class="QwtPlot" name="trainerPlot"/>
           </item>
          </layout>
         </item>
