@@ -621,6 +621,14 @@ inline void saveRoute(QString auid)
 
 }
 
+inline void deleteRoute(QString uid, QString database)
+{
+    //delete metadata database entry
+    //delete route database entry
+    //add uid to settings entry "empty"
+    //if if uid == next_uid-1 next_uid--
+}
+
 inline void setMetadata(QString auid, QString data, QString type)
 {
 	QSqlQuery adbquery(QSqlDatabase::database("adb"));
