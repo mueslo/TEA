@@ -623,10 +623,42 @@ inline void saveRoute(QString auid)
 
 inline void deleteRoute(QString uid, QString database)
 {
-    //delete metadata database entry
+    int next_uid;
+    //check if rdb route -> currently loaded
+    QSqlQuery dbquery(QSqlDatabase::database(database));
     //delete route database entry
+    dbquery.exec(qPrintable("DROP TABLE route"+uid));
+
+    //delete metadata database entry
     //add uid to settings entry "empty"
     //if if uid == next_uid-1 next_uid--
+    if (database == "adb") {
+
+        dbquery.exec(qPrintable("DELETE FROM active_metadata WHERE auid="+uid));
+	dbquery.exec("SELECT next_auid FROM settings");
+	next_uid = dbquery.record().value(0).toInt();
+	if (QString::number(next_uid-1) != uid) { dbquery.exec(qPrintable("INSERT INTO settings(empty) VALUES("+uid+")"));
+	} else { dbquery.exec(qPrintable("UPDATE settings SET next_auid="+QString::number(next_uid-1)));}
+
+    } else if (database == "rdb") {
+
+        dbquery.exec(qPrintable("DELETE FROM metadata WHERE uid="+uid));
+        dbquery.exec("SELECT next_uid FROM rsettings");
+	next_uid = dbquery.record().value(0).toInt();
+	if (QString::number(next_uid-1) != uid) { dbquery.exec(qPrintable("INSERT INTO rsettings(empty) VALUES("+uid+")"));
+	} else { dbquery.exec(qPrintable("UPDATE rsettings SET next_uid="+QString::number(next_uid-1)));}
+
+    }
+
+
+
+
+
+
+
+
+    //afterwards update loaded route list
+    //redraw map & trainer
 }
 
 inline void setMetadata(QString auid, QString data, QString type)

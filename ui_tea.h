@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'tea.ui'
 **
-** Created: Sat 27. Feb 01:01:59 2010
+** Created: Mon 15. Mar 10:38:36 2010
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -276,7 +276,7 @@ public:
         cbtnRotateCClockwise->setSizePolicy(sizePolicy1);
         cbtnRotateCClockwise->setMaximumSize(QSize(36, 36));
         QIcon icon15;
-        icon15.addFile(QString::fromUtf8("icons/32x32_0060/arrow_rotate_anticlockwise.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon15.addFile(QString::fromUtf8(":/icons/icons/32x32_0060/arrow_rotate_anticlockwise.png"), QSize(), QIcon::Normal, QIcon::Off);
         cbtnRotateCClockwise->setIcon(icon15);
         cbtnRotateCClockwise->setCheckable(false);
         cbtnRotateCClockwise->setAutoRepeat(false);
@@ -523,7 +523,7 @@ public:
 
         retranslateUi(MainWin);
 
-        tabwCentre->setCurrentIndex(1);
+        tabwCentre->setCurrentIndex(0);
 
 
         QMetaObject::connectSlotsByName(MainWin);

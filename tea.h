@@ -39,6 +39,8 @@ private slots:
     void mapSourceChanged();
     void trainerModeChanged();
     void trainerSelectionChange();
+    void unloadRoute();
+    void removeRoute();
 	//void graphicsViewResized();
 	//void grphPressed();
 	//void grphReleased();

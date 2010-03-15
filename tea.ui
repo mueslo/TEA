@@ -28,7 +28,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -205,8 +205,8 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset>
-                  <normaloff>icons/32x32_0060/arrow_rotate_anticlockwise.png</normaloff>icons/32x32_0060/arrow_rotate_anticlockwise.png</iconset>
+                 <iconset resource="icons.qrc">
+                  <normaloff>:/icons/icons/32x32_0060/arrow_rotate_anticlockwise.png</normaloff>:/icons/icons/32x32_0060/arrow_rotate_anticlockwise.png</iconset>
                 </property>
                 <property name="checkable">
                  <bool>false</bool>

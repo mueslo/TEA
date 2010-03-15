@@ -214,7 +214,7 @@ void TEA::downloaded(QNetworkReply* reply)
 
 	//newTile->setPos(-PI, -PI);
 	//newTile->scale(PI/128, PI/128);
-	ui.textInformation->append("Tile image file size:" + QString::number(data.length()) + " bits (x:"+QString::number(tileX)+" y:"+QString::number(tileY)+" z:"+QString::number(zoomLevel));
+	ui.textInformation->append("Tile image file size:" + QString::number(data.length()) + " bits (x:"+QString::number(tileX)+" y:"+QString::number(tileY)+" z:"+QString::number(zoomLevel)+")");
 	//scene->addItem(newTile);
 
 	//set position:
@@ -612,6 +612,16 @@ void TEA::drawRoute(QString auid)
 	scene->addItem(pathItem);
 	scene->setSceneRect(-PI,-PI,2*PI,2*PI);
 	prgBar->reset();
+}
+
+void TEA::unloadRoute()
+{
+
+}
+
+void TEA::removeRoute()
+{
+
 }
 
 void TEA::drawRoutes(QSqlQuery auidQuery)
