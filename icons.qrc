@@ -4,5 +4,17 @@
         <file>icons/32x32_0040/application_xp_terminal.png</file>
         <file>icons/32x32_0060/arrow_rotate_anticlockwise.png</file>
         <file>icons/32x32_0060/arrow_rotate_clockwise.png</file>
+        <file>icons/32x32_0320/cup.png</file>
+        <file>icons/32x32_0320/cup_add.png</file>
+        <file>icons/32x32_0340/door.png</file>
+        <file>icons/32x32_0480/help.png</file>
+        <file>icons/32x32_0340/disk.png</file>
+        <file>icons/32x32_0340/disk_multiple.png</file>
+        <file>icons/32x32_0560/map.png</file>
+        <file>icons/32x32_0640/page_save.png</file>
+        <file>icons/32x32_0320/cup_delete.png</file>
+        <file>icons/32x32_0320/database_delete.png</file>
+        <file>icons/32x32_0640/page_white_cup.png</file>
+        <file>icons/32x32_0320/database_add.png</file>
     </qresource>
 </RCC>
