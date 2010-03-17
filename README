@@ -1,0 +1,5 @@
+Requirements:
+	- Qt 4.x
+	- Qwt
+	- Hashlib++
+	- FatCow icon set http://www.fatcow.com/free-icons/
