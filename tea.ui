@@ -14,8 +14,8 @@
    <string>Tour Evaluation and Analysis</string>
   </property>
   <property name="windowIcon">
-   <iconset>
-    <normaloff>icons/32x32_0320/cup.png</normaloff>icons/32x32_0320/cup.png</iconset>
+   <iconset resource="icons.qrc">
+    <normaloff>:/icons/icons/32x32_0320/cup.png</normaloff>:/icons/icons/32x32_0320/cup.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_3">
@@ -230,12 +230,15 @@
                   <height>36</height>
                  </size>
                 </property>
+                <property name="cursor">
+                 <cursorShape>ArrowCursor</cursorShape>
+                </property>
                 <property name="text">
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset>
-                  <normaloff>icons/32x32_0060/arrow_rotate_clockwise.png</normaloff>icons/32x32_0060/arrow_rotate_clockwise.png</iconset>
+                 <iconset resource="icons.qrc">
+                  <normaloff>:/icons/icons/32x32_0060/arrow_rotate_clockwise.png</normaloff>:/icons/icons/32x32_0060/arrow_rotate_clockwise.png</iconset>
                 </property>
                </widget>
               </item>
@@ -312,7 +315,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuRoute">
@@ -632,8 +635,8 @@
   </widget>
   <action name="loadFromFileAction">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/32x32_0320/cup_add.png</normaloff>icons/32x32_0320/cup_add.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/icons/32x32_0320/cup_add.png</normaloff>:/icons/icons/32x32_0320/cup_add.png</iconset>
    </property>
    <property name="text">
     <string>Load from TEA file</string>
@@ -644,8 +647,8 @@
   </action>
   <action name="loadFromDatabaseAction">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/32x32_0320/database_add.png</normaloff>icons/32x32_0320/database_add.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/icons/32x32_0320/database_add.png</normaloff>:/icons/icons/32x32_0320/database_add.png</iconset>
    </property>
    <property name="text">
     <string>Load from database</string>
@@ -656,8 +659,8 @@
   </action>
   <action name="exitAction">
    <property name="icon">
-    <iconset>
-     <normaloff>release/icons/32x32_0340/door.png</normaloff>release/icons/32x32_0340/door.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/icons/32x32_0340/door.png</normaloff>:/icons/icons/32x32_0340/door.png</iconset>
    </property>
    <property name="text">
     <string>Exit</string>
@@ -668,8 +671,8 @@
   </action>
   <action name="aboutAction">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/32x32_0480/help.png</normaloff>icons/32x32_0480/help.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/icons/32x32_0480/help.png</normaloff>:/icons/icons/32x32_0480/help.png</iconset>
    </property>
    <property name="text">
     <string>About</string>
@@ -686,7 +689,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/icons/16x16_0040/application_xp_terminal.png</normaloff>:/icons/icons/16x16_0040/application_xp_terminal.png</iconset>
    </property>
    <property name="text">
@@ -701,8 +704,8 @@
   </action>
   <action name="saveAction">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/32x32_0340/disk.png</normaloff>icons/32x32_0340/disk.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/icons/32x32_0340/disk.png</normaloff>:/icons/icons/32x32_0340/disk.png</iconset>
    </property>
    <property name="text">
     <string>Save</string>
@@ -713,8 +716,8 @@
   </action>
   <action name="saveAllAction">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/32x32_0340/disk_multiple.png</normaloff>icons/32x32_0340/disk_multiple.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/icons/32x32_0340/disk_multiple.png</normaloff>:/icons/icons/32x32_0340/disk_multiple.png</iconset>
    </property>
    <property name="text">
     <string>Save all</string>
@@ -725,8 +728,8 @@
   </action>
   <action name="refreshMapAction">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/32x32_0560/map.png</normaloff>icons/32x32_0560/map.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/icons/32x32_0560/map.png</normaloff>:/icons/icons/32x32_0560/map.png</iconset>
    </property>
    <property name="text">
     <string>Refresh Map</string>
@@ -734,8 +737,8 @@
   </action>
   <action name="kmlExportAction">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/32x32_0640/page_save.png</normaloff>icons/32x32_0640/page_save.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/icons/32x32_0640/page_save.png</normaloff>:/icons/icons/32x32_0640/page_save.png</iconset>
    </property>
    <property name="text">
     <string>Export as .kml</string>
@@ -746,8 +749,8 @@
   </action>
   <action name="actionClose_route">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/32x32_0320/cup_delete.png</normaloff>icons/32x32_0320/cup_delete.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/icons/32x32_0320/cup_delete.png</normaloff>:/icons/icons/32x32_0320/cup_delete.png</iconset>
    </property>
    <property name="text">
     <string>Close route</string>
@@ -758,8 +761,8 @@
   </action>
   <action name="actionDelete_route_from_database">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/32x32_0320/database_delete.png</normaloff>icons/32x32_0320/database_delete.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/icons/32x32_0320/database_delete.png</normaloff>:/icons/icons/32x32_0320/database_delete.png</iconset>
    </property>
    <property name="text">
     <string>Delete route</string>
@@ -775,8 +778,8 @@
   </action>
   <action name="actionExport_as_tea">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/32x32_0640/page_white_cup.png</normaloff>icons/32x32_0640/page_white_cup.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/icons/32x32_0640/page_white_cup.png</normaloff>:/icons/icons/32x32_0640/page_white_cup.png</iconset>
    </property>
    <property name="text">
     <string>Export as .tea</string>
