@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'tea.ui'
 **
-** Created: Mon 15. Mar 10:38:36 2010
+** Created: Wed 17. Mar 23:37:38 2010
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -114,27 +114,27 @@ public:
             MainWin->setObjectName(QString::fromUtf8("MainWin"));
         MainWin->resize(1024, 810);
         QIcon icon;
-        icon.addFile(QString::fromUtf8("icons/32x32_0320/cup.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon.addFile(QString::fromUtf8(":/icons/icons/32x32_0320/cup.png"), QSize(), QIcon::Normal, QIcon::Off);
         MainWin->setWindowIcon(icon);
         loadFromFileAction = new QAction(MainWin);
         loadFromFileAction->setObjectName(QString::fromUtf8("loadFromFileAction"));
         QIcon icon1;
-        icon1.addFile(QString::fromUtf8("icons/32x32_0320/cup_add.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon1.addFile(QString::fromUtf8(":/icons/icons/32x32_0320/cup_add.png"), QSize(), QIcon::Normal, QIcon::Off);
         loadFromFileAction->setIcon(icon1);
         loadFromDatabaseAction = new QAction(MainWin);
         loadFromDatabaseAction->setObjectName(QString::fromUtf8("loadFromDatabaseAction"));
         QIcon icon2;
-        icon2.addFile(QString::fromUtf8("icons/32x32_0320/database_add.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon2.addFile(QString::fromUtf8(":/icons/icons/32x32_0320/database_add.png"), QSize(), QIcon::Normal, QIcon::Off);
         loadFromDatabaseAction->setIcon(icon2);
         exitAction = new QAction(MainWin);
         exitAction->setObjectName(QString::fromUtf8("exitAction"));
         QIcon icon3;
-        icon3.addFile(QString::fromUtf8("release/icons/32x32_0340/door.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon3.addFile(QString::fromUtf8(":/icons/icons/32x32_0340/door.png"), QSize(), QIcon::Normal, QIcon::Off);
         exitAction->setIcon(icon3);
         aboutAction = new QAction(MainWin);
         aboutAction->setObjectName(QString::fromUtf8("aboutAction"));
         QIcon icon4;
-        icon4.addFile(QString::fromUtf8("icons/32x32_0480/help.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon4.addFile(QString::fromUtf8(":/icons/icons/32x32_0480/help.png"), QSize(), QIcon::Normal, QIcon::Off);
         aboutAction->setIcon(icon4);
         consoleAction = new QAction(MainWin);
         consoleAction->setObjectName(QString::fromUtf8("consoleAction"));
@@ -147,39 +147,39 @@ public:
         saveAction = new QAction(MainWin);
         saveAction->setObjectName(QString::fromUtf8("saveAction"));
         QIcon icon6;
-        icon6.addFile(QString::fromUtf8("icons/32x32_0340/disk.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon6.addFile(QString::fromUtf8(":/icons/icons/32x32_0340/disk.png"), QSize(), QIcon::Normal, QIcon::Off);
         saveAction->setIcon(icon6);
         saveAllAction = new QAction(MainWin);
         saveAllAction->setObjectName(QString::fromUtf8("saveAllAction"));
         QIcon icon7;
-        icon7.addFile(QString::fromUtf8("icons/32x32_0340/disk_multiple.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon7.addFile(QString::fromUtf8(":/icons/icons/32x32_0340/disk_multiple.png"), QSize(), QIcon::Normal, QIcon::Off);
         saveAllAction->setIcon(icon7);
         refreshMapAction = new QAction(MainWin);
         refreshMapAction->setObjectName(QString::fromUtf8("refreshMapAction"));
         QIcon icon8;
-        icon8.addFile(QString::fromUtf8("icons/32x32_0560/map.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon8.addFile(QString::fromUtf8(":/icons/icons/32x32_0560/map.png"), QSize(), QIcon::Normal, QIcon::Off);
         refreshMapAction->setIcon(icon8);
         kmlExportAction = new QAction(MainWin);
         kmlExportAction->setObjectName(QString::fromUtf8("kmlExportAction"));
         QIcon icon9;
-        icon9.addFile(QString::fromUtf8("icons/32x32_0640/page_save.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon9.addFile(QString::fromUtf8(":/icons/icons/32x32_0640/page_save.png"), QSize(), QIcon::Normal, QIcon::Off);
         kmlExportAction->setIcon(icon9);
         actionClose_route = new QAction(MainWin);
         actionClose_route->setObjectName(QString::fromUtf8("actionClose_route"));
         QIcon icon10;
-        icon10.addFile(QString::fromUtf8("icons/32x32_0320/cup_delete.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon10.addFile(QString::fromUtf8(":/icons/icons/32x32_0320/cup_delete.png"), QSize(), QIcon::Normal, QIcon::Off);
         actionClose_route->setIcon(icon10);
         actionDelete_route_from_database = new QAction(MainWin);
         actionDelete_route_from_database->setObjectName(QString::fromUtf8("actionDelete_route_from_database"));
         QIcon icon11;
-        icon11.addFile(QString::fromUtf8("icons/32x32_0320/database_delete.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon11.addFile(QString::fromUtf8(":/icons/icons/32x32_0320/database_delete.png"), QSize(), QIcon::Normal, QIcon::Off);
         actionDelete_route_from_database->setIcon(icon11);
         actionEdit_metadata = new QAction(MainWin);
         actionEdit_metadata->setObjectName(QString::fromUtf8("actionEdit_metadata"));
         actionExport_as_tea = new QAction(MainWin);
         actionExport_as_tea->setObjectName(QString::fromUtf8("actionExport_as_tea"));
         QIcon icon12;
-        icon12.addFile(QString::fromUtf8("icons/32x32_0640/page_white_cup.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon12.addFile(QString::fromUtf8(":/icons/icons/32x32_0640/page_white_cup.png"), QSize(), QIcon::Normal, QIcon::Off);
         actionExport_as_tea->setIcon(icon12);
         centralwidget = new QWidget(MainWin);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
@@ -288,8 +288,9 @@ public:
         sizePolicy1.setHeightForWidth(cbtnRotateClockwise->sizePolicy().hasHeightForWidth());
         cbtnRotateClockwise->setSizePolicy(sizePolicy1);
         cbtnRotateClockwise->setMaximumSize(QSize(36, 36));
+        cbtnRotateClockwise->setCursor(QCursor(Qt::ArrowCursor));
         QIcon icon16;
-        icon16.addFile(QString::fromUtf8("icons/32x32_0060/arrow_rotate_clockwise.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon16.addFile(QString::fromUtf8(":/icons/icons/32x32_0060/arrow_rotate_clockwise.png"), QSize(), QIcon::Normal, QIcon::Off);
         cbtnRotateClockwise->setIcon(icon16);
 
         horizontalLayout->addWidget(cbtnRotateClockwise);
@@ -352,7 +353,7 @@ public:
         MainWin->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWin);
         menubar->setObjectName(QString::fromUtf8("menubar"));
-        menubar->setGeometry(QRect(0, 0, 1024, 23));
+        menubar->setGeometry(QRect(0, 0, 1024, 21));
         menuRoute = new QMenu(menubar);
         menuRoute->setObjectName(QString::fromUtf8("menuRoute"));
         menuHelp = new QMenu(menubar);
@@ -523,7 +524,7 @@ public:
 
         retranslateUi(MainWin);
 
-        tabwCentre->setCurrentIndex(0);
+        tabwCentre->setCurrentIndex(1);
 
 
         QMetaObject::connectSlotsByName(MainWin);
