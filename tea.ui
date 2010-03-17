@@ -28,7 +28,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -44,8 +44,8 @@
         </sizepolicy>
        </property>
        <attribute name="icon">
-        <iconset>
-         <normaloff>icons/16x16_0560/map.png</normaloff>icons/16x16_0560/map.png</iconset>
+        <iconset resource="icons.qrc">
+         <normaloff>:/icons/icons/16x16_0560/map.png</normaloff>:/icons/icons/16x16_0560/map.png</iconset>
        </attribute>
        <attribute name="title">
         <string>Map view</string>
@@ -252,8 +252,8 @@
       </widget>
       <widget class="QWidget" name="tabTrainer">
        <attribute name="icon">
-        <iconset>
-         <normaloff>icons/16x16_0220/chart_curve.png</normaloff>icons/16x16_0220/chart_curve.png</iconset>
+        <iconset resource="icons.qrc">
+         <normaloff>:/icons/icons/16x16_0220/chart_curve.png</normaloff>:/icons/icons/16x16_0220/chart_curve.png</iconset>
        </attribute>
        <attribute name="title">
         <string>Trainer view</string>
@@ -315,7 +315,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuRoute">
@@ -689,8 +689,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>:/icons/icons/16x16_0040/application_xp_terminal.png</normaloff>:/icons/icons/16x16_0040/application_xp_terminal.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/icons/32x32_0040/application_xp_terminal.png</normaloff>:/icons/icons/32x32_0040/application_xp_terminal.png</iconset>
    </property>
    <property name="text">
     <string>Console</string>

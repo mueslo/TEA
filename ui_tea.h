@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'tea.ui'
 **
-** Created: Wed 17. Mar 23:37:38 2010
+** Created: Thu 18. Mar 00:23:44 2010
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -305,7 +305,7 @@ public:
         gridLayout_4->addLayout(horizontalLayout_2, 0, 0, 1, 1);
 
         QIcon icon17;
-        icon17.addFile(QString::fromUtf8("icons/16x16_0560/map.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon17.addFile(QString::fromUtf8(":/icons/icons/16x16_0560/map.png"), QSize(), QIcon::Normal, QIcon::Off);
         tabwCentre->addTab(tabMap, icon17, QString());
         tabTrainer = new QWidget();
         tabTrainer->setObjectName(QString::fromUtf8("tabTrainer"));
@@ -345,7 +345,7 @@ public:
         gridLayout_6->addLayout(gridLayout_5, 0, 0, 1, 1);
 
         QIcon icon18;
-        icon18.addFile(QString::fromUtf8("icons/16x16_0220/chart_curve.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon18.addFile(QString::fromUtf8(":/icons/icons/16x16_0220/chart_curve.png"), QSize(), QIcon::Normal, QIcon::Off);
         tabwCentre->addTab(tabTrainer, icon18, QString());
 
         gridLayout_3->addWidget(tabwCentre, 0, 0, 1, 1);
@@ -353,7 +353,7 @@ public:
         MainWin->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWin);
         menubar->setObjectName(QString::fromUtf8("menubar"));
-        menubar->setGeometry(QRect(0, 0, 1024, 21));
+        menubar->setGeometry(QRect(0, 0, 1024, 23));
         menuRoute = new QMenu(menubar);
         menuRoute->setObjectName(QString::fromUtf8("menuRoute"));
         menuHelp = new QMenu(menubar);
@@ -524,7 +524,7 @@ public:
 
         retranslateUi(MainWin);
 
-        tabwCentre->setCurrentIndex(1);
+        tabwCentre->setCurrentIndex(0);
 
 
         QMetaObject::connectSlotsByName(MainWin);

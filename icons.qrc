@@ -16,5 +16,7 @@
         <file>icons/32x32_0320/database_delete.png</file>
         <file>icons/32x32_0640/page_white_cup.png</file>
         <file>icons/32x32_0320/database_add.png</file>
+        <file>icons/16x16_0220/chart_curve.png</file>
+        <file>icons/16x16_0560/map.png</file>
     </qresource>
 </RCC>
