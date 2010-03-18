@@ -336,8 +336,8 @@ void TEA::drawTrainer(int indexX, int indexY)
                 switch (ui.cboxY->currentIndex()) {
                         case 1: value = 6; ui.qwtPlot->setAxisTitle(0,"Altitude in m"); factor = 0.1; break;
                         case 2:	value = 1; ui.qwtPlot->setAxisTitle(0,"Velocity in km/h"); factor = 0.01; break;
-			case 3: value = 2; ui.qwtPlot->setAxisTitle(0,"Slope in deg€"); factor = 1; break;
-			case 4: value = 2; ui.qwtPlot->setAxisTitle(0,"Pedal frequency in RPM"); factor = 1; break;
+			case 3: value = 3; ui.qwtPlot->setAxisTitle(0,"Slope in deg"); factor = 0.1; break;
+			case 4: value = 2; ui.qwtPlot->setAxisTitle(0,"Pedal frequency in RPM"); factor = 0.1; break;
                         default: value = 1; ui.qwtPlot->setAxisTitle(0,"NYI"); break;
                 }
 
