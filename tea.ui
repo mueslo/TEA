@@ -71,8 +71,8 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
-              <normaloff>icons/16x16_0560/magnifier_zoom_in.png</normaloff>icons/16x16_0560/magnifier_zoom_in.png</iconset>
+             <iconset resource="icons.qrc">
+              <normaloff>:/icons/icons/16x16_0560/magnifier_zoom_in.png</normaloff>:/icons/icons/16x16_0560/magnifier_zoom_in.png</iconset>
             </property>
            </widget>
           </item>
@@ -134,8 +134,8 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
-              <normaloff>icons/16x16_0560/magnifier_zoom_out.png</normaloff>icons/16x16_0560/magnifier_zoom_out.png</iconset>
+             <iconset resource="icons.qrc">
+              <normaloff>:/icons/icons/16x16_0560/magnifier_zoom_out.png</normaloff>:/icons/icons/16x16_0560/magnifier_zoom_out.png</iconset>
             </property>
            </widget>
           </item>
@@ -542,7 +542,7 @@
    <property name="minimumSize">
     <size>
      <width>183</width>
-     <height>229</height>
+     <height>259</height>
     </size>
    </property>
    <property name="windowIcon">
@@ -560,6 +560,76 @@
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <widget class="QGroupBox" name="grpbGeneralSettings">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="title">
+        <string>General</string>
+       </property>
+       <widget class="QLineEdit" name="edtProxy">
+        <property name="geometry">
+         <rect>
+          <x>40</x>
+          <y>50</y>
+          <width>113</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>10.4.0.252:8080</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnGeneralSettings">
+        <property name="geometry">
+         <rect>
+          <x>50</x>
+          <y>110</y>
+          <width>93</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Apply</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>141</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Proxy (IP:Port)</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_2">
+        <property name="geometry">
+         <rect>
+          <x>40</x>
+          <y>70</y>
+          <width>111</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>6</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>(leave empty for none)</string>
+        </property>
+       </widget>
+      </widget>
+     </item>
      <item>
       <widget class="QGroupBox" name="grpbMapSource">
        <property name="title">

@@ -41,6 +41,7 @@ private slots:
     void trainerSelectionChange();
     void unloadRoute();
     void removeRoute();
+    void setGeneralSettings();
 	//void graphicsViewResized();
 	//void grphPressed();
 	//void grphReleased();

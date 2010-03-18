@@ -384,8 +384,8 @@
      <string/>
     </property>
     <property name="icon">
-     <iconset>
-      <normaloff>icons/16x16_0560/magnifier_zoom_in.png</normaloff>icons/16x16_0560/magnifier_zoom_in.png</iconset>
+     <iconset resource="icons.qrc">
+      <normaloff>:/icons/icons/16x16_0560/magnifier_zoom_in.png</normaloff>:/icons/icons/16x16_0560/magnifier_zoom_in.png</iconset>
     </property>
    </widget>
    <widget class="QPushButton" name="btnZoomOut">
@@ -401,8 +401,8 @@
      <string/>
     </property>
     <property name="icon">
-     <iconset>
-      <normaloff>icons/16x16_0560/magnifier_zoom_out.png</normaloff>icons/16x16_0560/magnifier_zoom_out.png</iconset>
+     <iconset resource="icons.qrc">
+      <normaloff>:/icons/icons/16x16_0560/magnifier_zoom_out.png</normaloff>:/icons/icons/16x16_0560/magnifier_zoom_out.png</iconset>
     </property>
    </widget>
   </widget>
@@ -534,6 +534,8 @@
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

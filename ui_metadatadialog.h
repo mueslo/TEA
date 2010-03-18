@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'metadatadialog.ui'
 **
-** Created: Thu 25. Feb 17:33:00 2010
+** Created: Thu 18. Mar 13:13:57 2010
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -159,13 +159,13 @@ public:
         btnZoomIn->setObjectName(QString::fromUtf8("btnZoomIn"));
         btnZoomIn->setGeometry(QRect(388, 50, 23, 23));
         QIcon icon;
-        icon.addFile(QString::fromUtf8("icons/16x16_0560/magnifier_zoom_in.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon.addFile(QString::fromUtf8(":/icons/icons/16x16_0560/magnifier_zoom_in.png"), QSize(), QIcon::Normal, QIcon::Off);
         btnZoomIn->setIcon(icon);
         btnZoomOut = new QPushButton(grpVisual);
         btnZoomOut->setObjectName(QString::fromUtf8("btnZoomOut"));
         btnZoomOut->setGeometry(QRect(388, 250, 23, 23));
         QIcon icon1;
-        icon1.addFile(QString::fromUtf8("icons/16x16_0560/magnifier_zoom_out.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon1.addFile(QString::fromUtf8(":/icons/icons/16x16_0560/magnifier_zoom_out.png"), QSize(), QIcon::Normal, QIcon::Off);
         btnZoomOut->setIcon(icon1);
         groupBox = new QGroupBox(MetadataDialogClass);
         groupBox->setObjectName(QString::fromUtf8("groupBox"));

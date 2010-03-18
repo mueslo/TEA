@@ -37,6 +37,7 @@ TEA::TEA(QWidget *parent) :
 {
 	init = true;
 	networkManager = new QNetworkAccessManager(this);
+
 	connect(networkManager, SIGNAL(finished(QNetworkReply*)),
 	         this, SLOT(downloaded(QNetworkReply*)));
 	ui.setupUi(this);
@@ -120,6 +121,7 @@ void TEA::fillTrainerViewCBoxes()
 		ui.cboxY->addItem("Altitude");
 		ui.cboxY->addItem("Velocity");
 		ui.cboxY->addItem("Slope");
+		ui.cboxY->addItem("Pedal frequency");
 
 		ui.cboxX->addItem("Time");
 		ui.cboxX->addItem("Distance");
@@ -285,9 +287,25 @@ void TEA::connectSignalsAndSlots()
 	connect(ui.cboxY, SIGNAL(currentIndexChanged(int)), this, SLOT(trainerSelectionChange()));
 	connect(ui.rbNode, SIGNAL(toggled(bool)), this, SLOT(trainerModeChanged()));
 	connect(ui.graphicsView, SIGNAL(wheelZoom(int)), this, SLOT(zoom(int)));
+	connect(ui.btnGeneralSettings, SIGNAL(clicked()), this, SLOT(setGeneralSettings()));
 	//connect(ui.graphicsView, SIGNAL(resizeEvent()), this, SLOT(graphicsViewResized()));
 	//connect(ui.graphicsView, SIGNAL(mousePressed()), this, SLOT(grphPressed()));
 	//ui.tbMain->addAction(QIcon("icons/32x32_0560/map.png"), "Something with maps", this, "mapAction");
+}
+
+
+void TEA::setGeneralSettings()
+{
+    QString address = ui.edtProxy->text();
+    if (address != "") {
+	QString ip = address.section(":",0,0);
+	int port = address.section(":", -1).toInt();
+	QNetworkProxy proxy = QNetworkProxy::QNetworkProxy(QNetworkProxy::HttpCachingProxy,ip,port);
+	networkManager->setProxy(proxy);
+    } else {
+	QNetworkProxy proxy = QNetworkProxy::QNetworkProxy(QNetworkProxy::NoProxy);
+	networkManager->setProxy(proxy);
+    }
 }
 
 void TEA::trainerModeChanged()
@@ -318,7 +336,8 @@ void TEA::drawTrainer(int indexX, int indexY)
                 switch (ui.cboxY->currentIndex()) {
                         case 1: value = 6; ui.qwtPlot->setAxisTitle(0,"Altitude in m"); factor = 0.1; break;
                         case 2:	value = 1; ui.qwtPlot->setAxisTitle(0,"Velocity in km/h"); factor = 0.01; break;
-                        case 3: value = 2; ui.qwtPlot->setAxisTitle(0,"Pedal frequency in RPM"); factor = 1; break;
+			case 3: value = 2; ui.qwtPlot->setAxisTitle(0,"Slope in deg€"); factor = 1; break;
+			case 4: value = 2; ui.qwtPlot->setAxisTitle(0,"Pedal frequency in RPM"); factor = 1; break;
                         default: value = 1; ui.qwtPlot->setAxisTitle(0,"NYI"); break;
                 }
 

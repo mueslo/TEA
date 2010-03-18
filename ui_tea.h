@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'tea.ui'
 **
-** Created: Thu 18. Mar 00:23:44 2010
+** Created: Thu 18. Mar 21:04:06 2010
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -22,6 +22,8 @@
 #include <QtGui/QGroupBox>
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QHeaderView>
+#include <QtGui/QLabel>
+#include <QtGui/QLineEdit>
 #include <QtGui/QListWidget>
 #include <QtGui/QMainWindow>
 #include <QtGui/QMenu>
@@ -97,6 +99,11 @@ public:
     QDockWidget *dwSettingsControls;
     QWidget *dockWidgetContents;
     QVBoxLayout *verticalLayout_2;
+    QGroupBox *grpbGeneralSettings;
+    QLineEdit *edtProxy;
+    QPushButton *btnGeneralSettings;
+    QLabel *label;
+    QLabel *label_2;
     QGroupBox *grpbMapSource;
     QFormLayout *formLayout;
     QRadioButton *rbMapnik;
@@ -141,7 +148,7 @@ public:
         consoleAction->setCheckable(true);
         consoleAction->setChecked(true);
         QIcon icon5;
-        icon5.addFile(QString::fromUtf8(":/icons/icons/16x16_0040/application_xp_terminal.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon5.addFile(QString::fromUtf8(":/icons/icons/32x32_0040/application_xp_terminal.png"), QSize(), QIcon::Normal, QIcon::Off);
         consoleAction->setIcon(icon5);
         consoleAction->setVisible(true);
         saveAction = new QAction(MainWin);
@@ -211,7 +218,7 @@ public:
         btnZoomIn->setSizePolicy(sizePolicy1);
         btnZoomIn->setMaximumSize(QSize(23, 23));
         QIcon icon13;
-        icon13.addFile(QString::fromUtf8("icons/16x16_0560/magnifier_zoom_in.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon13.addFile(QString::fromUtf8(":/icons/icons/16x16_0560/magnifier_zoom_in.png"), QSize(), QIcon::Normal, QIcon::Off);
         btnZoomIn->setIcon(icon13);
 
         layoutZoom->addWidget(btnZoomIn);
@@ -240,7 +247,7 @@ public:
         btnZoomOut->setSizePolicy(sizePolicy1);
         btnZoomOut->setMaximumSize(QSize(23, 23));
         QIcon icon14;
-        icon14.addFile(QString::fromUtf8("icons/16x16_0560/magnifier_zoom_out.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon14.addFile(QString::fromUtf8(":/icons/icons/16x16_0560/magnifier_zoom_out.png"), QSize(), QIcon::Normal, QIcon::Off);
         btnZoomOut->setIcon(icon14);
 
         layoutZoom->addWidget(btnZoomOut);
@@ -442,7 +449,7 @@ public:
         MainWin->addDockWidget(static_cast<Qt::DockWidgetArea>(1), dwActiveRoutes);
         dwSettingsControls = new QDockWidget(MainWin);
         dwSettingsControls->setObjectName(QString::fromUtf8("dwSettingsControls"));
-        dwSettingsControls->setMinimumSize(QSize(183, 229));
+        dwSettingsControls->setMinimumSize(QSize(183, 259));
         QIcon icon20;
         icon20.addFile(QString::fromUtf8("icons/32x32_1000/wrench_orange.png"), QSize(), QIcon::Normal, QIcon::Off);
         dwSettingsControls->setWindowIcon(icon20);
@@ -451,6 +458,28 @@ public:
         dockWidgetContents->setObjectName(QString::fromUtf8("dockWidgetContents"));
         verticalLayout_2 = new QVBoxLayout(dockWidgetContents);
         verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
+        grpbGeneralSettings = new QGroupBox(dockWidgetContents);
+        grpbGeneralSettings->setObjectName(QString::fromUtf8("grpbGeneralSettings"));
+        sizePolicy.setHeightForWidth(grpbGeneralSettings->sizePolicy().hasHeightForWidth());
+        grpbGeneralSettings->setSizePolicy(sizePolicy);
+        edtProxy = new QLineEdit(grpbGeneralSettings);
+        edtProxy->setObjectName(QString::fromUtf8("edtProxy"));
+        edtProxy->setGeometry(QRect(40, 50, 113, 22));
+        btnGeneralSettings = new QPushButton(grpbGeneralSettings);
+        btnGeneralSettings->setObjectName(QString::fromUtf8("btnGeneralSettings"));
+        btnGeneralSettings->setGeometry(QRect(50, 110, 93, 28));
+        label = new QLabel(grpbGeneralSettings);
+        label->setObjectName(QString::fromUtf8("label"));
+        label->setGeometry(QRect(10, 30, 141, 16));
+        label_2 = new QLabel(grpbGeneralSettings);
+        label_2->setObjectName(QString::fromUtf8("label_2"));
+        label_2->setGeometry(QRect(40, 70, 111, 20));
+        QFont font;
+        font.setPointSize(6);
+        label_2->setFont(font);
+
+        verticalLayout_2->addWidget(grpbGeneralSettings);
+
         grpbMapSource = new QGroupBox(dockWidgetContents);
         grpbMapSource->setObjectName(QString::fromUtf8("grpbMapSource"));
         formLayout = new QFormLayout(grpbMapSource);
@@ -595,6 +624,11 @@ public:
 #endif // QT_NO_TOOLTIP
         dwActiveRoutes->setWindowTitle(QApplication::translate("MainWin", "Currently loaded routes", 0, QApplication::UnicodeUTF8));
         dwSettingsControls->setWindowTitle(QApplication::translate("MainWin", "Settings and properties", 0, QApplication::UnicodeUTF8));
+        grpbGeneralSettings->setTitle(QApplication::translate("MainWin", "General", 0, QApplication::UnicodeUTF8));
+        edtProxy->setText(QApplication::translate("MainWin", "10.4.0.252:8080", 0, QApplication::UnicodeUTF8));
+        btnGeneralSettings->setText(QApplication::translate("MainWin", "Apply", 0, QApplication::UnicodeUTF8));
+        label->setText(QApplication::translate("MainWin", "Proxy (IP:Port)", 0, QApplication::UnicodeUTF8));
+        label_2->setText(QApplication::translate("MainWin", "(leave empty for none)", 0, QApplication::UnicodeUTF8));
         grpbMapSource->setTitle(QApplication::translate("MainWin", "Map source", 0, QApplication::UnicodeUTF8));
         rbMapnik->setText(QApplication::translate("MainWin", "Mapnik", 0, QApplication::UnicodeUTF8));
         rbCycleMap->setText(QApplication::translate("MainWin", "CycleMap", 0, QApplication::UnicodeUTF8));
