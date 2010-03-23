@@ -20,6 +20,7 @@
 #include "db.h"
 #include "metadatadialog.h"
 #include "finddialog.h"
+#include "databaseviewer.h"
 #include "qwt_plot.h"
 #include "qwt_data.h"
 #include "qwt_plot_curve.h"
@@ -288,11 +289,17 @@ void TEA::connectSignalsAndSlots()
 	connect(ui.rbNode, SIGNAL(toggled(bool)), this, SLOT(trainerModeChanged()));
 	connect(ui.graphicsView, SIGNAL(wheelZoom(int)), this, SLOT(zoom(int)));
 	connect(ui.btnGeneralSettings, SIGNAL(clicked()), this, SLOT(setGeneralSettings()));
+        connect(ui.databaseViewAction, SIGNAL(triggered()), this, SLOT(actionViewDatabase()));
 	//connect(ui.graphicsView, SIGNAL(resizeEvent()), this, SLOT(graphicsViewResized()));
 	//connect(ui.graphicsView, SIGNAL(mousePressed()), this, SLOT(grphPressed()));
 	//ui.tbMain->addAction(QIcon("icons/32x32_0560/map.png"), "Something with maps", this, "mapAction");
 }
 
+void TEA::actionViewDatabase()
+{
+DatabaseViewer d;
+d.exec();
+}
 
 void TEA::setGeneralSettings()
 {
@@ -306,6 +313,8 @@ void TEA::setGeneralSettings()
 	QNetworkProxy proxy = QNetworkProxy::QNetworkProxy(QNetworkProxy::NoProxy);
 	networkManager->setProxy(proxy);
     }
+
+    //SAVE TO DB
 }
 
 void TEA::trainerModeChanged()

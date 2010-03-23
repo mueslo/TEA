@@ -20,5 +20,6 @@
         <file>icons/16x16_0560/map.png</file>
         <file>icons/16x16_0560/magnifier_zoom_out.png</file>
         <file>icons/16x16_0560/magnifier_zoom_in.png</file>
+        <file>icons/32x32_0320/database_go.png</file>
     </qresource>
 </RCC>

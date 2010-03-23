@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'tea.ui'
 **
-** Created: Thu 18. Mar 21:04:06 2010
+** Created: Tue 23. Mar 22:56:00 2010
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -59,6 +59,7 @@ public:
     QAction *actionDelete_route_from_database;
     QAction *actionEdit_metadata;
     QAction *actionExport_as_tea;
+    QAction *databaseViewAction;
     QWidget *centralwidget;
     QGridLayout *gridLayout_3;
     QTabWidget *tabwCentre;
@@ -188,6 +189,11 @@ public:
         QIcon icon12;
         icon12.addFile(QString::fromUtf8(":/icons/icons/32x32_0640/page_white_cup.png"), QSize(), QIcon::Normal, QIcon::Off);
         actionExport_as_tea->setIcon(icon12);
+        databaseViewAction = new QAction(MainWin);
+        databaseViewAction->setObjectName(QString::fromUtf8("databaseViewAction"));
+        QIcon icon13;
+        icon13.addFile(QString::fromUtf8(":/icons/icons/32x32_0320/database_go.png"), QSize(), QIcon::Normal, QIcon::Off);
+        databaseViewAction->setIcon(icon13);
         centralwidget = new QWidget(MainWin);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         gridLayout_3 = new QGridLayout(centralwidget);
@@ -217,9 +223,9 @@ public:
         sizePolicy1.setHeightForWidth(btnZoomIn->sizePolicy().hasHeightForWidth());
         btnZoomIn->setSizePolicy(sizePolicy1);
         btnZoomIn->setMaximumSize(QSize(23, 23));
-        QIcon icon13;
-        icon13.addFile(QString::fromUtf8(":/icons/icons/16x16_0560/magnifier_zoom_in.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnZoomIn->setIcon(icon13);
+        QIcon icon14;
+        icon14.addFile(QString::fromUtf8(":/icons/icons/16x16_0560/magnifier_zoom_in.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnZoomIn->setIcon(icon14);
 
         layoutZoom->addWidget(btnZoomIn);
 
@@ -246,9 +252,9 @@ public:
         sizePolicy1.setHeightForWidth(btnZoomOut->sizePolicy().hasHeightForWidth());
         btnZoomOut->setSizePolicy(sizePolicy1);
         btnZoomOut->setMaximumSize(QSize(23, 23));
-        QIcon icon14;
-        icon14.addFile(QString::fromUtf8(":/icons/icons/16x16_0560/magnifier_zoom_out.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnZoomOut->setIcon(icon14);
+        QIcon icon15;
+        icon15.addFile(QString::fromUtf8(":/icons/icons/16x16_0560/magnifier_zoom_out.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnZoomOut->setIcon(icon15);
 
         layoutZoom->addWidget(btnZoomOut);
 
@@ -282,9 +288,9 @@ public:
         sizePolicy1.setHeightForWidth(cbtnRotateCClockwise->sizePolicy().hasHeightForWidth());
         cbtnRotateCClockwise->setSizePolicy(sizePolicy1);
         cbtnRotateCClockwise->setMaximumSize(QSize(36, 36));
-        QIcon icon15;
-        icon15.addFile(QString::fromUtf8(":/icons/icons/32x32_0060/arrow_rotate_anticlockwise.png"), QSize(), QIcon::Normal, QIcon::Off);
-        cbtnRotateCClockwise->setIcon(icon15);
+        QIcon icon16;
+        icon16.addFile(QString::fromUtf8(":/icons/icons/32x32_0060/arrow_rotate_anticlockwise.png"), QSize(), QIcon::Normal, QIcon::Off);
+        cbtnRotateCClockwise->setIcon(icon16);
         cbtnRotateCClockwise->setCheckable(false);
         cbtnRotateCClockwise->setAutoRepeat(false);
 
@@ -296,9 +302,9 @@ public:
         cbtnRotateClockwise->setSizePolicy(sizePolicy1);
         cbtnRotateClockwise->setMaximumSize(QSize(36, 36));
         cbtnRotateClockwise->setCursor(QCursor(Qt::ArrowCursor));
-        QIcon icon16;
-        icon16.addFile(QString::fromUtf8(":/icons/icons/32x32_0060/arrow_rotate_clockwise.png"), QSize(), QIcon::Normal, QIcon::Off);
-        cbtnRotateClockwise->setIcon(icon16);
+        QIcon icon17;
+        icon17.addFile(QString::fromUtf8(":/icons/icons/32x32_0060/arrow_rotate_clockwise.png"), QSize(), QIcon::Normal, QIcon::Off);
+        cbtnRotateClockwise->setIcon(icon17);
 
         horizontalLayout->addWidget(cbtnRotateClockwise);
 
@@ -311,9 +317,9 @@ public:
 
         gridLayout_4->addLayout(horizontalLayout_2, 0, 0, 1, 1);
 
-        QIcon icon17;
-        icon17.addFile(QString::fromUtf8(":/icons/icons/16x16_0560/map.png"), QSize(), QIcon::Normal, QIcon::Off);
-        tabwCentre->addTab(tabMap, icon17, QString());
+        QIcon icon18;
+        icon18.addFile(QString::fromUtf8(":/icons/icons/16x16_0560/map.png"), QSize(), QIcon::Normal, QIcon::Off);
+        tabwCentre->addTab(tabMap, icon18, QString());
         tabTrainer = new QWidget();
         tabTrainer->setObjectName(QString::fromUtf8("tabTrainer"));
         gridLayout_6 = new QGridLayout(tabTrainer);
@@ -351,16 +357,16 @@ public:
 
         gridLayout_6->addLayout(gridLayout_5, 0, 0, 1, 1);
 
-        QIcon icon18;
-        icon18.addFile(QString::fromUtf8(":/icons/icons/16x16_0220/chart_curve.png"), QSize(), QIcon::Normal, QIcon::Off);
-        tabwCentre->addTab(tabTrainer, icon18, QString());
+        QIcon icon19;
+        icon19.addFile(QString::fromUtf8(":/icons/icons/16x16_0220/chart_curve.png"), QSize(), QIcon::Normal, QIcon::Off);
+        tabwCentre->addTab(tabTrainer, icon19, QString());
 
         gridLayout_3->addWidget(tabwCentre, 0, 0, 1, 1);
 
         MainWin->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWin);
         menubar->setObjectName(QString::fromUtf8("menubar"));
-        menubar->setGeometry(QRect(0, 0, 1024, 23));
+        menubar->setGeometry(QRect(0, 0, 1024, 21));
         menuRoute = new QMenu(menubar);
         menuRoute->setObjectName(QString::fromUtf8("menuRoute"));
         menuHelp = new QMenu(menubar);
@@ -386,9 +392,9 @@ public:
         sizePolicy1.setHeightForWidth(dwBottom->sizePolicy().hasHeightForWidth());
         dwBottom->setSizePolicy(sizePolicy1);
         dwBottom->setMinimumSize(QSize(406, 236));
-        QIcon icon19;
-        icon19.addFile(QString::fromUtf8("icons/32x32_0040/application_xp_terminal.png"), QSize(), QIcon::Normal, QIcon::Off);
-        dwBottom->setWindowIcon(icon19);
+        QIcon icon20;
+        icon20.addFile(QString::fromUtf8("icons/32x32_0040/application_xp_terminal.png"), QSize(), QIcon::Normal, QIcon::Off);
+        dwBottom->setWindowIcon(icon20);
         dwBottom->setFeatures(QDockWidget::AllDockWidgetFeatures);
         dwBottom->setAllowedAreas(Qt::BottomDockWidgetArea);
         dockWidgetContents_18 = new QWidget();
@@ -450,9 +456,9 @@ public:
         dwSettingsControls = new QDockWidget(MainWin);
         dwSettingsControls->setObjectName(QString::fromUtf8("dwSettingsControls"));
         dwSettingsControls->setMinimumSize(QSize(183, 259));
-        QIcon icon20;
-        icon20.addFile(QString::fromUtf8("icons/32x32_1000/wrench_orange.png"), QSize(), QIcon::Normal, QIcon::Off);
-        dwSettingsControls->setWindowIcon(icon20);
+        QIcon icon21;
+        icon21.addFile(QString::fromUtf8("icons/32x32_1000/wrench_orange.png"), QSize(), QIcon::Normal, QIcon::Off);
+        dwSettingsControls->setWindowIcon(icon21);
         dwSettingsControls->setFeatures(QDockWidget::AllDockWidgetFeatures);
         dockWidgetContents = new QWidget();
         dockWidgetContents->setObjectName(QString::fromUtf8("dockWidgetContents"));
@@ -548,6 +554,7 @@ public:
         menuRoute->addAction(exitAction);
         menuHelp->addAction(aboutAction);
         menuView->addAction(consoleAction);
+        menuView->addAction(databaseViewAction);
         menuView->addSeparator();
         menuView->addAction(refreshMapAction);
 
@@ -608,6 +615,14 @@ public:
 #ifndef QT_NO_STATUSTIP
         actionExport_as_tea->setStatusTip(QApplication::translate("MainWin", "Export currently selected route as .tea", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
+        databaseViewAction->setText(QApplication::translate("MainWin", "Database", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_TOOLTIP
+        databaseViewAction->setToolTip(QApplication::translate("MainWin", "View the database", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_TOOLTIP
+#ifndef QT_NO_STATUSTIP
+        databaseViewAction->setStatusTip(QApplication::translate("MainWin", "View the database", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
+        databaseViewAction->setShortcut(QApplication::translate("MainWin", "D", 0, QApplication::UnicodeUTF8));
         btnZoomIn->setText(QString());
         btnZoomOut->setText(QString());
         cbtnRotateCClockwise->setText(QString());

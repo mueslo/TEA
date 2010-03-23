@@ -12,16 +12,19 @@ HEADERS += teaview.h \
     coordinates.h \
     metadatadialog.h \
     db.h \
-    tea.h
+    tea.h \
+    databaseviewer.h
 FORMS += finddialog.ui \
     metadatadialog.ui \
-    tea.ui
+    tea.ui \
+    databaseviewer.ui
 SOURCES += finddialog.cpp \
     metadatadialog.cpp \
     hl_md5.cpp \
     hl_md5wrapper.cpp \
     maintea.cpp \
-    main.cpp
+    main.cpp \
+    databaseviewer.cpp
 QT += core \
     gui \
     opengl \
