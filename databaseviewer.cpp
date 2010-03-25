@@ -10,6 +10,7 @@ DatabaseViewer::DatabaseViewer(QWidget *parent) :
     ui->setupUi(this);
     ui->cboxDatabase->addItem("Archived routes (rdb)");
     ui->cboxDatabase->addItem("Loaded routes (adb)");
+    ui->cboxDatabase->addItem("Archived maps (mdb)");
 
     connect(ui->btnQuery, SIGNAL(clicked()), this, SLOT(executeQuery()));
 
@@ -19,10 +20,12 @@ DatabaseViewer::DatabaseViewer(QWidget *parent) :
 void DatabaseViewer::executeQuery()
 {
     QString db, table;
-    if (ui->cboxDatabase->currentIndex()==0) db = "rdb"; else db = "adb";
+    if (ui->cboxDatabase->currentIndex()==0) db = "rdb";
+    else {  if (ui->cboxDatabase->currentIndex()==1) db = "adb";
+	    else db = "mdb";
+	 }
     table = ui->edtQuery->text();
 
-    //if (QSqlDatabase::database(db).open())
     {
 	model = new QSqlTableModel::QSqlTableModel(0,QSqlDatabase::database(db));
 	model->setEditStrategy(QSqlTableModel::OnManualSubmit);
@@ -44,9 +47,9 @@ void DatabaseViewer::changeEvent(QEvent *e)
     QDialog::changeEvent(e);
     switch (e->type()) {
     case QEvent::LanguageChange:
-        ui->retranslateUi(this);
-        break;
+	ui->retranslateUi(this);
+	break;
     default:
-        break;
+	break;
     }
 }

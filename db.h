@@ -64,7 +64,11 @@ inline bool prepareActiveRoutesDB()
 						"average_elevation integer," //18 in decimetres
 						"average_velocity integer," //19 in kilometres per hour
 						"picture blob," //20
-						"num_nodes integer)"); //21
+						"num_nodes integer," //21
+						"standard text," //22
+						"time_between_nodes integer)"); //23
+
+
 		adbquery.exec(	"CREATE TABLE route("
 						"node integer primary key,"
 						"velocity integer,"
@@ -81,7 +85,7 @@ inline bool prepareActiveRoutesDB()
 						"changes integer)");
 		adbquery.exec(	"INSERT INTO settings(next_auid)"
 						"VALUES (0)");
-		cout << "adb success" << endl;
+		qDebug("adb success");
 			return true;
 	} else return false;
 }
@@ -111,7 +115,9 @@ inline bool prepareRoutesDB()
 						"average_elevation integer,"
 						"average_velocity integer,"
 						"picture blob,"
-						"num_nodes integer)");
+						"num_nodes integer,"
+						"standard text,"
+						"time_between_nodes integer)");
 		rdbquery.exec(	"CREATE TABLE IF NOT EXISTS rroute("
 						"node integer primary key,"
 						"velocity integer,"
@@ -128,7 +134,7 @@ inline bool prepareRoutesDB()
 						"changes integer)");
 		rdbquery.exec(	"INSERT INTO rsettings(next_uid)"
 						"VALUES (0)");
-		cout << "rdb success" << endl;
+		qDebug("rdb success");
 			return true;
 	} else return false;
 }
@@ -146,7 +152,7 @@ inline bool prepareMapsDB()
 							"ytile integer,"
 							"tile blob)");
 			}
-			cout << "mdb success" << endl;
+			qDebug("mdb success");
 				return true;
 		} else return false;
 }
@@ -254,7 +260,7 @@ inline bool routePresentInDBs(QString checksum)
 
 inline QSqlQuery getAllMetadata(QString database)
 {
-        QSqlQuery rdbquery(QSqlDatabase::database(database));
+	QSqlQuery rdbquery(QSqlDatabase::database(database));
 	rdbquery.exec("SELECT * FROM metadata");
 	return rdbquery;
 }
@@ -344,14 +350,12 @@ inline void generateMetadataFromRoute(QString auid)
 				data1,
 				adbquery.record().value(1).toString(),
 				adbquery.record().value(2).toString());
-	/*	adbquery.exec(qPrintable("UPDATE route"+auid+
-								" SET distance="+QString::number(temp4)+
-								" WHERE node="+adbquery.record().value(3).toString())); */
 
 
-		if (temp3 < adbquery.record().value(0).toInt()) temp1 += (adbquery.record().value(0).toInt()-temp3);
+		if (temp3 < adbquery.record().value(0).toInt())
+		    temp1 += (adbquery.record().value(0).toInt()-temp3);
 			else temp2 += (adbquery.record().value(0).toInt()-temp3);
-		//cout << "Temp4: " << temp4 << endl;
+
 		temp3 = adbquery.record().value(0).toInt();
 		data = adbquery.record().value(1).toString();
 		data1 = adbquery.record().value(2).toString();
@@ -395,32 +399,60 @@ inline QString importRoute(QString TEAFilePath)
 	adbquery.first(); cout << "Next AUID: " <<qPrintable(adbquery.record().value(0).toString()) << endl;
 	auid=adbquery.record().value(0).toString();
 	adbquery.exec(qPrintable("CREATE TABLE route"+auid+" AS SELECT * FROM route"));
-		/*alternative:
-						QString query = QLatin1String("CREATE TABLE route%1 AS SELECT * FROM route");
-						if (adbquery.exec(query.arg(auid)))
-						{
-								...
-						}*/
 	adbquery.exec(qPrintable("UPDATE settings SET next_auid="+QString::number((auid.toInt()+1))+
 							" WHERE next_auid="+auid));
-	while (!TEAFile.eof())
-						{
-							getline(TEAFile,line);
-							characterNum=0;
-							for((characterNum=0);(characterNum<(line.size()));characterNum++)
-							{
-								if (line[characterNum] != ';') stringBuffer+=line[characterNum];
-									else stringBuffer += ", ";
-							}
-							//cout << qPrintable(stringBuffer) << endl;
-							adbquery.exec(qPrintable("INSERT INTO route"+auid+
-													" VALUES("+stringBuffer+")"));
-							stringBuffer.clear();
-						}
-						TEAFile.close();
 
-	adbquery.exec(qPrintable("INSERT INTO active_metadata(auid, checksum) "
-							"VALUES(" + auid + ", '" + generateChecksumFromFile(TEAFilePath) + "')"));
+	//get header
+	//compliant up to TEA standard 0.1
+	getline(TEAFile,line);
+	QString firstLine = QString::fromStdString(line);
+    if (firstLine.startsWith("$TEA"))
+    {
+	qDebug("Header: "+firstLine);
+	firstLine.remove(0,4);
+	firstLine.replace(";",",");
+
+
+	} else {
+	    qDebug("No header");
+	    //characterNum=0;
+
+	    for((characterNum=0);(characterNum<(line.size()));characterNum++)
+	    {
+		if (line[characterNum] != ';') stringBuffer+=line[characterNum];
+		else stringBuffer += ", ";
+	    }
+
+	    adbquery.exec(qPrintable("INSERT INTO route"+auid+
+				     " VALUES("+stringBuffer+")"));
+	    stringBuffer.clear();
+
+	}
+
+	//get remaining raw data
+	qDebug("Reading raw data");
+	while (!TEAFile.eof())
+	{
+	    getline(TEAFile,line);
+	    //characterNum=0;
+
+	    for((characterNum=0);(characterNum<(line.size()));characterNum++)
+	    {
+		if (line[characterNum] != ';') stringBuffer+=line[characterNum];
+		else stringBuffer += ", ";
+	    }
+
+	    adbquery.exec(qPrintable("INSERT INTO route"+auid+
+				     " VALUES("+stringBuffer+")"));
+	    stringBuffer.clear();
+	}
+	TEAFile.close();
+
+	adbquery.exec(qPrintable("INSERT INTO active_metadata(auid, checksum, standard, time_between_nodes) "
+							"VALUES(" + auid + ", '" + generateChecksumFromFile(TEAFilePath) + "'" + firstLine +")"));
+	qDebug(qPrintable("INSERT INTO active_metadata(auid, checksum, standard, time_between_nodes) "
+			  "VALUES(" + auid + ", '" + generateChecksumFromFile(TEAFilePath) + "'" + firstLine +")"));
+
 	generateMetadataFromRoute(auid);
 	return auid;
 }
@@ -449,6 +481,7 @@ inline QSqlQuery getRouteData(QString uid, QString database)
 
 inline void loadRoute(QString uid)
 {
+
 	QString next_auid;
 	QSqlQuery adbquery(QSqlDatabase::database("adb"));
 	QSqlQuery rdbquery(QSqlDatabase::database("rdb"));
@@ -460,8 +493,8 @@ inline void loadRoute(QString uid)
 	metadata = rdbquery.record();
 
 	if (!rdbquery.isActive())
-		QMessageBox::warning(0, "aDatabase Error1",
-	                         adbquery.lastError().text());
+		QMessageBox::warning(0, "aDatabase Error11",
+				 adbquery.lastError().text());
 
 	//get next_auid and update
 	adbquery.exec("SELECT max(next_auid) FROM settings");
@@ -472,30 +505,30 @@ inline void loadRoute(QString uid)
 								" WHERE next_auid="+next_auid));
 
 	if (!adbquery.isActive())
-		QMessageBox::warning(0, "aDatabase Error1",
-	                         adbquery.lastError().text());
+		QMessageBox::warning(0, "aDatabase Error12",
+				 adbquery.lastError().text());
 
 	//copy route data
 	adbquery.exec("ATTACH 'routes.db' AS rdb");
 	if (!adbquery.isActive())
-		QMessageBox::warning(0, "aDatabase Error1",
-	                         adbquery.lastError().text());
+		QMessageBox::warning(0, "aDatabase Error13",
+				 adbquery.lastError().text());
 	cout << "next_auid: " << qPrintable(next_auid) << endl;
 	adbquery.exec(qPrintable(	"CREATE TABLE route"+next_auid+
 								" AS SELECT * FROM rdb.rroute"+uid));
 	if (!adbquery.isActive())
-		QMessageBox::warning(0, "aDatabase Error1",
-	                         adbquery.lastError().text());
+		QMessageBox::warning(0, "aDatabase Error14",
+				 adbquery.lastError().text());
 	adbquery.exec("DETACH rdb");
 
 	if (!adbquery.isActive())
-		QMessageBox::warning(0, "aDatabase Error1",
-	                         adbquery.lastError().text());
+		QMessageBox::warning(0, "aDatabase Error15",
+				 adbquery.lastError().text());
 
 	//copy route metadata
 	QString values;
-	for(int i = 0;i<19;i++) values.append("'"+metadata.value(i).toString()+"',");
-		values.append("'"+metadata.value(19).toString()+"'");
+	for(int i = 0;i<21;i++) values.append("'"+metadata.value(i).toString()+"',");
+		values.append("'"+metadata.value(21).toString()+"'");
 
 	values.prepend(next_auid+",");
 	cout << "values: " << qPrintable(values) << endl;
@@ -503,9 +536,9 @@ inline void loadRoute(QString uid)
 
 
 	if (!adbquery.isActive())
-		QMessageBox::warning(0, "aDatabase Error1",
-	                         adbquery.lastError().text());
-                adbquery.finish();
+		QMessageBox::warning(0, "aDatabase Error16",
+				 adbquery.lastError().text());
+		adbquery.finish();
 
 }
 
@@ -514,7 +547,8 @@ inline void saveRoute(QString auid)
 	QString next_uid;
 	QSqlQuery adbquery(QSqlDatabase::database("adb"));
 	QSqlQuery rdbquery(QSqlDatabase::database("rdb"));
-	cout << "saving route..." << endl;
+
+	qDebug("Saving route...");
 
 	//get metadata
 	QSqlRecord metadata;
@@ -524,22 +558,22 @@ inline void saveRoute(QString auid)
 
 	//todo rm messageboxes
 	if (!adbquery.isActive())
-		QMessageBox::warning(0, "aDatabase Error1",
-	                         adbquery.lastError().text());
+		QMessageBox::warning(0, "aDatabase Error123",
+				 adbquery.lastError().text());
 
 	adbquery.finish();
 
-	//check if active route's uid is already presend in rdb (-> existent or new)
+	//check if active route's uid is already present in rdb (-> existent or new)
 	bool update;
 	QString uid;
 	if (metadata.value(1).toString() != "") uid=metadata.value(1).toString(); else uid="''";
-	cout << "uid: " << qPrintable(uid) << endl;
+	qDebug("UID: " + uid);
 	rdbquery.exec("SELECT * FROM metadata WHERE uid="+uid);
 	update = rdbquery.next();
 
 	if (!rdbquery.isActive())
 		QMessageBox::warning(0, "rDatabase Error2",
-	                         rdbquery.lastError().text());
+				 rdbquery.lastError().text());
 	rdbquery.finish();
 
 	//what to do if the route is new:
@@ -588,7 +622,7 @@ inline void saveRoute(QString auid)
 
 	if (!rdbquery.isActive())
 		QMessageBox::warning(0, "rDatabase Error4",
-	                         rdbquery.lastError().text());
+				 rdbquery.lastError().text());
 
 	rdbquery.finish();
 
@@ -596,8 +630,8 @@ inline void saveRoute(QString auid)
 	//format metadata values for query
 	QString values;
 	int i;
-	for((i = 2);(i<20);(i++)) values.append("'"+metadata.value(i).toString()+"',");
-		values.append("'"+metadata.value(20).toString()+"'");
+	for((i = 2);(i<22);(i++)) values.append("'"+metadata.value(i).toString()+"',");
+		values.append("'"+metadata.value(22).toString()+"'");
 
 	if (update)
 		{
@@ -634,7 +668,7 @@ inline void deleteRoute(QString uid, QString database)
     //if if uid == next_uid-1 next_uid--
     if (database == "adb") {
 
-        dbquery.exec(qPrintable("DELETE FROM active_metadata WHERE auid="+uid));
+	dbquery.exec(qPrintable("DELETE FROM active_metadata WHERE auid="+uid));
 	dbquery.exec("SELECT next_auid FROM settings");
 	next_uid = dbquery.record().value(0).toInt();
 	if (QString::number(next_uid-1) != uid) { dbquery.exec(qPrintable("INSERT INTO settings(empty) VALUES("+uid+")"));
@@ -642,8 +676,8 @@ inline void deleteRoute(QString uid, QString database)
 
     } else if (database == "rdb") {
 
-        dbquery.exec(qPrintable("DELETE FROM metadata WHERE uid="+uid));
-        dbquery.exec("SELECT next_uid FROM rsettings");
+	dbquery.exec(qPrintable("DELETE FROM metadata WHERE uid="+uid));
+	dbquery.exec("SELECT next_uid FROM rsettings");
 	next_uid = dbquery.record().value(0).toInt();
 	if (QString::number(next_uid-1) != uid) { dbquery.exec(qPrintable("INSERT INTO rsettings(empty) VALUES("+uid+")"));
 	} else { dbquery.exec(qPrintable("UPDATE rsettings SET next_uid="+QString::number(next_uid-1)));}

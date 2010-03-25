@@ -30,9 +30,6 @@
 
 using namespace std;
 
-// OSM
-
-
 TEA::TEA(QWidget *parent) :
 	QMainWindow(parent)
 {
@@ -40,7 +37,7 @@ TEA::TEA(QWidget *parent) :
 	networkManager = new QNetworkAccessManager(this);
 
 	connect(networkManager, SIGNAL(finished(QNetworkReply*)),
-	         this, SLOT(downloaded(QNetworkReply*)));
+		 this, SLOT(downloaded(QNetworkReply*)));
 	ui.setupUi(this);
 	ui.textInformation->append("<b>TEA console</b>");
 	scene = new QGraphicsScene;
@@ -57,9 +54,9 @@ TEA::TEA(QWidget *parent) :
 	createStatusBar();
 	fillTrainerViewCBoxes();
 
-        QwtPlot *trainer = new QwtPlot;
-        trainer->setAxisAutoScale(true);
-        trainer->setAxisTitle(0,"test");
+	QwtPlot *trainer = new QwtPlot;
+	trainer->setAxisAutoScale(true);
+	trainer->setAxisTitle(0,"test");
 
 	/*
 	QProgressBar *progress = new QProgressBar(ui.statusbar);
@@ -72,8 +69,8 @@ TEA::TEA(QWidget *parent) :
 	if (!initialiseDBs())
 	{
 	     QMessageBox::critical(this, tr("A critical error occured!"),
-	                                     "A critical error occured while intialising active routes",
-	                                     QMessageBox::Abort | QMessageBox::Ignore);
+					     "A critical error occured while intialising active routes",
+					     QMessageBox::Abort | QMessageBox::Ignore);
 	}
 
 
@@ -81,8 +78,8 @@ TEA::TEA(QWidget *parent) :
 	if (!db.createAndLoadActiveRoutesDB())
 	{
 	     QMessageBox::critical(this, tr("A critical error occured!"),
-	                                     "A critical error occured while intialising active routes (new)",
-	                                     QMessageBox::Abort | QMessageBox::Ignore);
+					     "A critical error occured while intialising active routes (new)",
+					     QMessageBox::Abort | QMessageBox::Ignore);
 	}*/
 }
 
@@ -132,15 +129,15 @@ void TEA::fillTrainerViewCBoxes()
 	ui.cboxY->addItem("Duration");
 	ui.cboxY->addItem("Altitude gain");
 	ui.cboxY->addItem("Altitude loss");
-	
-	
+
+
 	ui.cboxX->addItem("Date");
 	ui.cboxX->addItem("Duration");
 	ui.cboxX->addItem("Mean velocity");
 	ui.cboxX->addItem("Mean altitude");
 	ui.cboxX->addItem("Altitude gain");
 	ui.cboxX->addItem("Altitude loss");
-	
+
 	}
 }
 
@@ -225,24 +222,24 @@ void TEA::downloaded(QNetworkReply* reply)
 	/*//WITH FILE HANDLING
 	QString fileName = QString::fromUtf8("temp");
     if (QFile::exists(fileName)) {
-        if (QMessageBox::question(this, tr("HTTP"),
-                                  tr("There already exists a file called %1 in "
-                                     "the current directory. Overwrite?").arg(fileName),
-                                  QMessageBox::Yes|QMessageBox::No, QMessageBox::No)
-            == QMessageBox::No)
-            return;
-        QFile::remove(fileName);
+	if (QMessageBox::question(this, tr("HTTP"),
+				  tr("There already exists a file called %1 in "
+				     "the current directory. Overwrite?").arg(fileName),
+				  QMessageBox::Yes|QMessageBox::No, QMessageBox::No)
+	    == QMessageBox::No)
+	    return;
+	QFile::remove(fileName);
     }
 
 	file = new QFile(fileName);
 
     if (!file->open(QIODevice::WriteOnly)) {
-        QMessageBox::information(this, tr("HTTP"),
-                                 tr("Unable to save the file %1: %2.")
-                                 .arg(fileName).arg(file->errorString()));
-        delete file;
-        file = 0;
-        return;
+	QMessageBox::information(this, tr("HTTP"),
+				 tr("Unable to save the file %1: %2.")
+				 .arg(fileName).arg(file->errorString()));
+	delete file;
+	file = 0;
+	return;
     }
 
 	file->write(data);
@@ -289,7 +286,7 @@ void TEA::connectSignalsAndSlots()
 	connect(ui.rbNode, SIGNAL(toggled(bool)), this, SLOT(trainerModeChanged()));
 	connect(ui.graphicsView, SIGNAL(wheelZoom(int)), this, SLOT(zoom(int)));
 	connect(ui.btnGeneralSettings, SIGNAL(clicked()), this, SLOT(setGeneralSettings()));
-        connect(ui.databaseViewAction, SIGNAL(triggered()), this, SLOT(actionViewDatabase()));
+	connect(ui.databaseViewAction, SIGNAL(triggered()), this, SLOT(actionViewDatabase()));
 	//connect(ui.graphicsView, SIGNAL(resizeEvent()), this, SLOT(graphicsViewResized()));
 	//connect(ui.graphicsView, SIGNAL(mousePressed()), this, SLOT(grphPressed()));
 	//ui.tbMain->addAction(QIcon("icons/32x32_0560/map.png"), "Something with maps", this, "mapAction");
@@ -331,29 +328,29 @@ void TEA::drawTrainer(int indexX, int indexY)
 {
 	//get auids
 
-        QwtArray<double> x,y;
-        int value,routeNum = 0; double factor = 1.0;
+	QwtArray<double> x,y;
+	int value,routeNum = 0; double factor = 1.0;
 
 	QSqlQuery auidQuery = getCurrentlyLoadedRoutes();
 
-        QwtPlotCurve *curve = new QwtPlotCurve;
+	QwtPlotCurve *curve = new QwtPlotCurve;
 
 
 	if (ui.rbNode->isChecked()){
-                ui.qwtPlot->clear();
+		ui.qwtPlot->clear();
 
-                switch (ui.cboxY->currentIndex()) {
-                        case 1: value = 6; ui.qwtPlot->setAxisTitle(0,"Altitude in m"); factor = 0.1; break;
-                        case 2:	value = 1; ui.qwtPlot->setAxisTitle(0,"Velocity in km/h"); factor = 0.01; break;
+		switch (ui.cboxY->currentIndex()) {
+			case 1: value = 6; ui.qwtPlot->setAxisTitle(0,"Altitude in m"); factor = 0.1; break;
+			case 2:	value = 1; ui.qwtPlot->setAxisTitle(0,"Velocity in km/h"); factor = 0.01; break;
 			case 3: value = 3; ui.qwtPlot->setAxisTitle(0,"Slope in deg"); factor = 0.1; break;
 			case 4: value = 2; ui.qwtPlot->setAxisTitle(0,"Pedal frequency in RPM"); factor = 0.1; break;
-                        default: value = 1; ui.qwtPlot->setAxisTitle(0,"NYI"); break;
-                }
+			default: value = 1; ui.qwtPlot->setAxisTitle(0,"NYI"); break;
+		}
 
-                switch (ui.cboxX->currentIndex()) {
-                        case 0: ui.qwtPlot->setAxisTitle(2,"Time in s"); break;
-                        default: ui.qwtPlot->setAxisTitle(2,"NYI"); break;
-                }
+		switch (ui.cboxX->currentIndex()) {
+			case 0: ui.qwtPlot->setAxisTitle(2,"Time in s"); break;
+			default: ui.qwtPlot->setAxisTitle(2,"NYI"); break;
+		}
 
 		while (auidQuery.next())
 		{
@@ -363,62 +360,62 @@ void TEA::drawTrainer(int indexX, int indexY)
 			QSqlQuery route = getRouteData(auid, "adb");
 
 			int i=0;
-                        //x.clear(); y.clear();
-                        while (route.next())
+			//x.clear(); y.clear();
+			while (route.next())
 			{
-                                x << (double)i; y << (factor * route.record().value(value).toDouble());
+				x << (double)i; y << (factor * route.record().value(value).toDouble());
 				i++;
 			}
 
-                        //curveList.at(routeNum)->setData(x,y);
-                        //curveList.at(routeNum)->attach(ui.qwtPlot);
-                        //plotList.at(routeNum)->attach(ui.qwtPlot);
+			//curveList.at(routeNum)->setData(x,y);
+			//curveList.at(routeNum)->attach(ui.qwtPlot);
+			//plotList.at(routeNum)->attach(ui.qwtPlot);
 
 
-                        curve->setData(x,y);
-                        //curve->setStyle()
-                        curve->attach(ui.qwtPlot);
-                        ui.qwtPlot->replot();
+			curve->setData(x,y);
+			//curve->setStyle()
+			curve->attach(ui.qwtPlot);
+			ui.qwtPlot->replot();
 
 
 
 			//todo use largest and not last path diagram
 			//trainerScene->setSceneRect(path.boundingRect());
 			//ui.graphicsViewTrainer->fitInView(path.boundingRect(),Qt::IgnoreAspectRatio);
-                        routeNum++;
+			routeNum++;
 
 		}
 
 	} else {
-            ui.qwtPlot->clear();
-            switch (ui.cboxY->currentIndex()) {
-                    case 0: value = 19; ui.qwtPlot->setAxisTitle(0,"Mean velocity in km/h"); factor = 1; break;
-                    case 1: value = 18; ui.qwtPlot->setAxisTitle(0,"Mean altitude in m"); factor = 0.1; break;
-                    case 3: value = 10; ui.qwtPlot->setAxisTitle(0,"Altitude gain in m"); factor = 0.1; break;
-                    case 4: value = 11; ui.qwtPlot->setAxisTitle(0,"Altitude loss in m"); factor = 0.1; break;
-                    default: value = 19; ui.qwtPlot->setAxisTitle(0,"NYI"); factor = 0.0; break;
-            }
+	    ui.qwtPlot->clear();
+	    switch (ui.cboxY->currentIndex()) {
+		    case 0: value = 19; ui.qwtPlot->setAxisTitle(0,"Mean velocity in km/h"); factor = 1; break;
+		    case 1: value = 18; ui.qwtPlot->setAxisTitle(0,"Mean altitude in m"); factor = 0.1; break;
+		    case 3: value = 10; ui.qwtPlot->setAxisTitle(0,"Altitude gain in m"); factor = 0.1; break;
+		    case 4: value = 11; ui.qwtPlot->setAxisTitle(0,"Altitude loss in m"); factor = 0.1; break;
+		    default: value = 19; ui.qwtPlot->setAxisTitle(0,"NYI"); factor = 0.0; break;
+	    }
 
-            int value2, factor2;
-            switch (ui.cboxX->currentIndex()) {
-                    case 2: value2 = 19; ui.qwtPlot->setAxisTitle(2,"Mean velocity in km/h"); factor2 = 1; break;
-                    case 3: value2 = 18; ui.qwtPlot->setAxisTitle(2,"Mean altitude in m"); factor2 = 0.1; break;
-                    case 4: value2 = 10; ui.qwtPlot->setAxisTitle(2,"Altitude gain in m"); factor2 = 0.1; break;
-                    case 5: value2 = 11; ui.qwtPlot->setAxisTitle(2,"Altitude loss in m"); factor2 = 0.1; break;
-                    default: value2 = 19; ui.qwtPlot->setAxisTitle(2,"NYI"); factor2 = 0.0; break;
-            }
+	    int value2, factor2;
+	    switch (ui.cboxX->currentIndex()) {
+		    case 2: value2 = 19; ui.qwtPlot->setAxisTitle(2,"Mean velocity in km/h"); factor2 = 1; break;
+		    case 3: value2 = 18; ui.qwtPlot->setAxisTitle(2,"Mean altitude in m"); factor2 = 0.1; break;
+		    case 4: value2 = 10; ui.qwtPlot->setAxisTitle(2,"Altitude gain in m"); factor2 = 0.1; break;
+		    case 5: value2 = 11; ui.qwtPlot->setAxisTitle(2,"Altitude loss in m"); factor2 = 0.1; break;
+		    default: value2 = 19; ui.qwtPlot->setAxisTitle(2,"NYI"); factor2 = 0.0; break;
+	    }
 
-            QSqlQuery metadata = getAllMetadata("adb");
+	    QSqlQuery metadata = getAllMetadata("adb");
 
-            while (metadata.next()) {
-            x << (factor * metadata.value(value).toDouble());
-            y << (factor2 * metadata.value(value2).toDouble());
-            }
+	    while (metadata.next()) {
+	    x << (factor * metadata.value(value).toDouble());
+	    y << (factor2 * metadata.value(value2).toDouble());
+	    }
 
-            curve->setData(x,y);
-            curve->setStyle(QwtPlotCurve::Lines);
-            curve->attach(ui.qwtPlot);
-            ui.qwtPlot->replot();
+	    curve->setData(x,y);
+	    curve->setStyle(QwtPlotCurve::Lines);
+	    curve->attach(ui.qwtPlot);
+	    ui.qwtPlot->replot();
 
 
 	}
@@ -533,8 +530,8 @@ TEA::~TEA()
 void TEA::About()
 {
     QMessageBox::about(this, tr("About TEA"),
-             tr("<b>TEA</b> is an application which is used for the evaluation "
-                "and analysis of tracked routes in the TEA data format."));
+	     tr("<b>TEA</b> is an application which is used for the evaluation "
+		"and analysis of tracked routes in the TEA data format."));
 
 }
 
@@ -600,7 +597,7 @@ void TEA::ActionLoadFromDatabase()
 
 void TEA::drawRoute(QString auid)
 {
-        //remove all objects residing above the current zoom strata
+	//remove all objects residing above the current zoom strata
 	int i = 0;
 	while (scene->items().size()>i)
 	{
@@ -621,17 +618,26 @@ void TEA::drawRoute(QString auid)
 
 	routeData.first();
 	prgBar->setMaximum(metadata.value(20).toInt());
+
+	//skip zeroes
+	while (nodeNextSkip(routeData,1) && (getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())) == 0));
+
 	path.moveTo(getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())),
 				getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())));
 
-	double x,y;
+	double x,y,tempX,tempY;
 	while (nodeNextSkip(routeData,nodeSkips))
 	{
 		prgBar->setValue(routeData.value(0).toInt());
 		qApp->processEvents();
-		x=getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString()));
-		y=getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()));
+
+		tempX=getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString()));
+		tempY=getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()));
+		ui.textInformation->append(QString::number(tempX)+' '+QString::number(tempY));
+		if ((tempY != 0) || (tempX != 0)) {
+		x = tempX; y = tempY;
 		if (nodeNextSkip(routeData,nodeSkips)) path.quadTo(x,y,getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())),getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())));
+		}
 	}
 
 	QGraphicsPathItem *pathItem = new QGraphicsPathItem;
@@ -671,12 +677,12 @@ void TEA::closeEvent(QCloseEvent *event)
 bool TEA::maybeExit()
 {
 	QMessageBox::StandardButton
-	         ret = QMessageBox::warning(this, tr("TEA exit dialog"),
-	                      tr("There may be unsaved changes!"),
-	                      QMessageBox::Discard | QMessageBox::Cancel);
-	         if (ret == QMessageBox::Discard)
-	             return true;
-	         else if (ret == QMessageBox::Cancel)
-	             return false;
-	         return false;
+		 ret = QMessageBox::warning(this, tr("TEA exit dialog"),
+			      tr("There may be unsaved changes!"),
+			      QMessageBox::Discard | QMessageBox::Cancel);
+		 if (ret == QMessageBox::Discard)
+		     return true;
+		 else if (ret == QMessageBox::Cancel)
+		     return false;
+		 return false;
 }

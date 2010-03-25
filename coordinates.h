@@ -12,6 +12,7 @@
 #include <math.h>
 #include <iostream>
 #include <QPointF>
+#include <QList>
 
 using namespace std;
 
@@ -78,6 +79,7 @@ inline double getLongFromMercatorX(double x)
 
 inline double getDistanceFromRawCoords(QString latitude1Raw, QString longitude1Raw, QString latitude2Raw, QString longitude2Raw)
 {
+
 	double latitude1 = 2*PI*(getYFromLat(latitude1Raw)/1000000)/360;
 	double longitude1 = 2*PI*(getXFromLon(longitude1Raw)/1000000)/360;
 	double latitude2 = 2*PI*(getYFromLat(latitude2Raw)/1000000)/360;
