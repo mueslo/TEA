@@ -363,7 +363,9 @@ void TEA::drawTrainer(int indexX, int indexY)
 			//x.clear(); y.clear();
 			while (route.next())
 			{
-				x << (double)i; y << (factor * route.record().value(value).toDouble());
+				if ((route.record().value(value).toDouble() != 0.0) && value == 6)
+			    {  x << (double)i; y << (factor * route.record().value(value).toDouble());} else if (value != 6){
+				    x << (double)i; y << (factor * route.record().value(value).toDouble()); }
 				i++;
 			}
 
@@ -553,9 +555,10 @@ void TEA::ActionLoadFromFile()
 
 			QString auid = importRoute(TEAFilePath);
 			ui.textInformation->append("Route loaded. Requesting metadata...");
-
+			qDebug("Requesting metadata");
 			getMetadata(auid);
 			ui.textInformation->append("Metadata written.");
+			qDebug("Metadata written");
 
 			drawRoute(auid);
 
@@ -619,13 +622,19 @@ void TEA::drawRoute(QString auid)
 	routeData.first();
 	prgBar->setMaximum(metadata.value(20).toInt());
 
-	//skip zeroes
-	while (nodeNextSkip(routeData,1) && (getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())) == 0));
-
-	path.moveTo(getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())),
-				getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())));
 
 	double x,y,tempX,tempY;
+	//skip zeroes
+
+	while ((getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())) == 0) && (nodeNextSkip(routeData,0)));
+
+	if (routeData.isValid()) {
+	x=getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString()));
+	y=getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()));
+	qDebug("First coordinate: "+QString::number(x)+"; "+QString::number(y));
+	path.moveTo(x,y);
+	}
+
 	while (nodeNextSkip(routeData,nodeSkips))
 	{
 		prgBar->setValue(routeData.value(0).toInt());
@@ -633,10 +642,14 @@ void TEA::drawRoute(QString auid)
 
 		tempX=getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString()));
 		tempY=getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()));
-		ui.textInformation->append(QString::number(tempX)+' '+QString::number(tempY));
-		if ((tempY != 0) || (tempX != 0)) {
-		x = tempX; y = tempY;
-		if (nodeNextSkip(routeData,nodeSkips)) path.quadTo(x,y,getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())),getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())));
+		//ui.textInformation->append(QString::number(tempX)+' '+QString::number(tempY));
+		if (nodeNextSkip(routeData,nodeSkips)) {
+
+		if (((tempY != 0.0) || (tempX != 0.0)) && ((getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())) != 0) || (getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())) != 0) ))  {
+		    x = tempX; y = tempY;
+		    path.quadTo(x,y,getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())),getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())));
+		    //qDebug(QString::number(x)+" "+QString::number(y)+" "+QString::number(getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())))+","+QString::number(getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()))));
+		}
 		}
 	}
 

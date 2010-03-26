@@ -406,8 +406,10 @@ inline QString importRoute(QString TEAFilePath)
 	//compliant up to TEA standard 0.1
 	getline(TEAFile,line);
 	QString firstLine = QString::fromStdString(line);
+	bool header = false;
     if (firstLine.startsWith("$TEA"))
     {
+	header = true;
 	qDebug("Header: "+firstLine);
 	firstLine.remove(0,4);
 	firstLine.replace(";",",");
@@ -447,11 +449,14 @@ inline QString importRoute(QString TEAFilePath)
 	    stringBuffer.clear();
 	}
 	TEAFile.close();
-
+	qDebug("Raw data read");
+	if (header)
 	adbquery.exec(qPrintable("INSERT INTO active_metadata(auid, checksum, standard, time_between_nodes) "
 							"VALUES(" + auid + ", '" + generateChecksumFromFile(TEAFilePath) + "'" + firstLine +")"));
-	qDebug(qPrintable("INSERT INTO active_metadata(auid, checksum, standard, time_between_nodes) "
-			  "VALUES(" + auid + ", '" + generateChecksumFromFile(TEAFilePath) + "'" + firstLine +")"));
+	else adbquery.exec(qPrintable("INSERT INTO active_metadata(auid, checksum) "
+					 "VALUES(" + auid + ", '" + generateChecksumFromFile(TEAFilePath) + "')"));
+	//qDebug(qPrintable("INSERT INTO active_metadata(auid, checksum, standard, time_between_nodes) "
+	//		  "VALUES(" + auid + ", '" + generateChecksumFromFile(TEAFilePath) + "'" + firstLine +")"));
 
 	generateMetadataFromRoute(auid);
 	return auid;
@@ -481,7 +486,7 @@ inline QSqlQuery getRouteData(QString uid, QString database)
 
 inline void loadRoute(QString uid)
 {
-
+	qDebug("Loading route");
 	QString next_auid;
 	QSqlQuery adbquery(QSqlDatabase::database("adb"));
 	QSqlQuery rdbquery(QSqlDatabase::database("rdb"));
@@ -548,7 +553,7 @@ inline void saveRoute(QString auid)
 	QSqlQuery adbquery(QSqlDatabase::database("adb"));
 	QSqlQuery rdbquery(QSqlDatabase::database("rdb"));
 
-	qDebug("Saving route...");
+	qDebug("Saving route");
 
 	//get metadata
 	QSqlRecord metadata;
@@ -726,6 +731,7 @@ inline void addTileToDB(int zoomLevel, int tileX, int tileY, QByteArray tile)
 
 inline QByteArray getTileFromDB(int zoomLevel, int tileX, int tileY)
 {
+    qDebug("Loading tile "+QString::number(tileX)+","+QString::number(tileY)+","+QString::number(zoomLevel));
 	QSqlQuery mdbquery(QSqlDatabase::database("mdb"));
 	mdbquery.exec(qPrintable(	"SELECT tile FROM zoom"+QString::number(zoomLevel)+
 								" WHERE tilex="+QString::number(tileX)+

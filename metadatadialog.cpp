@@ -33,15 +33,25 @@ void MetadataDialog::fillKnownMetadata()
 {
 	//mpAuid = auid;
 	QSqlRecord metadata = getRouteMetadata(mpAuid, "adb");
+	qDebug(QString::number(__LINE__));
 	renderRoute();
+	qDebug("1");
 	ui.calDate->setSelectedDate(QDate::fromString(metadata.value(2).toString(), "ddMMyy").addYears(100));
+	qDebug("1");
 	ui.edtID->setText(metadata.value(3).toString());
+	qDebug("1");
 	ui.edtLocation->setText(metadata.value(4).toString());
+	qDebug("1");
 	ui.edtTags->appendPlainText(metadata.value(5).toString());
+	qDebug("1");
 	ui.edtName->setText(metadata.value(6).toString());
+	qDebug("1");
 	ui.lblDistance->setText("Distance: " + metadata.value(8).toString() + "km");
+	qDebug("1");
 	ui.lblAltitudeGain->setText("Altitude gain: " + QString::number(metadata.value(9).toDouble()/10) + "m");
+	qDebug("1");
 	ui.lblAltitudeLoss->setText("Altitude loss:" + QString::number(metadata.value(10).toDouble()/10) + "m");
+	qDebug("1");
 	ui.lblTotalAltitudeDifference->setText("Total altitude difference: " + QString::number(metadata.value(11).toDouble()/10) + "m");
 	ui.lblAvgAltitude->setText("Average altitude: " + QString::number(metadata.value(17).toDouble()/10) + "m");
 	ui.lblAvgVelocity->setText("Average velocity: " + QString::number(metadata.value(18).toDouble()) + "km/h");
@@ -82,9 +92,42 @@ void MetadataDialog::renderRoute()
     QSqlQuery routeData = getRouteData(mpAuid, "adb");
     QSqlRecord metadata = getRouteMetadata(mpAuid, "adb");
     QPainterPath path;
-
+qDebug(QString::number(__LINE__));
     int nodeSkips = metadata.value(20).toInt()/2500+1;
     routeData.first();
+
+    qDebug(QString::number(__LINE__));
+    double x,y,tempX,tempY;
+    //skip zeroes
+    while ((getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())) == 0) && (nodeNextSkip(routeData,0)));
+
+qDebug(QString::number(__LINE__));
+if (routeData.isValid()) {
+    x=getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString()));
+    y=getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()));
+    qDebug("First coordinate: "+QString::number(x)+"; "+QString::number(y));
+    path.moveTo(x,y);
+}
+qDebug(QString::number(__LINE__));
+
+    while (nodeNextSkip(routeData,nodeSkips))
+    {
+	    qApp->processEvents();
+
+	    tempX=getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString()));
+	    tempY=getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()));
+	    //ui.textInformation->append(QString::number(tempX)+' '+QString::number(tempY));
+	    if (nodeNextSkip(routeData,nodeSkips)) {
+
+	    if (((tempY != 0.0) || (tempX != 0.0)) && ((getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())) != 0) || (getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())) != 0) ))  {
+		x = tempX; y = tempY;
+		path.quadTo(x,y,getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())),getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())));
+		//qDebug(QString::number(x)+" "+QString::number(y)+" "+QString::number(getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())))+","+QString::number(getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()))));
+	    }
+	    }
+    }
+
+    /*
     path.moveTo(getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())),
                             getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())));
 
@@ -96,7 +139,7 @@ void MetadataDialog::renderRoute()
             y=getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()));
             if (nodeNextSkip(routeData,nodeSkips)) path.quadTo(x,y,getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())),getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())));
     }
-
+    */
     QGraphicsPathItem *pathItem = new QGraphicsPathItem;
     pathItem->setPath(path);
     mvpScene->addItem(pathItem);

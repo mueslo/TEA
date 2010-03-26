@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'tea.ui'
 **
-** Created: Tue 23. Mar 22:56:00 2010
+** Created: Fri 26. Mar 09:37:18 2010
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -366,7 +366,7 @@ public:
         MainWin->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWin);
         menubar->setObjectName(QString::fromUtf8("menubar"));
-        menubar->setGeometry(QRect(0, 0, 1024, 21));
+        menubar->setGeometry(QRect(0, 0, 1024, 23));
         menuRoute = new QMenu(menubar);
         menuRoute->setObjectName(QString::fromUtf8("menuRoute"));
         menuHelp = new QMenu(menubar);
@@ -430,7 +430,7 @@ public:
         dwActiveRoutes->setMinimumSize(QSize(256, 442));
         dwActiveRoutes->setMaximumSize(QSize(300, 524287));
         dwActiveRoutes->setFloating(false);
-        dwActiveRoutes->setFeatures(QDockWidget::DockWidgetMovable);
+        dwActiveRoutes->setFeatures(QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable);
         dockWidgetContents_14 = new QWidget();
         dockWidgetContents_14->setObjectName(QString::fromUtf8("dockWidgetContents_14"));
         gridLayout_2 = new QGridLayout(dockWidgetContents_14);
@@ -598,6 +598,7 @@ public:
         saveAllAction->setStatusTip(QApplication::translate("MainWin", "Save all currently loaded routes", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
         refreshMapAction->setText(QApplication::translate("MainWin", "Refresh Map", 0, QApplication::UnicodeUTF8));
+        refreshMapAction->setShortcut(QApplication::translate("MainWin", "R", 0, QApplication::UnicodeUTF8));
         kmlExportAction->setText(QApplication::translate("MainWin", "Export as .kml", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         kmlExportAction->setStatusTip(QApplication::translate("MainWin", "Export currently selected route as .kml", 0, QApplication::UnicodeUTF8));
