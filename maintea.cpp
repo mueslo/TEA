@@ -287,6 +287,7 @@ void TEA::connectSignalsAndSlots()
 	connect(ui.graphicsView, SIGNAL(wheelZoom(int)), this, SLOT(zoom(int)));
 	connect(ui.btnGeneralSettings, SIGNAL(clicked()), this, SLOT(setGeneralSettings()));
 	connect(ui.databaseViewAction, SIGNAL(triggered()), this, SLOT(actionViewDatabase()));
+	connect(ui.listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(RouteChange()) );  //TODO
 	//connect(ui.graphicsView, SIGNAL(resizeEvent()), this, SLOT(graphicsViewResized()));
 	//connect(ui.graphicsView, SIGNAL(mousePressed()), this, SLOT(grphPressed()));
 	//ui.tbMain->addAction(QIcon("icons/32x32_0560/map.png"), "Something with maps", this, "mapAction");
@@ -296,6 +297,12 @@ void TEA::actionViewDatabase()
 {
 DatabaseViewer d;
 d.exec();
+}
+
+void TEA::RouteChange()
+{
+    //gibt noch einiges zu tun: überprüfen welche Route gerade angezeigt wird, nicht ausgewählte löschen, nicht angezeigte zeigen.
+    drawRoute(QString::number(ui.listWidget->currentIndex().row()));
 }
 
 void TEA::setGeneralSettings()
@@ -614,7 +621,12 @@ void TEA::drawRoute(QString auid)
 	QSqlQuery routeData = getRouteData(auid, "adb");
 	QSqlRecord metadata = getRouteMetadata(auid, "adb");
 
-	ui.listWidget->addItem(QString::number(auid.toInt()+1)+" - "+metadata.value(6).toString());
+	//TODO: check if item is already added
+	if( ui.listWidget->currentIndex().row() != auid.toInt() )
+	{
+	    ui.listWidget->insertItem(auid.toInt(),metadata.value(6).toString());
+	}
+	//ui.listWidget->addItem(QString::number(auid.toInt()+1)+" - "+metadata.value(6).toString());
 
 	int nodeSkips = metadata.value(20).toInt()/2500+1;
 	QPainterPath path;
