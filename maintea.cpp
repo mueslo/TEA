@@ -344,7 +344,7 @@ void TEA::drawTrainer(int indexX, int indexY)
 			case 2:	value = 1; ui.qwtPlot->setAxisTitle(0,"Velocity in km/h"); factor = 0.01; break;
 			case 3: value = 3; ui.qwtPlot->setAxisTitle(0,"Slope in deg"); factor = 0.1; break;
 			case 4: value = 2; ui.qwtPlot->setAxisTitle(0,"Pedal frequency in RPM"); factor = 0.1; break;
-			default: value = 1; ui.qwtPlot->setAxisTitle(0,"NYI"); break;
+			default: value = 1; ui.qwtPlot->setAxisTitle(0,"NYI"); factor = 0.0; break;
 		}
 
 		switch (ui.cboxX->currentIndex()) {
@@ -654,6 +654,7 @@ void TEA::drawRoute(QString auid)
 	}
 
 	QGraphicsPathItem *pathItem = new QGraphicsPathItem;
+	//QGraphicsPathItem **pathItemTest[];
 	pathItem->setPath(path);
 	pathItem->setZValue(20);
 	scene->addItem(pathItem);
