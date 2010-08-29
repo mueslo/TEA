@@ -12,7 +12,8 @@
 #include <stdlib.h>
 #include <fstream>
 #include <stdlib.h>
-#include <hashlibpp.h>
+//#include <hashlibpp>
+#include "hashlibpp.h"
 #include <QtSql>
 #include <coordinates.h>
 #include <QMessageBox>
