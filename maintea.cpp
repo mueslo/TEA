@@ -491,7 +491,7 @@ void TEA::sldChanged(int value)
 	while (scene->items().size()>i)
 	{
 		if (round(scene->items().at(i)->zValue()) > ui.sldZoom->value() &&
-			round(scene->items().at(i)->zValue()) != 19 && round(scene->items().at(i)->zValue()) != 20) //routes are at these zvalues
+		    round(scene->items().at(i)->zValue()) != 19 && round(scene->items().at(i)->zValue()) != 20) //routes are at these zvalues: routes at 20, outlines at 19 (nyi)
 			scene->removeItem(scene->items().at(i));
 		else i++;
 
