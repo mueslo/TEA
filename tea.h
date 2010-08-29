@@ -43,6 +43,7 @@ private slots:
     void removeRoute();
     void setGeneralSettings();
     void actionViewDatabase();
+    void RouteChange();
 	//void graphicsViewResized();
 	//void grphPressed();
 	//void grphReleased();
