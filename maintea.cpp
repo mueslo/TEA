@@ -210,7 +210,9 @@ void TEA::downloaded(QNetworkReply* reply)
 	//todo: functioning addtiletodb
 	addTileToDB(zoomLevel,tileX,tileY,data);
 
-	placeTile(data, tileX, tileY, zoomLevel);
+	//IF-Bedingung ist mehr oder weniger QND. ;)
+	//BTW. ich zweifle bischen dran dass, wenn du die downloadaufforderung einmal an den QNetworkManager geschickt hast, du die abarbeitungsreihenfolge noch ändern kannst.
+	if( ui.sldZoom->value() == zoomLevel ) placeTile(data, tileX, tileY, zoomLevel);
 
 	//newTile->setPos(-PI, -PI);
 	//newTile->scale(PI/128, PI/128);
@@ -498,7 +500,7 @@ void TEA::sldChanged(int value)
 	while (scene->items().size()>i)
 	{
 		if (round(scene->items().at(i)->zValue()) > ui.sldZoom->value() &&
-		    round(scene->items().at(i)->zValue()) != 19 && round(scene->items().at(i)->zValue()) != 20) //routes are at these zvalues: routes at 20, outlines at 19 (nyi)
+			round(scene->items().at(i)->zValue()) != 19 && round(scene->items().at(i)->zValue()) != 20) //routes are at these zvalues
 			scene->removeItem(scene->items().at(i));
 		else i++;
 
@@ -666,7 +668,6 @@ void TEA::drawRoute(QString auid)
 	}
 
 	QGraphicsPathItem *pathItem = new QGraphicsPathItem;
-	//QGraphicsPathItem **pathItemTest[];
 	pathItem->setPath(path);
 	pathItem->setZValue(20);
 	scene->addItem(pathItem);
