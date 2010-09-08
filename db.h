@@ -549,114 +549,118 @@ inline void loadRoute(QString uid)
 
 inline void saveRoute(QString auid)
 {
-	QString next_uid;
-	QSqlQuery adbquery(QSqlDatabase::database("adb"));
-	QSqlQuery rdbquery(QSqlDatabase::database("rdb"));
+    QString next_uid;
+    QSqlQuery adbquery(QSqlDatabase::database("adb"));
+    QSqlQuery rdbquery(QSqlDatabase::database("rdb"));
 
-	qDebug("Saving route");
+    qDebug("Saving route");
 
-	//get metadata
-	QSqlRecord metadata;
-	adbquery.exec(qPrintable("SELECT * FROM active_metadata WHERE auid="+auid));
-	adbquery.first();
-	metadata = adbquery.record();
+    //get metadata from the specific active route - klar soweit.
+    QSqlRecord metadata;
+    adbquery.exec(qPrintable("SELECT * FROM active_metadata WHERE auid="+auid));
+    adbquery.first();
+    metadata = adbquery.record();
 
-	//todo rm messageboxes
+    //todo rm messageboxes - wenn's scheiße läuft, blöde warnung aussgeben - klar soweit
+    if (!adbquery.isActive())
+	QMessageBox::warning(0, "aDatabase Error123",
+			     adbquery.lastError().text());
+
+    adbquery.finish();
+
+    //check if active route's uid is already present in rdb (-> existent or new)
+    bool update;
+    QString uid;
+    if (metadata.value(1).toString() != "") uid=metadata.value(1).toString(); else uid="''";
+    qDebug("UID: " + uid);
+    rdbquery.exec("SELECT * FROM metadata WHERE uid="+uid);
+    update = rdbquery.next();
+
+    if (!rdbquery.isActive())
+	QMessageBox::warning(0, "rDatabase Error2",
+			     rdbquery.lastError().text());
+    rdbquery.finish();
+
+    //what to do if the route is new:
+  //  if (!update)
+    if ( TRUE )
+    {
+	//find out the next uid for rdb and update it in rdb
+	rdbquery.exec("SELECT max(next_uid) FROM rsettings");
+	rdbquery.first();
+	next_uid=rdbquery.record().value(0).toString();
+	rdbquery.exec(qPrintable(	"UPDATE rsettings SET next_uid="+
+					QString::number(next_uid.toInt()+1)+
+					" WHERE next_uid="+next_uid));
+
+	//copy active route data to rdb
+	//QSqlDatabase::database("rdb").close();
+	cout << "next_uid: " << qPrintable(next_uid) << endl;
+	cout << "auid: " << qPrintable(auid) << endl;
+	adbquery.exec("ATTACH 'routes.db' AS rdb");
+
 	if (!adbquery.isActive())
-		QMessageBox::warning(0, "aDatabase Error123",
-				 adbquery.lastError().text());
+	    QMessageBox::warning(0, "aDatabase Error31; Error code:"+QString::number(adbquery.lastError().number()),
+				 "Database error: "+adbquery.lastError().databaseText()+
+				 "\nDriver error: "+adbquery.lastError().driverText());
+	/*THIS WAS ADDED*/
+	//The hard way: drop table before you add data from adb; TODO: check if this is really needed
+	if( update ) adbquery.exec(qPrintable( "DROP Table rdb.rroute"
+					       +next_uid));
+
+	adbquery.exec(qPrintable(	"CREATE TABLE rdb.rroute"+next_uid+
+					" AS SELECT * FROM route"+auid));   //kopiere derzeitige Route von adb in Richtung rdb
+
+	if (!adbquery.isActive())
+	    QMessageBox::warning(0, "aDatabase Error32; Error code:"+QString::number(adbquery.lastError().number()),
+				 "Database error: "+adbquery.lastError().databaseText()+
+				 "\nDriver error: "+adbquery.lastError().driverText());
+
+	adbquery.exec("DETACH rdb");
+	//QSqlDatabase::database("rdb").open();
+
+	if (!adbquery.isActive())
+	    QMessageBox::warning(0, "aDatabase Error33; Error code:"+QString::number(adbquery.lastError().number()),
+				 "Database error: "+adbquery.lastError().databaseText()+
+				 "\nDriver error: "+adbquery.lastError().driverText());
 
 	adbquery.finish();
 
-	//check if active route's uid is already present in rdb (-> existent or new)
-	bool update;
-	QString uid;
-	if (metadata.value(1).toString() != "") uid=metadata.value(1).toString(); else uid="''";
-	qDebug("UID: " + uid);
-	rdbquery.exec("SELECT * FROM metadata WHERE uid="+uid);
-	update = rdbquery.next();
-
-	if (!rdbquery.isActive())
-		QMessageBox::warning(0, "rDatabase Error2",
-				 rdbquery.lastError().text());
-	rdbquery.finish();
-
-	//what to do if the route is new:
-	if (!update)
-	{
-		//find out the next uid for rdb and update it in rdb
-		rdbquery.exec("SELECT max(next_uid) FROM rsettings");
-		rdbquery.first();
-		next_uid=rdbquery.record().value(0).toString();
-		rdbquery.exec(qPrintable(	"UPDATE rsettings SET next_uid="+
-									QString::number(next_uid.toInt()+1)+
-									" WHERE next_uid="+next_uid));
-
-		//copy active route data to rdb
-		//QSqlDatabase::database("rdb").close();
-		cout << "next_uid: " << qPrintable(next_uid) << endl;
-		cout << "auid: " << qPrintable(auid) << endl;
-		adbquery.exec("ATTACH 'routes.db' AS rdb");
-
-		if (!adbquery.isActive())
-			QMessageBox::warning(0, "aDatabase Error31; Error code:"+QString::number(adbquery.lastError().number()),
-									"Database error: "+adbquery.lastError().databaseText()+
-									"\nDriver error: "+adbquery.lastError().driverText());
-
-		adbquery.exec(qPrintable(	"CREATE TABLE rdb.rroute"+next_uid+
-									" AS SELECT * FROM route"+auid));
-
-		if (!adbquery.isActive())
-			QMessageBox::warning(0, "aDatabase Error32; Error code:"+QString::number(adbquery.lastError().number()),
-									"Database error: "+adbquery.lastError().databaseText()+
-									"\nDriver error: "+adbquery.lastError().driverText());
-
-		adbquery.exec("DETACH rdb");
-		//QSqlDatabase::database("rdb").open();
-
-		if (!adbquery.isActive())
-			QMessageBox::warning(0, "aDatabase Error33; Error code:"+QString::number(adbquery.lastError().number()),
-									"Database error: "+adbquery.lastError().databaseText()+
-									"\nDriver error: "+adbquery.lastError().driverText());
-
-		adbquery.finish();
 
 
+    }
 
-	}
+    if (!rdbquery.isActive())
+	QMessageBox::warning(0, "rDatabase Error4",
+			     rdbquery.lastError().text());
 
-	if (!rdbquery.isActive())
-		QMessageBox::warning(0, "rDatabase Error4",
-				 rdbquery.lastError().text());
+    rdbquery.finish();
 
-	rdbquery.finish();
+    //update metadata
+    //format metadata values for query
+    QString values;
+    int i;
+    for((i = 2);(i<22);(i++)) values.append("'"+metadata.value(i).toString()+"',");
+    values.append("'"+metadata.value(22).toString()+"'");
 
-	//update metadata
-	//format metadata values for query
-	QString values;
-	int i;
-	for((i = 2);(i<22);(i++)) values.append("'"+metadata.value(i).toString()+"',");
-		values.append("'"+metadata.value(22).toString()+"'");
-
-	if (update)
-		{
-		//if it is an update, delete the old metadata entry and create a new one
-		values.prepend(metadata.value(1).toString()+","); //uid
-		cout << "values: " << qPrintable(values) << endl;
-		rdbquery.exec(qPrintable("DELETE FROM metadata WHERE uid="+metadata.value(1).toString()));
-		rdbquery.exec(qPrintable("INSERT INTO metadata VALUES("+values+")"));
-		rdbquery.finish();
-		cout << "existent" << endl;
-		}
-	else
-		{
-		//if it is not an update, create a new metadata entry
-		values.prepend(next_uid+",");
-		cout << "values: " << qPrintable(values) << endl;
-		rdbquery.exec(qPrintable("INSERT INTO metadata VALUES("+values+")"));
-		rdbquery.finish();
-		cout << "new" << endl;
-		}
+    //Sieht mir noch recht redundant aus.
+    if (update)
+    {
+	//if it is an update, delete the old metadata entry and create a new one
+	values.prepend(metadata.value(1).toString()+","); //uid
+	//cout << "values: " << qPrintable(values) << endl;
+	rdbquery.exec(qPrintable("DELETE FROM metadata WHERE uid="+metadata.value(1).toString()));
+	//cout << "existent" << endl;
+    }
+    else
+    {
+	//if it is not an update, create a new metadata entry
+	values.prepend(next_uid+",");
+	//cout << "values: " << qPrintable(values) << endl;
+	//cout << "new" << endl;
+    }
+    rdbquery.exec(qPrintable("INSERT INTO metadata VALUES("+values+")"));
+    rdbquery.finish();
 
 }
 

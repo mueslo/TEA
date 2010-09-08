@@ -27,8 +27,10 @@ void DatabaseViewer::executeQuery()
     table = ui->edtQuery->text();
 
     {
-	model = new QSqlTableModel::QSqlTableModel(0,QSqlDatabase::database(db));
-	model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+	model = new QSqlTableModel::QSqlTableModel(this,QSqlDatabase::database(db)); //deletes the table after closing the dialog -> prevents the following error: QSqlDatabasePrivate::removeDatabase: connection 'rdb' is still in use, all queries will cease to work.
+//	model = new QSqlTableModel::QSqlTableModel(0,QSqlDatabase::database(db));
+	//model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+	model->setEditStrategy(QSqlTableModel::OnFieldChange);
 	model->setTable(table);
 	ui->tblvResult->setModel(model);
 

@@ -12,25 +12,25 @@ class QFile;
 
 class TEA : public QMainWindow
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	TEA(QWidget *parent = 0);
-	~TEA();
-	void getMetadata(QString auid);
+    TEA(QWidget *parent = 0);
+    ~TEA();
+    void getMetadata(QString auid);
 
 public slots:
-	void ActionLoadFromFile();
-	void ActionLoadFromDatabase();
-	void ActionSaveToDatabase();
-	void About();
+    void ActionLoadFromFile();
+    void ActionLoadFromDatabase();
+    void ActionSaveToDatabase();
+    void About();
 
 private slots:
-	void downloaded(QNetworkReply* reply);
-	void zoom(int steps);
-	void zoomIn();
-	void zoomOut();
-	void sldChanged(int value);
+    void downloaded(QNetworkReply* reply);
+    void zoom(int steps);
+    void zoomIn();
+    void zoomOut();
+    void sldChanged(int value);
     void viewChange();
     void rotateClockwise();
     void rotateCClockwise();
@@ -44,37 +44,38 @@ private slots:
     void setGeneralSettings();
     void actionViewDatabase();
     void RouteChange();
-	//void graphicsViewResized();
-	//void grphPressed();
-	//void grphReleased();
+    void UpdateAdb();
+    //void graphicsViewResized();
+    //void grphPressed();
+    //void grphReleased();
 
 
 private:
     Ui::MainWin ui;
-	bool nodeNextSkip(QSqlQuery routeData, int timesToSkip);
+    bool nodeNextSkip(QSqlQuery routeData, int timesToSkip);
     bool maybeExit();
     void drawTrainer(int indexX, int indexY);
     void getTile(int tileX, int tileY, int zoomLevel);
     void getTilesInRange();
     void createStatusBar();
     void fillTrainerViewCBoxes();
-	void connectSignalsAndSlots();
-	void rerenderRoute();
-	void drawRoutes(QSqlQuery auidQuery);
-	void drawRoute(QString auid);
-	void placeTile(QByteArray tile, int tileX, int tileY, int zoomLevel);
-	void createToolBar();
-	int zoomOld;
-	QProgressBar *prgBar;
-	QString mapSource;
+    void connectSignalsAndSlots();
+    void rerenderRoute();
+    void drawRoutes(QSqlQuery auidQuery);
+    void drawRoute(QString auid);
+    void placeTile(QByteArray tile, int tileX, int tileY, int zoomLevel);
+    void createToolBar();
+    int zoomOld;
+    QProgressBar *prgBar;
+    QString mapSource;
     QFile *file;
     QNetworkAccessManager *networkManager;
     QGraphicsScene *scene;
     bool init;
 
 protected:
-	void closeEvent(QCloseEvent *event);
-	void resizeEvent(QResizeEvent *event);
+    void closeEvent(QCloseEvent *event);
+    void resizeEvent(QResizeEvent *event);
 
 
 };

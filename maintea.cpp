@@ -24,6 +24,7 @@
 #include "qwt_plot.h"
 #include "qwt_data.h"
 #include "qwt_plot_curve.h"
+#include "pathlist.h"
 
 
 #define PI 3.1415926535897932384626433832795
@@ -290,6 +291,7 @@ void TEA::connectSignalsAndSlots()
 	connect(ui.btnGeneralSettings, SIGNAL(clicked()), this, SLOT(setGeneralSettings()));
 	connect(ui.databaseViewAction, SIGNAL(triggered()), this, SLOT(actionViewDatabase()));
 	connect(ui.listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(RouteChange()) );  //TODO
+	connect(ui.saveAction, SIGNAL(triggered()), this, SLOT(UpdateAdb()) );
 	//connect(ui.graphicsView, SIGNAL(resizeEvent()), this, SLOT(graphicsViewResized()));
 	//connect(ui.graphicsView, SIGNAL(mousePressed()), this, SLOT(grphPressed()));
 	//ui.tbMain->addAction(QIcon("icons/32x32_0560/map.png"), "Something with maps", this, "mapAction");
@@ -305,6 +307,23 @@ void TEA::RouteChange()
 {
     //gibt noch einiges zu tun: überprüfen welche Route gerade angezeigt wird, nicht ausgewählte löschen, nicht angezeigte zeigen.
     drawRoute(QString::number(ui.listWidget->currentIndex().row()));
+}
+
+void TEA::UpdateAdb()
+{
+    qDebug("UpdateAdb");
+    PathList *Entry = dynamic_cast<PathList *>(ui.listWidget->currentItem());
+    if( Entry == 0 ) return;	//return if no Item is selected
+    qDebug("Item found");
+    qDebug("Name:" + QString(Entry->text()) );
+    qDebug("auid="+QString::number(Entry->getAuid()));
+
+    QString Name = Entry->text();
+    Name.append("'").prepend("'");
+    QSqlQuery adbquery(QSqlDatabase::database("adb"));
+    adbquery.exec(qPrintable("UPDATE active_metadata SET name="+Name+" WHERE auid="+QString::number(Entry->getAuid())));
+
+    adbquery.finish();
 }
 
 void TEA::setGeneralSettings()
@@ -609,70 +628,89 @@ void TEA::ActionLoadFromDatabase()
 
 void TEA::drawRoute(QString auid)
 {
-	//remove all objects residing above the current zoom strata
-	int i = 0;
-	while (scene->items().size()>i)
-	{
-		if (round(scene->items().at(i)->zValue()) == 19 || round(scene->items().at(i)->zValue()) == 20)
-			scene->removeItem(scene->items().at(i));
-		else i++;
+    QSqlQuery routeData = getRouteData(auid, "adb");
+    QSqlRecord metadata = getRouteMetadata(auid, "adb");
 
-	}
+    PathList *Entry = new PathList(metadata.value(6).toString(), auid.toInt());
+
+    //TODO: check if item is already present in ItemView (+Path)
+    if( ui.listWidget->currentIndex().row() != auid.toInt() )
+    {
+	Entry->setAuid( auid.toInt() );
+	ui.listWidget->insertItem(auid.toInt(), Entry );
+    }
+    else
+    {
+	qDebug("Return");
+	return;
+    }
+
+    //remove all objects residing above the current zoom strata
+    /*int i = 0;
+    while (scene->items().size()>i)
+    {
+	if (round(scene->items().at(i)->zValue()) == 19 || round(scene->items().at(i)->zValue()) == 20)
+	    scene->removeItem(scene->items().at(i));
+	else i++;
+
+    }*/
 
 
-	QSqlQuery routeData = getRouteData(auid, "adb");
-	QSqlRecord metadata = getRouteMetadata(auid, "adb");
 
-	//TODO: check if item is already added
-	if( ui.listWidget->currentIndex().row() != auid.toInt() )
-	{
-	    ui.listWidget->insertItem(auid.toInt(),metadata.value(6).toString());
-	}
-	//ui.listWidget->addItem(QString::number(auid.toInt()+1)+" - "+metadata.value(6).toString());
+    //ui.listWidget->addItem(QString::number(auid.toInt()+1)+" - "+metadata.value(6).toString());
 
-	int nodeSkips = metadata.value(20).toInt()/2500+1;
-	QPainterPath path;
+    int nodeSkips = metadata.value(20).toInt()/2500+1;
+    QPainterPath path;
 
-	routeData.first();
-	prgBar->setMaximum(metadata.value(20).toInt());
+    routeData.first();
+    prgBar->setMaximum(metadata.value(20).toInt());
 
 
-	double x,y,tempX,tempY;
-	//skip zeroes
+    double x,y,tempX,tempY;
+    //skip zeroes
 
-	while ((getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())) == 0) && (nodeNextSkip(routeData,0)));
+    while ((getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())) == 0) && (nodeNextSkip(routeData,0)));
 
-	if (routeData.isValid()) {
+    if (routeData.isValid()) {
 	x=getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString()));
 	y=getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()));
 	qDebug("First coordinate: "+QString::number(x)+"; "+QString::number(y));
 	path.moveTo(x,y);
+    }
+
+    /* Draw Path */
+    while (nodeNextSkip(routeData,nodeSkips))
+    {
+	prgBar->setValue(routeData.value(0).toInt());
+	qApp->processEvents();
+
+	tempX=getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString()));
+	tempY=getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()));
+	//ui.textInformation->append(QString::number(tempX)+' '+QString::number(tempY));
+
+	/* schöne Variante */
+	if (nodeNextSkip(routeData,nodeSkips)) {
+
+	    if (((tempY != 0.0) || (tempX != 0.0)) && ((getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())) != 0) || (getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())) != 0) ))  {
+		x = tempX; y = tempY;
+		path.quadTo(x,y,getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())),getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())));
+		//qDebug(QString::number(x)+" "+QString::number(y)+" "+QString::number(getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())))+","+QString::number(getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()))));
+	    }
 	}
+	/* schnelle Variante. TODO: Wahl per Menüoption
+		if( ( tempX != 0 ) || ( tempY != 0) ) {
+		    path.lineTo(tempX, tempY);
+		} */
+    }
 
-	while (nodeNextSkip(routeData,nodeSkips))
-	{
-		prgBar->setValue(routeData.value(0).toInt());
-		qApp->processEvents();
-
-		tempX=getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString()));
-		tempY=getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()));
-		//ui.textInformation->append(QString::number(tempX)+' '+QString::number(tempY));
-		if (nodeNextSkip(routeData,nodeSkips)) {
-
-		if (((tempY != 0.0) || (tempX != 0.0)) && ((getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())) != 0) || (getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())) != 0) ))  {
-		    x = tempX; y = tempY;
-		    path.quadTo(x,y,getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())),getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())));
-		    //qDebug(QString::number(x)+" "+QString::number(y)+" "+QString::number(getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())))+","+QString::number(getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()))));
-		}
-		}
-	}
-
-	QGraphicsPathItem *pathItem = new QGraphicsPathItem;
-	pathItem->setPath(path);
-	pathItem->setZValue(20);
-	scene->addItem(pathItem);
-	scene->setSceneRect(-PI,-PI,2*PI,2*PI);
-	prgBar->reset();
+    /*Add Path to the Scene */
+    QGraphicsPathItem *pathItem = new QGraphicsPathItem;
+    Entry->setPath(pathItem);
+    pathItem->setPath(path);
+    pathItem->setZValue(20);
+    scene->addItem(pathItem);
+    scene->setSceneRect(-PI,-PI,2*PI,2*PI);
+    prgBar->reset();
 }
 
 void TEA::unloadRoute()
@@ -703,13 +741,27 @@ void TEA::closeEvent(QCloseEvent *event)
 
 bool TEA::maybeExit()
 {
-	QMessageBox::StandardButton
-		 ret = QMessageBox::warning(this, tr("TEA exit dialog"),
-			      tr("There may be unsaved changes!"),
-			      QMessageBox::Discard | QMessageBox::Cancel);
-		 if (ret == QMessageBox::Discard)
-		     return true;
-		 else if (ret == QMessageBox::Cancel)
-		     return false;
-		 return false;
+    //todo: check if there are realy unsaved changes
+    QMessageBox::StandardButton
+	    ret = QMessageBox::warning(this, tr("TEA exit dialog"),
+				       tr("There may be unsaved changes!"),
+				       QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+    if (ret ==QMessageBox::Save)
+    {
+	//TODO check if this makes sense
+	//save every route from ADB in RDB
+	QSqlQuery adbquery(QSqlDatabase::database("adb"));
+	QString auid;
+	adbquery.exec("SELECT * FROM active_metadata");	//get all active routes
+	while(adbquery.next())
+	{
+	    auid=adbquery.record().value(0).toString();	//get uid from query
+	    saveRoute(auid);	//save route
+	}
+	adbquery.finish();
+	return true;
+    }
+    if (ret == QMessageBox::Discard) return true;
+    else if (ret == QMessageBox::Cancel) return false;
+    return false;
 }

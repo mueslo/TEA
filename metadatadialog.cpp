@@ -180,7 +180,7 @@ void MetadataDialog::save()
 	setRouteLocation(mpAuid, ui.edtLocation->text());
 	setRouteTags(mpAuid, ui.edtTags->document()->toPlainText());
 	//Save DB entry to rdb
-	saveRoute(mpAuid);
+	if( ui.SaveRoute->isChecked() ) saveRoute(mpAuid);
 	//Ask to remove DB entry from adb
 	//close dialog
 	MetadataDialog::accept();
