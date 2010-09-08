@@ -579,6 +579,7 @@ inline void saveRoute(QString auid)
     if (!rdbquery.isActive())
 	QMessageBox::warning(0, "rDatabase Error2",
 			     rdbquery.lastError().text());
+    if( update) rdbquery.exec(qPrintable("DROP Table rroute"+uid));
     rdbquery.finish();
 
     //what to do if the route is new:
@@ -589,10 +590,12 @@ inline void saveRoute(QString auid)
 	rdbquery.exec("SELECT max(next_uid) FROM rsettings");
 	rdbquery.first();
 	next_uid=rdbquery.record().value(0).toString();
-	rdbquery.exec(qPrintable(	"UPDATE rsettings SET next_uid="+
-					QString::number(next_uid.toInt()+1)+
-					" WHERE next_uid="+next_uid));
+	if( !update ) rdbquery.exec(qPrintable(	"UPDATE rsettings SET next_uid="+
+					QString::number(next_uid.toInt()+1)
+					+" WHERE next_uid="+next_uid
+					));
 
+	rdbquery.finish();  //just a testing purpose
 	//copy active route data to rdb
 	//QSqlDatabase::database("rdb").close();
 	cout << "next_uid: " << qPrintable(next_uid) << endl;
@@ -605,8 +608,16 @@ inline void saveRoute(QString auid)
 				 "\nDriver error: "+adbquery.lastError().driverText());
 	/*THIS WAS ADDED*/
 	//The hard way: drop table before you add data from adb; TODO: check if this is really needed
-	if( update ) adbquery.exec(qPrintable( "DROP Table rdb.rroute"
-					       +next_uid));
+	if( update )
+	{
+	    adbquery.exec(qPrintable( "DROP Table If Exists rdb.rroute"
+					       +uid));
+	    next_uid = uid;
+	    if (!adbquery.isActive())
+		QMessageBox::warning(0, "aDatabase Error32.1; Error code:"+QString::number(adbquery.lastError().number()),
+				     "Database error: "+adbquery.lastError().databaseText()+	//unable to fetch row
+				     "\nDriver error: "+adbquery.lastError().driverText());	//database is locked
+	}
 
 	adbquery.exec(qPrintable(	"CREATE TABLE rdb.rroute"+next_uid+
 					" AS SELECT * FROM route"+auid));   //kopiere derzeitige Route von adb in Richtung rdb
@@ -630,11 +641,12 @@ inline void saveRoute(QString auid)
 
     }
 
-    if (!rdbquery.isActive())
+    /*if (!rdbquery.isActive())
 	QMessageBox::warning(0, "rDatabase Error4",
 			     rdbquery.lastError().text());
 
-    rdbquery.finish();
+    rdbquery.finish();*/
+
 
     //update metadata
     //format metadata values for query

@@ -255,8 +255,11 @@ void TEA::createToolBar()
 {
 	ui.tbMain->addAction(ui.loadFromFileAction);
 	ui.tbMain->addAction(ui.loadFromDatabaseAction);
+	ui.tbMain->addSeparator();
 	ui.tbMain->addAction(ui.saveAction);
 	ui.tbMain->addAction(ui.saveAllAction);
+	ui.tbMain->addSeparator();
+	ui.tbMain->addAction(ui.actionEdit_metadata);
 }
 
 void TEA::rotateClockwise()
@@ -290,11 +293,36 @@ void TEA::connectSignalsAndSlots()
 	connect(ui.graphicsView, SIGNAL(wheelZoom(int)), this, SLOT(zoom(int)));
 	connect(ui.btnGeneralSettings, SIGNAL(clicked()), this, SLOT(setGeneralSettings()));
 	connect(ui.databaseViewAction, SIGNAL(triggered()), this, SLOT(actionViewDatabase()));
-	connect(ui.listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(RouteChange()) );  //TODO
+	connect(ui.listWidget, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(updatePath(QListWidgetItem*)));
 	connect(ui.saveAction, SIGNAL(triggered()), this, SLOT(UpdateAdb()) );
+	connect(ui.actionEdit_metadata, SIGNAL(triggered()), this, SLOT(editMetadata()));
 	//connect(ui.graphicsView, SIGNAL(resizeEvent()), this, SLOT(graphicsViewResized()));
 	//connect(ui.graphicsView, SIGNAL(mousePressed()), this, SLOT(grphPressed()));
 	//ui.tbMain->addAction(QIcon("icons/32x32_0560/map.png"), "Something with maps", this, "mapAction");
+}
+
+void TEA::updatePath(QListWidgetItem *Item)
+{
+    PathList *Entry = dynamic_cast<PathList *>(Item);
+    Entry->getPath()->setVisible( Entry->checkState() == Qt::Checked );
+}
+
+void TEA::editMetadata()
+{
+    if( ui.listWidget->selectedItems().size() == 0 )
+    {
+	ui.textInformation->append(QString("No Item selected."));
+	return;
+    }
+    QListWidgetItem *Item = ui.listWidget->selectedItems().first();
+    PathList *Entry = dynamic_cast<PathList *>(Item);
+    getMetadata(QString::number(Entry->getAuid()));
+
+    QSqlQuery adbquery(QSqlDatabase::database("adb"));
+    adbquery.exec(qPrintable("Select * FROM active_metadata WHERE auid="+QString::number(Entry->getAuid())));
+    adbquery.first();
+    Entry->setText(adbquery.record().value(6).toString());
+    adbquery.finish();
 }
 
 void TEA::actionViewDatabase()
@@ -303,20 +331,10 @@ DatabaseViewer d;
 d.exec();
 }
 
-void TEA::RouteChange()
-{
-    //gibt noch einiges zu tun: überprüfen welche Route gerade angezeigt wird, nicht ausgewählte löschen, nicht angezeigte zeigen.
-    drawRoute(QString::number(ui.listWidget->currentIndex().row()));
-}
-
 void TEA::UpdateAdb()
 {
-    qDebug("UpdateAdb");
     PathList *Entry = dynamic_cast<PathList *>(ui.listWidget->currentItem());
     if( Entry == 0 ) return;	//return if no Item is selected
-    qDebug("Item found");
-    qDebug("Name:" + QString(Entry->text()) );
-    qDebug("auid="+QString::number(Entry->getAuid()));
 
     QString Name = Entry->text();
     Name.append("'").prepend("'");
@@ -639,9 +657,9 @@ void TEA::drawRoute(QString auid)
 	Entry->setAuid( auid.toInt() );
 	ui.listWidget->insertItem(auid.toInt(), Entry );
     }
-    else
+    else    //this case should not occour theoretically, but just to be sure.
     {
-	qDebug("Return");
+	ui.textInformation->append(QString("Item has been already added"));
 	return;
     }
 

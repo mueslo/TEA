@@ -7,7 +7,7 @@
 #include <QtNetwork>
 #include <QProgressBar>
 #include <QtSql>
-
+#include "pathlist.h"
 class QFile;
 
 class TEA : public QMainWindow
@@ -43,8 +43,9 @@ private slots:
     void removeRoute();
     void setGeneralSettings();
     void actionViewDatabase();
-    void RouteChange();
     void UpdateAdb();
+    void updatePath(QListWidgetItem *Item);
+    void editMetadata();
     //void graphicsViewResized();
     //void grphPressed();
     //void grphReleased();
