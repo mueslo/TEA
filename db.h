@@ -38,6 +38,13 @@ inline void dbqry_in(QString query)
 }
 */
 
+inline QSqlQuery customRDBQuery(QString query)
+{
+    QSqlQuery rdbquery(QSqlDatabase::database("rdb"));
+    rdbquery.exec(qPrintable(query));
+    return rdbquery;
+}
+
 inline bool prepareActiveRoutesDB()
 {
 	if (QSqlDatabase::database("adb").open())

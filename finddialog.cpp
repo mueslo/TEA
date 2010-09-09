@@ -10,7 +10,7 @@ FindDialog::FindDialog(QWidget *parent)
 	ui.setupUi(this);
 	connectSignalsAndSlots();
 	fillComboBoxes();
-        metadata = getAllMetadata("rdb");
+	metadata = getAllMetadata("rdb");
 	displayResult();
 
 }
@@ -20,10 +20,9 @@ FindDialog::~FindDialog()
 
 }
 
-
-
 void FindDialog::displayResult()
 {
+    ui.lwResult->clear();
 	while (metadata.next())
 	{
 		QListWidgetItem *route = new QListWidgetItem;
@@ -63,82 +62,117 @@ void FindDialog::updateOperators(int index)
     	  break;
       case 1: //id
     	  ui.cboxOperator->addItem("=");
-          break;
+	  break;
       case 2: //location
     	  ui.cboxOperator->addItem("=");
     	  ui.cboxOperator->addItem("contains");
-          break;
+	  break;
       case 3: //tags
     	  ui.cboxOperator->addItem("contain");
     	  break;
       case 4: //name
     	  ui.cboxOperator->addItem("=");
     	  ui.cboxOperator->addItem("contains");
-          break;
+	  break;
       case 5: //distance
     	  ui.cboxOperator->addItem("close to");
     	  ui.cboxOperator->addItem(">");
     	  ui.cboxOperator->addItem("<");
     	  ui.cboxOperator->addItem(QString::fromUtf8("\u2265"));
     	  ui.cboxOperator->addItem(QString::fromUtf8("\u2264"));
-          break;
+	  break;
       case 6: //altitude gain
     	  ui.cboxOperator->addItem("close to");
     	  ui.cboxOperator->addItem(">");
     	  ui.cboxOperator->addItem("<");
     	  ui.cboxOperator->addItem(QString::fromUtf8("\u2265"));
     	  ui.cboxOperator->addItem(QString::fromUtf8("\u2264"));
-          break;
+	  break;
       case 7: //loss
     	  ui.cboxOperator->addItem("close to");
     	  ui.cboxOperator->addItem(">");
     	  ui.cboxOperator->addItem("<");
     	  ui.cboxOperator->addItem(QString::fromUtf8("\u2265"));
     	  ui.cboxOperator->addItem(QString::fromUtf8("\u2264"));
-          break;
+	  break;
       case 8: //alt diff
     	  ui.cboxOperator->addItem("close to");
     	  ui.cboxOperator->addItem(">");
     	  ui.cboxOperator->addItem("<");
     	  ui.cboxOperator->addItem(QString::fromUtf8("\u2265"));
     	  ui.cboxOperator->addItem(QString::fromUtf8("\u2264"));
-          break;
+	  break;
       case 9: //duration
     	  ui.cboxOperator->addItem("close to");
     	  ui.cboxOperator->addItem(">");
     	  ui.cboxOperator->addItem("<");
     	  ui.cboxOperator->addItem(QString::fromUtf8("\u2265"));
     	  ui.cboxOperator->addItem(QString::fromUtf8("\u2264"));
-          break;
+	  break;
       case 10: //coordinates
     	  ui.cboxOperator->addItem("near to");
-          break;
+	  break;
       case 11: //mean alt
     	  ui.cboxOperator->addItem("close to");
     	  ui.cboxOperator->addItem(">");
     	  ui.cboxOperator->addItem("<");
     	  ui.cboxOperator->addItem(QString::fromUtf8("\u2265"));
     	  ui.cboxOperator->addItem(QString::fromUtf8("\u2264"));
-          break;
+	  break;
       case 12: //mean velocity
     	  ui.cboxOperator->addItem("close to");
     	  ui.cboxOperator->addItem(">");
     	  ui.cboxOperator->addItem("<");
     	  ui.cboxOperator->addItem(QString::fromUtf8("\u2265"));
     	  ui.cboxOperator->addItem(QString::fromUtf8("\u2264"));
-          break;
+	  break;
       case 13: //near to other route
     	ui.cboxOperator->addItem("near to");
-        break;
+	break;
       default:
-        ui.cboxOperator->addItem("Operator");
-        break;
+	ui.cboxOperator->addItem("Operator");
+	break;
     }
 }
 
 void FindDialog::query()
 {
+    int type = ui.cboxType->currentIndex();
+    int sign = ui.cboxOperator->currentIndex();
+    QString value = ui.edtValue->text();
 
+
+    /*  The different types
+	0 ui.cboxType->addItem("Date (in DDMMYY)");
+	1 ui.cboxType->addItem("ID");
+	2 ui.cboxType->addItem("Location");
+	3 ui.cboxType->addItem("Tags");
+	4 ui.cboxType->addItem("Name");
+	5 ui.cboxType->addItem("Distance (in km)");
+	6 ui.cboxType->addItem("Altitude gain (in m)");
+	7 ui.cboxType->addItem("Altitude loss (in m)");
+	8 ui.cboxType->addItem("Total altitude difference (in m)");
+	9 ui.cboxType->addItem("Duration (in HHMMSS)");
+	10 ui.cboxType->addItem("Coordinates (in DDD.DDDDDD°,DD.DDDDDD°)");
+	11 ui.cboxType->addItem("Mean altitude (in m)");
+	12 ui.cboxType->addItem("Mean velocity (in km/h)");
+	13 ui.cboxType->addItem("Route near to Route (in UID)");
+      */
+
+    switch(type){
+    case 1:
+	if (value.isEmpty()) value = "0";
+	metadata = customRDBQuery("SELECT * FROM metadata"
+				  " WHERE id="+value);
+	qDebug("empty");
+	if (metadata.isValid()) qDebug(":)");
+	break;
+    default:
+	queryAll();
+	break;
+    }
+
+    displayResult();
 }
 
 void FindDialog::load()
@@ -163,7 +197,7 @@ void FindDialog::load()
 
 void FindDialog::queryAll()
 {
-        metadata = getAllMetadata("rdb");
+	metadata = getAllMetadata("rdb");
 	displayResult();
 }
 

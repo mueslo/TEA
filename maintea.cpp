@@ -355,7 +355,7 @@ void TEA::editMetadata()
 {
     if( ui.listWidget->selectedItems().size() == 0 )
     {
-	ui.textInformation->append(QString("No Item selected."));
+	ui.textInformation->append(QString("No route selected."));
 	return;
     }
     QListWidgetItem *Item = ui.listWidget->selectedItems().first();

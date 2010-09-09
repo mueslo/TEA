@@ -914,6 +914,10 @@
    </property>
   </action>
   <action name="actionEdit_metadata">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/icons/32x32_0320/cup_edit.png</normaloff>:/icons/icons/32x32_0320/cup_edit.png</iconset>
+   </property>
    <property name="text">
     <string>Edit metadata</string>
    </property>
