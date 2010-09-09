@@ -647,7 +647,11 @@ void TEA::ActionLoadFromFile()
 			QString auid = importRoute(TEAFilePath);
 			ui.textInformation->append("Route loaded. Requesting metadata...");
 			qDebug("Requesting metadata");
-			getMetadata(auid);
+			if(!getMetadata(auid))	//if the user rejected to load the file
+			{
+			    deleteRoute(auid, "adb");
+			    return;
+			}
 			ui.textInformation->append("Metadata written.");
 			qDebug("Metadata written");
 
@@ -667,11 +671,11 @@ bool TEA::nodeNextSkip(QSqlQuery routeData, int timesToSkip)
 	return routeData.next();
 }
 
-void TEA::getMetadata(QString auid)
+int TEA::getMetadata(QString auid)
 {
 	//load existing metadata
 	MetadataDialog d(auid);
-	d.exec();
+	return d.exec();
 }
 
 void TEA::ActionSaveToDatabase()

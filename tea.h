@@ -17,7 +17,7 @@ class TEA : public QMainWindow
 public:
     TEA(QWidget *parent = 0);
     ~TEA();
-    void getMetadata(QString auid);
+    int getMetadata(QString auid);
 
 public slots:
     void ActionLoadFromFile();
