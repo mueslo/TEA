@@ -21,11 +21,13 @@ private slots:
 	void queryAll();
 	void close();
 	void updateOperators(int index);
+	void showListContextMenu(const QPoint &);
 
 private:
     Ui::FindDialogClass ui;
     void connectSignalsAndSlots();
     void fillComboBoxes();
+
     void displayResult();
     QSqlQuery metadata;
 };

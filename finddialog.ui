@@ -72,6 +72,9 @@
         <property name="standardButtons">
          <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
         </property>
+        <property name="centerButtons">
+         <bool>false</bool>
+        </property>
        </widget>
       </item>
      </layout>
@@ -79,6 +82,9 @@
    </item>
    <item>
     <widget class="QListWidget" name="lwResult">
+     <property name="contextMenuPolicy">
+      <enum>Qt::CustomContextMenu</enum>
+     </property>
      <property name="alternatingRowColors">
       <bool>true</bool>
      </property>
@@ -95,6 +101,39 @@
     </widget>
    </item>
   </layout>
+  <action name="actionDelete_Route">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/icons/32x32_0320/cup_delete.png</normaloff>:/icons/icons/32x32_0320/cup_delete.png</iconset>
+   </property>
+   <property name="text">
+    <string>Delete Route</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete Route</string>
+   </property>
+  </action>
+  <action name="actionEdit_Metadata">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/icons/32x32_0320/cup_edit.png</normaloff>:/icons/icons/32x32_0320/cup_edit.png</iconset>
+   </property>
+   <property name="text">
+    <string>Edit Metadata</string>
+   </property>
+  </action>
+  <action name="actionLoad_Route">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/icons/32x32_0320/cup_add.png</normaloff>:/icons/icons/32x32_0320/cup_add.png</iconset>
+   </property>
+   <property name="text">
+    <string>Load Route</string>
+   </property>
+   <property name="toolTip">
+    <string>Load Route</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

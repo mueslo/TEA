@@ -2,6 +2,8 @@
 #include "ui_finddialog.h"
 #include "db.h"
 #include <QtSql>
+#include <QMenu>
+#include <QModelIndex>
 #include <QTableView>
 
 FindDialog::FindDialog(QWidget *parent)
@@ -45,6 +47,21 @@ void FindDialog::connectSignalsAndSlots()
 	connect(ui.bboxQuery, SIGNAL(rejected()), this, SLOT(queryAll()));
 	connect(ui.bboxChoice, SIGNAL(rejected()), this, SLOT(close()));
 	connect(ui.cboxType, SIGNAL(currentIndexChanged(int)), this, SLOT(updateOperators(int)));
+	connect(ui.lwResult, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showListContextMenu(const QPoint &)));
+}
+
+void FindDialog::showListContextMenu(const QPoint &pos)
+{
+    QMenu *contextMenu = new QMenu;
+    QModelIndex t = ui.lwResult->indexAt(pos);
+    contextMenu->addAction(ui.actionLoad_Route);
+    contextMenu->addAction(ui.actionEdit_Metadata);
+    contextMenu->addAction(ui.actionDelete_Route);
+
+    //ui.lwResult->item(t.row())->setSelected(true); //select despite right click
+
+    contextMenu->exec(ui.lwResult->mapToGlobal(pos));
+
 }
 
 void FindDialog::updateOperators(int index)
