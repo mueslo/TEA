@@ -164,10 +164,10 @@ void TEA::getTilesInRange()
 {
 	QRectF viewRect = ui.graphicsView->mapToScene(0,0,ui.graphicsView->width(),ui.graphicsView->height()).boundingRect();
 	QList<QPoint> XYTileList = getXYTileInRange(ui.sldZoom->value(),
-												getLongFromMercatorX(viewRect.x()+viewRect.width()),
-												getLongFromMercatorX(viewRect.x()),
-												getLatFromMercatorY(viewRect.y()+viewRect.height()),
-												getLatFromMercatorY(viewRect.y()));
+									getLongFromMercatorX(viewRect.x()+viewRect.width()),
+									getLongFromMercatorX(viewRect.x()),
+									getLatFromMercatorY(viewRect.y()+viewRect.height()),
+									getLatFromMercatorY(viewRect.y()));
 	for(int i=0;i<XYTileList.size();i++){ getTile(XYTileList.at(i).x(),XYTileList.at(i).y(),ui.sldZoom->value());
 	}
 
@@ -296,6 +296,7 @@ void TEA::connectSignalsAndSlots()
 	connect(ui.listWidget, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(updatePath(QListWidgetItem*)));
 	connect(ui.saveAction, SIGNAL(triggered()), this, SLOT(UpdateAdb()) );
 	connect(ui.actionEdit_metadata, SIGNAL(triggered()), this, SLOT(editMetadata()));
+	connect(ui.actionCenter_Route, SIGNAL(triggered()), this, SLOT(centerRoute()));
 	//connect(ui.graphicsView, SIGNAL(resizeEvent()), this, SLOT(graphicsViewResized()));
 	//connect(ui.graphicsView, SIGNAL(mousePressed()), this, SLOT(grphPressed()));
 	//ui.tbMain->addAction(QIcon("icons/32x32_0560/map.png"), "Something with maps", this, "mapAction");
@@ -307,6 +308,49 @@ void TEA::updatePath(QListWidgetItem *Item)
     Entry->getPath()->setVisible( Entry->checkState() == Qt::Checked );
 }
 
+void TEA::centerRoute()
+{   //TODO redundanz entfernen, siehe editMetadata (extra funkt.?)
+    if( ui.listWidget->selectedItems().size() == 0 )
+    {
+	ui.textInformation->append(QString("No Item selected."));
+	return;
+    }
+    QListWidgetItem *Item = ui.listWidget->selectedItems().first();
+    PathList *Entry = dynamic_cast<PathList *>(Item);
+
+    QSqlQuery adbquery(QSqlDatabase::database("adb"));
+    adbquery.exec(qPrintable("Select * FROM active_metadata WHERE auid="+QString::number(Entry->getAuid())));
+    adbquery.first();
+
+    double latdiff = fabs(adbquery.record().value(13).asDouble() - adbquery.record().value(14).asDouble())/(PI*10000000);
+    double londiff = fabs(adbquery.record().value(15).asDouble() - adbquery.record().value(16).asDouble())/(PI*10000000);
+    double height = ui.graphicsView->mapToScene(0,0,ui.graphicsView->width(),ui.graphicsView->height()).boundingRect().height();
+    double width = ui.graphicsView->mapToScene(0,0,ui.graphicsView->width(),ui.graphicsView->height()).boundingRect().width();
+    int zoom = 0;
+    if((latdiff > height) || (londiff > width))
+    {
+	do{
+	    zoom--;
+	    height = height * 2;
+	    width = width * 2;
+	}while((latdiff > height) || (londiff > width));
+    }
+    else
+    {
+	do{
+	    zoom++;
+	    height = height / 2;
+	    width = width / 2;
+	}while((latdiff < height) || (londiff < width));
+	zoom--;
+    }
+
+    //center on selected Path
+    ui.graphicsView->centerOn(dynamic_cast<QGraphicsItem *>(Entry->getPath()));
+    //zoom and load tiles
+    ui.sldZoom->setValue(zoom+zoomOld);
+}
+
 void TEA::editMetadata()
 {
     if( ui.listWidget->selectedItems().size() == 0 )
@@ -316,7 +360,8 @@ void TEA::editMetadata()
     }
     QListWidgetItem *Item = ui.listWidget->selectedItems().first();
     PathList *Entry = dynamic_cast<PathList *>(Item);
-    getMetadata(QString::number(Entry->getAuid()));
+    MetadataDialog d(QString::number(Entry->getAuid()), 1);
+    d.exec();
 
     QSqlQuery adbquery(QSqlDatabase::database("adb"));
     adbquery.exec(qPrintable("Select * FROM active_metadata WHERE auid="+QString::number(Entry->getAuid())));
@@ -519,7 +564,7 @@ void TEA::sldChanged(int value)
 
 	int zoomNew = ui.sldZoom->value();
 	int dZoom = zoomNew-zoomOld;
-	QRectF oldSceneRect = scene->sceneRect();
+	//QRectF oldSceneRect = scene->sceneRect();
 	ui.graphicsView->scale(pow(2,(dZoom)),pow(2,(dZoom)));
 	/*
 	scene->setSceneRect(oldSceneRect.x()+oldSceneRect.width()*(0.5 - pow(2.0,-dZoom-1)),
@@ -656,6 +701,7 @@ void TEA::drawRoute(QString auid)
     {
 	Entry->setAuid( auid.toInt() );
 	ui.listWidget->insertItem(auid.toInt(), Entry );
+	ui.listWidget->setCurrentItem(Entry);
     }
     else    //this case should not occour theoretically, but just to be sure.
     {
@@ -729,6 +775,7 @@ void TEA::drawRoute(QString auid)
     scene->addItem(pathItem);
     scene->setSceneRect(-PI,-PI,2*PI,2*PI);
     prgBar->reset();
+    centerRoute();
 }
 
 void TEA::unloadRoute()

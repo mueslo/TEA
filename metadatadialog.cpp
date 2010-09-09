@@ -7,10 +7,11 @@
 
 using namespace std;
 
-MetadataDialog::MetadataDialog(QString auid, QWidget *parent)
+MetadataDialog::MetadataDialog(QString auid, int type, QWidget *parent)
     : QDialog(parent)
 {
 	ui.setupUi(this);
+	if(type==1) ui.OKButton->setText(tr("&Update"));
 	connectSignalsAndSlots();
 	mpAuid = auid;
 	fillKnownMetadata();
@@ -25,8 +26,9 @@ void MetadataDialog::connectSignalsAndSlots()
 {
 	connect(ui.btnZoomIn, SIGNAL(clicked()), this, SLOT(zoomIn()));
 	connect(ui.btnZoomOut, SIGNAL(clicked()), this, SLOT(zoomOut()));
-	connect(ui.btnbResponse, SIGNAL(accepted()), this, SLOT(save()));
-	connect(ui.btnbResponse, SIGNAL(rejected()), this, SLOT(cancel()));
+	connect(ui.edtName, SIGNAL(textChanged(QString)), this, SLOT(enableLoadButton(QString)));
+	connect(ui.OKButton, SIGNAL(clicked()), this, SLOT(save()));
+	connect(ui.CancelButton, SIGNAL(clicked()), this, SLOT(cancel()));
 }
 
 void MetadataDialog::fillKnownMetadata()
@@ -179,8 +181,7 @@ void MetadataDialog::save()
 	setRouteID(mpAuid, ui.edtID->text());
 	setRouteLocation(mpAuid, ui.edtLocation->text());
 	setRouteTags(mpAuid, ui.edtTags->document()->toPlainText());
-	//Save DB entry to rdb
-	if( ui.SaveRoute->isChecked() ) saveRoute(mpAuid);
+	//todo: set update variable in pathlistitem to true;
 	//Ask to remove DB entry from adb
 	//close dialog
 	MetadataDialog::accept();
@@ -192,4 +193,9 @@ void MetadataDialog::cancel()
 	//Remove DB entry from adb
 	//close dialog
 	MetadataDialog::reject();
+}
+
+void MetadataDialog::enableLoadButton(const QString &text)
+{
+    ui.OKButton->setEnabled(!text.isEmpty());
 }

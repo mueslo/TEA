@@ -23,6 +23,7 @@ private:
     //Ui::MainWin ui;
     QGraphicsPathItem *path;	//Pointer to PathItem in Memory (which is a child of QGraphicsView)
     int auid;
+    bool changed;
 
 };
 

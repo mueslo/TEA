@@ -353,6 +353,7 @@
     <addaction name="kmlExportAction"/>
     <addaction name="actionExport_as_tea"/>
     <addaction name="separator"/>
+    <addaction name="actionCenter_Route"/>
     <addaction name="actionEdit_metadata"/>
     <addaction name="separator"/>
     <addaction name="actionClose_route"/>
@@ -774,7 +775,7 @@
      <normaloff>:/icons/icons/32x32_0320/cup_add.png</normaloff>:/icons/icons/32x32_0320/cup_add.png</iconset>
    </property>
    <property name="text">
-    <string>Load from TEA file</string>
+    <string>Load from &amp;TEA file</string>
    </property>
    <property name="statusTip">
     <string>Load route from TEA file</string>
@@ -789,7 +790,7 @@
      <normaloff>:/icons/icons/32x32_0320/database_add.png</normaloff>:/icons/icons/32x32_0320/database_add.png</iconset>
    </property>
    <property name="text">
-    <string>Load from database</string>
+    <string>Load from &amp;Database</string>
    </property>
    <property name="statusTip">
     <string>Load route from database</string>
@@ -801,7 +802,7 @@
      <normaloff>:/icons/icons/32x32_0340/door.png</normaloff>:/icons/icons/32x32_0340/door.png</iconset>
    </property>
    <property name="text">
-    <string>Exit</string>
+    <string>E&amp;xit</string>
    </property>
    <property name="statusTip">
     <string>Exit TEA</string>
@@ -846,7 +847,7 @@
      <normaloff>:/icons/icons/32x32_0340/disk.png</normaloff>:/icons/icons/32x32_0340/disk.png</iconset>
    </property>
    <property name="text">
-    <string>Save</string>
+    <string>&amp;Save</string>
    </property>
    <property name="statusTip">
     <string>Save currently selected route</string>
@@ -858,7 +859,7 @@
      <normaloff>:/icons/icons/32x32_0340/disk_multiple.png</normaloff>:/icons/icons/32x32_0340/disk_multiple.png</iconset>
    </property>
    <property name="text">
-    <string>Save all</string>
+    <string>Save &amp;All</string>
    </property>
    <property name="statusTip">
     <string>Save all currently loaded routes</string>
@@ -882,7 +883,7 @@
      <normaloff>:/icons/icons/32x32_0640/page_save.png</normaloff>:/icons/icons/32x32_0640/page_save.png</iconset>
    </property>
    <property name="text">
-    <string>Export as .kml</string>
+    <string>Export as .&amp;kml</string>
    </property>
    <property name="statusTip">
     <string>Export currently selected route as .kml</string>
@@ -923,7 +924,7 @@
      <normaloff>:/icons/icons/32x32_0640/page_white_cup.png</normaloff>:/icons/icons/32x32_0640/page_white_cup.png</iconset>
    </property>
    <property name="text">
-    <string>Export as .tea</string>
+    <string>&amp;Export as .tea</string>
    </property>
    <property name="statusTip">
     <string>Export currently selected route as .tea</string>
@@ -945,6 +946,11 @@
    </property>
    <property name="shortcut">
     <string>D</string>
+   </property>
+  </action>
+  <action name="actionCenter_Route">
+   <property name="text">
+    <string>&amp;Center Route</string>
    </property>
   </action>
  </widget>
