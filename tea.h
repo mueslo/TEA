@@ -20,9 +20,9 @@ public:
     int getMetadata(QString auid);
 
 public slots:
-    void ActionLoadFromFile();
-    void ActionLoadFromDatabase();
-    void ActionSaveToDatabase();
+    void loadFromFile();
+    void loadFromDatabase();
+    void saveToDatabase();
     void About();
 
 private slots:
@@ -43,7 +43,7 @@ private slots:
     void removeRoute();
     void setGeneralSettings();
     void actionViewDatabase();
-    void UpdateAdb();
+    void updateADB();
     void updatePath(QListWidgetItem *Item);
     void editMetadata();
     void centerMapOnSelectedRoute();

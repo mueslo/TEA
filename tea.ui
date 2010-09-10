@@ -20,7 +20,7 @@
    <string>Tour Evaluation and Analysis</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="icons.qrc">
+   <iconset>
     <normaloff>:/icons/icons/32x32_0320/cup.png</normaloff>:/icons/icons/32x32_0320/cup.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -68,7 +68,7 @@
         </sizepolicy>
        </property>
        <attribute name="icon">
-        <iconset resource="icons.qrc">
+        <iconset>
          <normaloff>:/icons/icons/16x16_0560/map.png</normaloff>:/icons/icons/16x16_0560/map.png</iconset>
        </attribute>
        <attribute name="title">
@@ -140,7 +140,7 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset resource="icons.qrc">
+               <iconset>
                 <normaloff>:/icons/icons/32x32_0060/arrow_rotate_anticlockwise.png</normaloff>:/icons/icons/32x32_0060/arrow_rotate_anticlockwise.png</iconset>
               </property>
               <property name="checkable">
@@ -172,7 +172,7 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset resource="icons.qrc">
+               <iconset>
                 <normaloff>:/icons/icons/32x32_0060/arrow_rotate_clockwise.png</normaloff>:/icons/icons/32x32_0060/arrow_rotate_clockwise.png</iconset>
               </property>
              </widget>
@@ -201,7 +201,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="icons.qrc">
+             <iconset>
               <normaloff>:/icons/icons/16x16_0560/magnifier_zoom_in.png</normaloff>:/icons/icons/16x16_0560/magnifier_zoom_in.png</iconset>
             </property>
            </widget>
@@ -264,7 +264,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="icons.qrc">
+             <iconset>
               <normaloff>:/icons/icons/16x16_0560/magnifier_zoom_out.png</normaloff>:/icons/icons/16x16_0560/magnifier_zoom_out.png</iconset>
             </property>
            </widget>
@@ -275,7 +275,7 @@
       </widget>
       <widget class="QWidget" name="tabTrainer">
        <attribute name="icon">
-        <iconset resource="icons.qrc">
+        <iconset>
          <normaloff>:/icons/icons/16x16_0220/chart_curve.png</normaloff>:/icons/icons/16x16_0220/chart_curve.png</iconset>
        </attribute>
        <attribute name="title">
@@ -549,6 +549,9 @@
        <property name="contextMenuPolicy">
         <enum>Qt::CustomContextMenu</enum>
        </property>
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
        <property name="dragEnabled">
         <bool>true</bool>
        </property>
@@ -556,7 +559,7 @@
         <bool>true</bool>
        </property>
        <property name="selectionMode">
-        <enum>QAbstractItemView::ExtendedSelection</enum>
+        <enum>QAbstractItemView::MultiSelection</enum>
        </property>
        <property name="isWrapping" stdset="0">
         <bool>true</bool>
@@ -774,7 +777,7 @@
   </widget>
   <action name="loadFromFileAction">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/icons/32x32_0320/cup_add.png</normaloff>:/icons/icons/32x32_0320/cup_add.png</iconset>
    </property>
    <property name="text">
@@ -789,7 +792,7 @@
   </action>
   <action name="loadFromDatabaseAction">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/icons/32x32_0320/database_add.png</normaloff>:/icons/icons/32x32_0320/database_add.png</iconset>
    </property>
    <property name="text">
@@ -801,7 +804,7 @@
   </action>
   <action name="exitAction">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/icons/32x32_0340/door.png</normaloff>:/icons/icons/32x32_0340/door.png</iconset>
    </property>
    <property name="text">
@@ -813,7 +816,7 @@
   </action>
   <action name="aboutAction">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/icons/32x32_0480/help.png</normaloff>:/icons/icons/32x32_0480/help.png</iconset>
    </property>
    <property name="text">
@@ -831,7 +834,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/icons/32x32_0040/application_xp_terminal.png</normaloff>:/icons/icons/32x32_0040/application_xp_terminal.png</iconset>
    </property>
    <property name="text">
@@ -846,7 +849,7 @@
   </action>
   <action name="saveAction">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/icons/32x32_0340/disk.png</normaloff>:/icons/icons/32x32_0340/disk.png</iconset>
    </property>
    <property name="text">
@@ -858,7 +861,7 @@
   </action>
   <action name="saveAllAction">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/icons/32x32_0340/disk_multiple.png</normaloff>:/icons/icons/32x32_0340/disk_multiple.png</iconset>
    </property>
    <property name="text">
@@ -870,7 +873,7 @@
   </action>
   <action name="refreshMapAction">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/icons/32x32_0560/map.png</normaloff>:/icons/icons/32x32_0560/map.png</iconset>
    </property>
    <property name="text">
@@ -882,7 +885,7 @@
   </action>
   <action name="kmlExportAction">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/icons/32x32_0640/page_save.png</normaloff>:/icons/icons/32x32_0640/page_save.png</iconset>
    </property>
    <property name="text">
@@ -894,7 +897,7 @@
   </action>
   <action name="actionClose_route">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/icons/32x32_0320/cup_delete.png</normaloff>:/icons/icons/32x32_0320/cup_delete.png</iconset>
    </property>
    <property name="text">
@@ -906,7 +909,7 @@
   </action>
   <action name="actionDelete_route_from_database">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/icons/32x32_0320/database_delete.png</normaloff>:/icons/icons/32x32_0320/database_delete.png</iconset>
    </property>
    <property name="text">
@@ -918,7 +921,7 @@
   </action>
   <action name="actionEdit_metadata">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/icons/32x32_0320/cup_edit.png</normaloff>:/icons/icons/32x32_0320/cup_edit.png</iconset>
    </property>
    <property name="text">
@@ -927,7 +930,7 @@
   </action>
   <action name="actionExport_as_tea">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/icons/32x32_0640/page_white_cup.png</normaloff>:/icons/icons/32x32_0640/page_white_cup.png</iconset>
    </property>
    <property name="text">
@@ -939,7 +942,7 @@
   </action>
   <action name="databaseViewAction">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/icons/32x32_0320/database_go.png</normaloff>:/icons/icons/32x32_0320/database_go.png</iconset>
    </property>
    <property name="text">
@@ -957,7 +960,7 @@
   </action>
   <action name="actionCenter_Map">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/icons/32x32_0060/arrow_in.png</normaloff>:/icons/icons/32x32_0060/arrow_in.png</iconset>
    </property>
    <property name="text">
@@ -978,9 +981,7 @@
    <header location="global">teaview.h</header>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="icons.qrc"/>
- </resources>
+ <resources/>
  <connections/>
  <buttongroups>
   <buttongroup name="btngrpMapSource"/>

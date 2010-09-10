@@ -2,3 +2,6 @@ GOALS FOR VERSION 0.1
 ------------------------------------------------------------------------------------------
 -Map DB
 -TreeView interface to display loaded routes + context menu
+-Separate menu page
+-MetadataDialog no longer used for editing metadata, only for importing (->ImportDialog)
+-Metadata displayed in place of current settings (on the very right)

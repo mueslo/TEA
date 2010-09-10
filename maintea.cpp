@@ -281,8 +281,8 @@ void TEA::rotateCClockwise()
 
 void TEA::connectSignalsAndSlots()
 {
-	connect(ui.loadFromFileAction, SIGNAL(triggered()), this, SLOT(ActionLoadFromFile()));
-	connect(ui.loadFromDatabaseAction, SIGNAL(triggered()), this, SLOT(ActionLoadFromDatabase()));
+	connect(ui.loadFromFileAction, SIGNAL(triggered()), this, SLOT(loadFromFile()));
+	connect(ui.loadFromDatabaseAction, SIGNAL(triggered()), this, SLOT(loadFromDatabase()));
 	connect(ui.exitAction, SIGNAL(triggered()), this, SLOT(close()));
 	connect(ui.aboutAction, SIGNAL(triggered()), this, SLOT(About()));
 	connect(ui.btnZoomIn, SIGNAL(clicked()), this, SLOT(zoomIn()));
@@ -301,7 +301,8 @@ void TEA::connectSignalsAndSlots()
 	connect(ui.btnGeneralSettings, SIGNAL(clicked()), this, SLOT(setGeneralSettings()));
 	connect(ui.databaseViewAction, SIGNAL(triggered()), this, SLOT(actionViewDatabase()));
 	connect(ui.listWidget, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(updatePath(QListWidgetItem*)));
-	connect(ui.saveAction, SIGNAL(triggered()), this, SLOT(UpdateAdb()) );
+	//connect(ui.saveAction, SIGNAL(triggered()), this, SLOT(UpdateADB()) );
+	connect(ui.saveAction, SIGNAL(triggered()), this, SLOT(saveToDatabase()));
 	connect(ui.actionEdit_metadata, SIGNAL(triggered()), this, SLOT(editMetadata()));
 	connect(ui.actionCenter_Map, SIGNAL(triggered()), this, SLOT(centerMapOnSelectedRoute()));
 	connect(ui.listWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showListContextMenu(const QPoint &)));
@@ -403,7 +404,7 @@ DatabaseViewer d;
 d.exec();
 }
 
-void TEA::UpdateAdb()
+void TEA::updateADB()
 {
     PathList *Entry = dynamic_cast<PathList *>(ui.listWidget->currentItem());
     if( Entry == 0 ) return;	//return if no Item is selected
@@ -418,6 +419,9 @@ void TEA::UpdateAdb()
 
 void TEA::setGeneralSettings()
 {
+    //TODO: Load from DB
+
+    //manual
     QString address = ui.edtProxy->text();
     if (address != "") {
 	QString ip = address.section(":",0,0);
@@ -429,7 +433,7 @@ void TEA::setGeneralSettings()
 	networkManager->setProxy(proxy);
     }
 
-    //SAVE TO DB
+    //TODO: Save to DB
 }
 
 void TEA::trainerModeChanged()
@@ -655,7 +659,7 @@ void TEA::About()
 
 }
 
-void TEA::ActionLoadFromFile()
+void TEA::loadFromFile()
 {
 
 	QString TEAFilePath = QFileDialog::getOpenFileName(this, tr("Open TEA route file"),
@@ -705,14 +709,28 @@ int TEA::getMetadata(QString auid)
 	return d.exec();
 }
 
-void TEA::ActionSaveToDatabase()
+void TEA::saveToDatabase()
 {
-	//get selection
-	//save metadata
+    //get selection
+    QList<QListWidgetItem*> selectedItems = ui.listWidget->selectedItems();
+qDebug("saveToDatabase() 1");
+    for (int i=0; i<selectedItems.count(); i++)
+    {
+	//get pathlist
+	qDebug("saveToDatabase() 2");
+	PathList *Entry = dynamic_cast<PathList *>(selectedItems.at(i));
+	qDebug("saveToDatabase() 3");
+
+	//save all changes from adb to rdb
+	if (Entry != 0) saveRoute(QString::number(Entry->getAuid())); //should work
+	qDebug("saveToDatabase() 4");
+	//TODO: might be useful: implement "getAllSelectedUIDs"
+    }
+
 	drawTrainer(ui.cboxX->currentIndex(),ui.cboxY->currentIndex());
 }
 
-void TEA::ActionLoadFromDatabase()
+void TEA::loadFromDatabase()
 {
 	FindDialog d;
 	d.exec();
