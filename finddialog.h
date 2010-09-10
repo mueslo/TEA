@@ -3,7 +3,7 @@
 
 #include <QtGui/QDialog>
 #include "ui_finddialog.h"
-#include "QtSql"
+#include <QtSql>
 
 class ListWidgetRouteItem;
 

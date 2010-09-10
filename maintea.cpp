@@ -188,7 +188,7 @@ void TEA::placeTile(QByteArray tile, int tileX, int tileY, int zoomLevel)
 void TEA::getTile(int tileX, int tileY, int zoomLevel)
 {
 	//todo: check if present in DB
-	QByteArray tile = getTileFromDB(zoomLevel,tileX,tileY);
+    QByteArray tile = getTileFromDB(zoomLevel,tileX,tileY,mapSource);
 	//if ((QString::fromAscii(tile)!="0") ) placeTile(tile, tileX, tileY, zoomLevel);
 	if (QString::fromAscii(tile)!="0"){
 	    placeTile(tile, tileX, tileY, zoomLevel);
@@ -215,7 +215,7 @@ void TEA::downloaded(QNetworkReply* reply)
 	int tileY = path.section('/',3,3).toInt();
 
 	//todo: functioning addtiletodb
-	addTileToDB(zoomLevel,tileX,tileY,data);
+	addTileToDB(zoomLevel,tileX,tileY,data,mapSource);
 
 	//IF-Bedingung ist mehr oder weniger QND. ;)
 	//BTW. ich zweifle bischen dran dass, wenn du die downloadaufforderung einmal an den QNetworkManager geschickt hast, du die abarbeitungsreihenfolge noch ändern kannst.
@@ -720,18 +720,27 @@ void TEA::saveSelectedToDatabase()
 
 void TEA::saveToDatabase(QList<QListWidgetItem*> chosenItems)
 {
-
-qDebug("saveToDatabase() 1");
+    if(chosenItems.isEmpty())
+    {
+	ui.textInformation->append(tr("No Item selected"));
+	return;
+    }
     for (int i=0; i<chosenItems.count(); i++)
     {
 	//get ActiveRouteListItem
-	qDebug("saveToDatabase() 2");
 	ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(chosenItems.at(i));
-	qDebug("saveToDatabase() 3");
 
 	//save all changes from adb to rdb
-	if (Entry != 0) saveRoute(QString::number(Entry->getAuid())); //should work
-	qDebug("saveToDatabase() 4");
+	if (Entry != 0)
+	{
+	    QString uid = saveRoute(QString::number(Entry->getAuid()));
+	    if(!uid.isEmpty()) //should work
+	    {
+		QSqlQuery adbquery(QSqlDatabase::database("adb"));
+		adbquery.exec(qPrintable("UPDATE active_metadata SET uid="+uid+" WHERE auid="+QString::number(Entry->getAuid())));
+	    }
+
+	}
 	//TODO: might be useful: implement "getAllSelectedUIDs"
     }
 
