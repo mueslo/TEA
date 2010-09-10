@@ -19,11 +19,14 @@ public:
     void setPath( QGraphicsPathItem *Path);
     void setAuid(int Auid);
     ~ActiveRouteListItem();
+    void setModified(bool mod=1);
+    bool isModified();
+
 private:
     //Ui::MainWin ui;
     QGraphicsPathItem *path;	//Pointer to PathItem in Memory (which is a child of QGraphicsView)
     int auid;
-    bool changed;
+    bool Modified;
 
 };
 

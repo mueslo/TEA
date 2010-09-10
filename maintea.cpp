@@ -334,6 +334,7 @@ void TEA::showListContextMenu(const QPoint &pos)
 void TEA::updatePath(QListWidgetItem *Item)
 {
     ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(Item);
+    if(Entry == 0) return;
     Entry->getPath()->setVisible( Entry->checkState() == Qt::Checked );
 }
 
@@ -396,6 +397,7 @@ void TEA::editMetadata()
     adbquery.exec(qPrintable("Select * FROM active_metadata WHERE auid="+QString::number(Entry->getAuid())));
     adbquery.first();
     Entry->setText(adbquery.record().value(6).toString());
+    Entry->setModified();
     adbquery.finish();
 }
 
@@ -738,6 +740,7 @@ void TEA::saveToDatabase(QList<QListWidgetItem*> chosenItems)
 	    {
 		QSqlQuery adbquery(QSqlDatabase::database("adb"));
 		adbquery.exec(qPrintable("UPDATE active_metadata SET uid="+uid+" WHERE auid="+QString::number(Entry->getAuid())));
+		Entry->setModified(0);
 	    }
 
 	}
@@ -849,6 +852,7 @@ void TEA::drawRoute(QString auid)
     scene->setSceneRect(-PI,-PI,2*PI,2*PI);
     prgBar->reset();
     centerMapOnSelectedRoute();
+    Entry->setModified();
 }
 
 void TEA::unloadRoute()
@@ -886,10 +890,36 @@ void TEA::closeEvent(QCloseEvent *event)
 bool TEA::maybeExit()
 {
     //todo: check if there are really unsaved changes
-    QMessageBox::StandardButton
+    //get listitem, check if modified
+    QList<QListWidgetItem*> allItems = ui.lwActiveRoutes->findItems("", Qt::MatchContains);
+    bool modified = false;
+    if(!allItems.isEmpty())
+    {
+	for (int i=0; i<allItems.count(); i++)
+	{
+	    //get ActiveRouteListItem
+	    ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(allItems.at(i));
+
+	    //save all changes from adb to rdb
+	    if (Entry != 0)
+	    {
+		if(Entry->isModified()) modified = true;
+	    }
+	}
+    }
+    QMessageBox::StandardButton ret;
+    if(modified)
+    {
 	    ret = QMessageBox::warning(this, tr("TEA exit dialog"),
-				       tr("There may be unsaved changes!"),
+				       tr("There are unsaved changes!"),
 				       QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+	}
+    else
+    {
+	ret = QMessageBox::warning(this, tr("TEA exit dialog"),
+				   tr("Do you really want to quit?"),
+				   QMessageBox::Yes | QMessageBox::Cancel);
+    }
     if (ret ==QMessageBox::Save)
     {
 	//TODO check if this makes sense
@@ -905,7 +935,7 @@ bool TEA::maybeExit()
 	adbquery.finish();
 	return true;
     }
-    if (ret == QMessageBox::Discard) return true;
+    if ((ret == QMessageBox::Discard) || (ret == QMessageBox::Yes)) return true;
     else if (ret == QMessageBox::Cancel) return false;
     return false;
 }
