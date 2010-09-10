@@ -157,7 +157,7 @@ inline bool prepareMapsDB()
 			mdbquery.exec(	"CREATE TABLE IF NOT EXISTS zoom"+QString::number(i)+" ("
 							"xtile integer,"
 							"ytile integer,"
-							"tile blob)");
+							"tile string)");
 			}
 			qDebug("mdb success");
 				return true;
@@ -743,24 +743,43 @@ inline void setRoutePicture(QString auid, QByteArray picture)
 
 inline void addTileToDB(int zoomLevel, int tileX, int tileY, QByteArray tile)
 {
-	QString tileString = QString::number(tile.toInt());
-	QSqlQuery mdbquery(QSqlDatabase::database("mdb"));
+    QString tileString = tile.toBase64();
+    QSqlQuery mdbquery(QSqlDatabase::database("mdb"));
+    qDebug("Zoom: "+QString::number(zoomLevel)+ " - tilex: "+QString::number(tileX));
+    tileString.append("\"");
+    tileString.prepend("\"");
+    mdbquery.exec(qPrintable(	"SELECT * FROM zoom"+QString::number(zoomLevel)+
+				" WHERE xtile="+QString::number(tileX)+
+				" AND ytile="+QString::number(tileY)));
+    if(!mdbquery.first())
+    {
 	mdbquery.exec(qPrintable(	"INSERT INTO zoom"+QString::number(zoomLevel)+" VALUES("
-								+QString::number(tileX)+","
-								+QString::number(tileY)+","
-								+tileString+")"));
-	mdbquery.finish();
+					+QString::number(tileX)+","
+					+QString::number(tileY)+","
+					+tileString+")"));
+    }
+    mdbquery.finish();
 }
 
 inline QByteArray getTileFromDB(int zoomLevel, int tileX, int tileY)
 {
     qDebug("Loading tile "+QString::number(tileX)+","+QString::number(tileY)+","+QString::number(zoomLevel));
 	QSqlQuery mdbquery(QSqlDatabase::database("mdb"));
-	mdbquery.exec(qPrintable(	"SELECT tile FROM zoom"+QString::number(zoomLevel)+
-								" WHERE tilex="+QString::number(tileX)+
-								" AND tiley="+QString::number(tileY)));
-	if (mdbquery.first())	return mdbquery.record().value(0).toByteArray();
-							else return QString::number(0).toAscii();
+	mdbquery.exec(qPrintable(	"SELECT * FROM zoom"+QString::number(zoomLevel)+
+								" WHERE xtile="+QString::number(tileX)+
+								" AND ytile="+QString::number(tileY)));
+	if (mdbquery.first())
+	{
+	    QByteArray temparray;
+	    QString tile = mdbquery.record().value(2).toString();
+	    temparray = tile.toAscii();
+	    QByteArray array = QByteArray::fromBase64(temparray);
+	    //array.fromBase64(temparray);
+	    tile = array.toBase64();
+	    tile.truncate(10);
+	    return array;
+	}
+	else return QString::number(0).toAscii();
 }
 
 #endif /* DB_H_ */

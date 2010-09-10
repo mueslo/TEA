@@ -46,7 +46,7 @@ private slots:
     void UpdateAdb();
     void updatePath(QListWidgetItem *Item);
     void editMetadata();
-    void centerRoute();
+    void centerMapOnSelectedRoute();
     //void graphicsViewResized();
     //void grphPressed();
     //void grphReleased();

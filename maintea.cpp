@@ -35,6 +35,14 @@ TEA::TEA(QWidget *parent) :
 	QMainWindow(parent)
 {
 	init = true;
+
+	if (!initialiseDBs())
+	{
+	    QMessageBox::critical(this, tr("A critical error occured!"),
+				  "A critical error occured while intialising active routes",
+				  QMessageBox::Abort | QMessageBox::Ignore);
+	}
+
 	networkManager = new QNetworkAccessManager(this);
 
 	connect(networkManager, SIGNAL(finished(QNetworkReply*)),
@@ -65,15 +73,6 @@ TEA::TEA(QWidget *parent) :
 	ui.statusbar->addPermanentWidget(progress);
 	progress->setAlignment(Qt::AlignRight);
 	*/
-
-
-	if (!initialiseDBs())
-	{
-	     QMessageBox::critical(this, tr("A critical error occured!"),
-					     "A critical error occured while intialising active routes",
-					     QMessageBox::Abort | QMessageBox::Ignore);
-	}
-
 
 	/*
 	if (!db.createAndLoadActiveRoutesDB())
@@ -190,9 +189,16 @@ void TEA::getTile(int tileX, int tileY, int zoomLevel)
 {
 	//todo: check if present in DB
 	QByteArray tile = getTileFromDB(zoomLevel,tileX,tileY);
-	if ((QString::fromAscii(tile)!="0") ) placeTile(tile, tileX, tileY, zoomLevel);
-			else if (ui.sldZoom->value() == zoomLevel) networkManager->get(QNetworkRequest(QUrl(qPrintable(
-					mapSource+QString::number(zoomLevel)+"/"+QString::number(tileX)+"/"+QString::number(tileY)+".png"))));
+	//if ((QString::fromAscii(tile)!="0") ) placeTile(tile, tileX, tileY, zoomLevel);
+	if (QString::fromAscii(tile)!="0"){
+	    placeTile(tile, tileX, tileY, zoomLevel);
+	    qDebug("Tile from DB");
+	}
+	else if(ui.sldZoom->value() == zoomLevel)
+	{
+	    networkManager->get(QNetworkRequest(QUrl(qPrintable(
+		mapSource+QString::number(zoomLevel)+"/"+QString::number(tileX)+"/"+QString::number(tileY)+".png"))));
+	}
 	 //manager->get(QNetworkRequest(QUrl("http://tile.openstreetmap.org/cgi-bin/export?bbox=7.28,48.35,7.29,48.36&scale=10000&format=png")));
 
 }
@@ -260,6 +266,7 @@ void TEA::createToolBar()
 	ui.tbMain->addAction(ui.saveAllAction);
 	ui.tbMain->addSeparator();
 	ui.tbMain->addAction(ui.actionEdit_metadata);
+	ui.tbMain->addAction(ui.actionCenter_Route);
 }
 
 void TEA::rotateClockwise()
@@ -296,7 +303,7 @@ void TEA::connectSignalsAndSlots()
 	connect(ui.listWidget, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(updatePath(QListWidgetItem*)));
 	connect(ui.saveAction, SIGNAL(triggered()), this, SLOT(UpdateAdb()) );
 	connect(ui.actionEdit_metadata, SIGNAL(triggered()), this, SLOT(editMetadata()));
-	connect(ui.actionCenter_Route, SIGNAL(triggered()), this, SLOT(centerRoute()));
+	connect(ui.actionCenter_Route, SIGNAL(triggered()), this, SLOT(centerMapOnSelectedRoute()));
 	//connect(ui.graphicsView, SIGNAL(resizeEvent()), this, SLOT(graphicsViewResized()));
 	//connect(ui.graphicsView, SIGNAL(mousePressed()), this, SLOT(grphPressed()));
 	//ui.tbMain->addAction(QIcon("icons/32x32_0560/map.png"), "Something with maps", this, "mapAction");
@@ -308,7 +315,7 @@ void TEA::updatePath(QListWidgetItem *Item)
     Entry->getPath()->setVisible( Entry->checkState() == Qt::Checked );
 }
 
-void TEA::centerRoute()
+void TEA::centerMapOnSelectedRoute()
 {   //TODO redundanz entfernen, siehe editMetadata (extra funkt.?)
     if( ui.listWidget->selectedItems().size() == 0 )
     {
@@ -327,15 +334,7 @@ void TEA::centerRoute()
     double height = ui.graphicsView->mapToScene(0,0,ui.graphicsView->width(),ui.graphicsView->height()).boundingRect().height();
     double width = ui.graphicsView->mapToScene(0,0,ui.graphicsView->width(),ui.graphicsView->height()).boundingRect().width();
     int zoom = 0;
-    if((latdiff > height) || (londiff > width))
-    {
-	do{
-	    zoom--;
-	    height = height * 2;
-	    width = width * 2;
-	}while((latdiff > height) || (londiff > width));
-    }
-    else
+    if((latdiff < height) || (londiff < width))
     {
 	do{
 	    zoom++;
@@ -343,6 +342,14 @@ void TEA::centerRoute()
 	    width = width / 2;
 	}while((latdiff < height) || (londiff < width));
 	zoom--;
+    }
+    else
+    {
+	do{
+	    zoom--;
+	    height = height * 2;
+	    width = width * 2;
+	}while((latdiff > height) || (londiff > width));
     }
 
     //center on selected Path
@@ -779,7 +786,7 @@ void TEA::drawRoute(QString auid)
     scene->addItem(pathItem);
     scene->setSceneRect(-PI,-PI,2*PI,2*PI);
     prgBar->reset();
-    centerRoute();
+    centerMapOnSelectedRoute();
 }
 
 void TEA::unloadRoute()

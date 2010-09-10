@@ -23,5 +23,6 @@
         <file>icons/32x32_0320/database_go.png</file>
         <file>icons/32x32_0320/cup_edit.png</file>
         <file>icons/16x16_0320/cup_edit.png</file>
+        <file>icons/32x32_0060/arrow_in.png</file>
     </qresource>
 </RCC>

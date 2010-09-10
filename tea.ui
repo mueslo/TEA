@@ -953,6 +953,10 @@
    </property>
   </action>
   <action name="actionCenter_Route">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/icons/32x32_0060/arrow_in.png</normaloff>:/icons/icons/32x32_0060/arrow_in.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Center Route</string>
    </property>
