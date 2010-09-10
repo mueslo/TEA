@@ -7,7 +7,7 @@
 #include <QtNetwork>
 #include <QProgressBar>
 #include <QtSql>
-#include "pathlist.h"
+#include "activeroutelistitem.h"
 class QFile;
 
 class TEA : public QMainWindow
@@ -17,13 +17,8 @@ class TEA : public QMainWindow
 public:
     TEA(QWidget *parent = 0);
     ~TEA();
-    int getMetadata(QString auid);
 
 public slots:
-    void loadFromFile();
-    void loadFromDatabase();
-    void saveToDatabase();
-    void About();
 
 private slots:
     void downloaded(QNetworkReply* reply);
@@ -47,6 +42,12 @@ private slots:
     void updatePath(QListWidgetItem *Item);
     void editMetadata();
     void centerMapOnSelectedRoute();
+    void saveAllToDatabase();
+    void saveSelectedToDatabase();
+    void loadFromFile();
+    void loadFromDatabase();
+    void saveToDatabase(QList<QListWidgetItem*> chosenItems);
+    void About();
     void showListContextMenu(const QPoint &);
     //void graphicsViewResized();
     //void grphPressed();
@@ -55,6 +56,7 @@ private slots:
 
 private:
     Ui::MainWin ui;
+    int getMetadata(QString auid);
     bool nodeNextSkip(QSqlQuery routeData, int timesToSkip);
     bool maybeExit();
     void drawTrainer(int indexX, int indexY);

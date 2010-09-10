@@ -24,7 +24,7 @@
 #include "qwt_plot.h"
 #include "qwt_data.h"
 #include "qwt_plot_curve.h"
-#include "pathlist.h"
+#include "activeroutelistitem.h"
 
 
 #define PI 3.1415926535897932384626433832795
@@ -300,12 +300,13 @@ void TEA::connectSignalsAndSlots()
 	connect(ui.graphicsView, SIGNAL(wheelZoom(int)), this, SLOT(zoom(int)));
 	connect(ui.btnGeneralSettings, SIGNAL(clicked()), this, SLOT(setGeneralSettings()));
 	connect(ui.databaseViewAction, SIGNAL(triggered()), this, SLOT(actionViewDatabase()));
-	connect(ui.listWidget, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(updatePath(QListWidgetItem*)));
+	connect(ui.lwActiveRoutes, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(updatePath(QListWidgetItem*)));
 	//connect(ui.saveAction, SIGNAL(triggered()), this, SLOT(UpdateADB()) );
-	connect(ui.saveAction, SIGNAL(triggered()), this, SLOT(saveToDatabase()));
+	connect(ui.saveAction, SIGNAL(triggered()), this, SLOT(saveSelectedToDatabase()));
 	connect(ui.actionEdit_metadata, SIGNAL(triggered()), this, SLOT(editMetadata()));
 	connect(ui.actionCenter_Map, SIGNAL(triggered()), this, SLOT(centerMapOnSelectedRoute()));
-	connect(ui.listWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showListContextMenu(const QPoint &)));
+	connect(ui.lwActiveRoutes, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showListContextMenu(const QPoint &)));
+	connect(ui.saveAllAction, SIGNAL(triggered()), this, SLOT(saveAllToDatabase()));
 	//connect(ui.graphicsView, SIGNAL(resizeEvent()), this, SLOT(graphicsViewResized()));
 	//connect(ui.graphicsView, SIGNAL(mousePressed()), this, SLOT(grphPressed()));
 	//ui.tbMain->addAction(QIcon("icons/32x32_0560/map.png"), "Something with maps", this, "mapAction");
@@ -315,7 +316,7 @@ void TEA::connectSignalsAndSlots()
 void TEA::showListContextMenu(const QPoint &pos)
 {
     QMenu *contextMenu = new QMenu;
-    QModelIndex t = ui.listWidget->indexAt(pos);
+    QModelIndex t = ui.lwActiveRoutes->indexAt(pos);
     contextMenu->addAction(ui.saveAction);
     contextMenu->addAction(ui.actionCenter_Map);
     contextMenu->addAction(ui.actionEdit_metadata);
@@ -324,27 +325,27 @@ void TEA::showListContextMenu(const QPoint &pos)
     contextMenu->addAction(ui.actionClose_route);
     contextMenu->addAction(ui.actionDelete_route_from_database);
 
-    //ui.listWidgetResult->item(t.row())->setSelected(true); //select despite right click
+    //ui.lwActiveRoutesResult->item(t.row())->setSelected(true); //select despite right click
 
-    contextMenu->exec(ui.listWidget->mapToGlobal(pos));
+    contextMenu->exec(ui.lwActiveRoutes->mapToGlobal(pos));
 
 }
 
 void TEA::updatePath(QListWidgetItem *Item)
 {
-    PathList *Entry = dynamic_cast<PathList *>(Item);
+    ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(Item);
     Entry->getPath()->setVisible( Entry->checkState() == Qt::Checked );
 }
 
 void TEA::centerMapOnSelectedRoute()
 {   //TODO redundanz entfernen, siehe editMetadata (extra funkt.?)
-    if( ui.listWidget->selectedItems().size() == 0 )
+    if( ui.lwActiveRoutes->selectedItems().size() == 0 )
     {
 	ui.textInformation->append(QString("No Item selected."));
 	return;
     }
-    QListWidgetItem *Item = ui.listWidget->selectedItems().first();
-    PathList *Entry = dynamic_cast<PathList *>(Item);
+    QListWidgetItem *Item = ui.lwActiveRoutes->selectedItems().first();
+    ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(Item);
 
     QSqlQuery adbquery(QSqlDatabase::database("adb"));
     adbquery.exec(qPrintable("Select * FROM active_metadata WHERE auid="+QString::number(Entry->getAuid())));
@@ -381,13 +382,13 @@ void TEA::centerMapOnSelectedRoute()
 
 void TEA::editMetadata()
 {
-    if( ui.listWidget->selectedItems().size() == 0 )
+    if( ui.lwActiveRoutes->selectedItems().size() == 0 )
     {
 	ui.textInformation->append(QString("No route selected."));
 	return;
     }
-    QListWidgetItem *Item = ui.listWidget->selectedItems().first();
-    PathList *Entry = dynamic_cast<PathList *>(Item);
+    QListWidgetItem *Item = ui.lwActiveRoutes->selectedItems().first();
+    ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(Item);
     MetadataDialog d(QString::number(Entry->getAuid()), 1);
     d.exec();
 
@@ -406,7 +407,7 @@ d.exec();
 
 void TEA::updateADB()
 {
-    PathList *Entry = dynamic_cast<PathList *>(ui.listWidget->currentItem());
+    ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(ui.lwActiveRoutes->currentItem());
     if( Entry == 0 ) return;	//return if no Item is selected
 
     QString Name = Entry->text();
@@ -709,16 +710,23 @@ int TEA::getMetadata(QString auid)
 	return d.exec();
 }
 
-void TEA::saveToDatabase()
+void TEA::saveSelectedToDatabase()
 {
     //get selection
-    QList<QListWidgetItem*> selectedItems = ui.listWidget->selectedItems();
+    QList<QListWidgetItem*> selectedItems = ui.lwActiveRoutes->selectedItems();
+    //run saveToDatabase method
+    saveToDatabase(selectedItems);
+}
+
+void TEA::saveToDatabase(QList<QListWidgetItem*> chosenItems)
+{
+
 qDebug("saveToDatabase() 1");
-    for (int i=0; i<selectedItems.count(); i++)
+    for (int i=0; i<chosenItems.count(); i++)
     {
-	//get pathlist
+	//get ActiveRouteListItem
 	qDebug("saveToDatabase() 2");
-	PathList *Entry = dynamic_cast<PathList *>(selectedItems.at(i));
+	ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(chosenItems.at(i));
 	qDebug("saveToDatabase() 3");
 
 	//save all changes from adb to rdb
@@ -728,6 +736,12 @@ qDebug("saveToDatabase() 1");
     }
 
 	drawTrainer(ui.cboxX->currentIndex(),ui.cboxY->currentIndex());
+}
+
+void TEA::saveAllToDatabase()
+{
+    QList<QListWidgetItem*> allItems = ui.lwActiveRoutes->findItems("", Qt::MatchContains);
+    saveToDatabase(allItems);
 }
 
 void TEA::loadFromDatabase()
@@ -743,14 +757,14 @@ void TEA::drawRoute(QString auid)
     QSqlQuery routeData = getRouteData(auid, "adb");
     QSqlRecord metadata = getRouteMetadata(auid, "adb");
 
-    PathList *Entry = new PathList(metadata.value(6).toString(), auid.toInt());
+    ActiveRouteListItem *Entry = new ActiveRouteListItem(metadata.value(6).toString(), auid.toInt());
 
     //TODO: check if item is already present in ItemView (+Path)
-    if( ui.listWidget->currentIndex().row() != auid.toInt() )
+    if( ui.lwActiveRoutes->currentIndex().row() != auid.toInt() )
     {
 	Entry->setAuid( auid.toInt() );
-	ui.listWidget->insertItem(auid.toInt(), Entry );
-	ui.listWidget->setCurrentItem(Entry);
+	ui.lwActiveRoutes->insertItem(auid.toInt(), Entry );
+	ui.lwActiveRoutes->setCurrentItem(Entry);
     }
     else    //this case should not occour theoretically, but just to be sure.
     {
@@ -770,7 +784,7 @@ void TEA::drawRoute(QString auid)
 
 
 
-    //ui.listWidget->addItem(QString::number(auid.toInt()+1)+" - "+metadata.value(6).toString());
+    //ui.lwActiveRoutes->addItem(QString::number(auid.toInt()+1)+" - "+metadata.value(6).toString());
 
     int nodeSkips = metadata.value(20).toInt()/2500+1;
     QPainterPath path;
@@ -839,7 +853,7 @@ void TEA::removeRoute()
 
 void TEA::drawRoutes(QSqlQuery auidQuery)
 {
-	ui.listWidget->clear();
+	ui.lwActiveRoutes->clear();
 	while (auidQuery.next())
 	{
 		drawRoute(auidQuery.record().value(0).toString());

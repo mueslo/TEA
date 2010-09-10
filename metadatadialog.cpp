@@ -181,7 +181,7 @@ void MetadataDialog::save()
 	setRouteID(mpAuid, ui.edtID->text());
 	setRouteLocation(mpAuid, ui.edtLocation->text());
 	setRouteTags(mpAuid, ui.edtTags->document()->toPlainText());
-	//todo: set update variable in pathlistitem to true;
+	//todo: set update variable in pathlistitem(ActiveRouteItem) to true;
 	//Ask to remove DB entry from adb
 	//close dialog
 	MetadataDialog::accept();

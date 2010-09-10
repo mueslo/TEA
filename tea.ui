@@ -539,7 +539,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QListWidget" name="listWidget">
+      <widget class="QListWidget" name="lwActiveRoutes">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
          <horstretch>0</horstretch>

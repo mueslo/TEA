@@ -1,5 +1,5 @@
-#ifndef PATHLIST_H
-#define PATHLIST_H
+#ifndef ACTIVEROUTELISTITEM_H
+#define ACTIVEROUTELISTITEM_H
 
 #include <QListWidgetItem>
 #include <QGraphicsPathItem>
@@ -8,17 +8,17 @@
 #include <QtGui>
 
 
-class PathList : public QObject, public QListWidgetItem
+class ActiveRouteListItem : public QObject, public QListWidgetItem
 {
     Q_OBJECT
 
 public:
-    PathList(const QString &text, int row);
+    ActiveRouteListItem(const QString &text, int row);
     QGraphicsPathItem* getPath();
     int getAuid();
     void setPath( QGraphicsPathItem *Path);
     void setAuid(int Auid);
-    ~PathList();
+    ~ActiveRouteListItem();
 private:
     //Ui::MainWin ui;
     QGraphicsPathItem *path;	//Pointer to PathItem in Memory (which is a child of QGraphicsView)
@@ -27,4 +27,4 @@ private:
 
 };
 
-#endif // PATHLIST_H
+#endif // ACTIVEROUTELISTITEM_H

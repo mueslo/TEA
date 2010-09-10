@@ -1,7 +1,7 @@
-#include "pathlist.h"
+#include "activeroutelistitem.h"
 #include "ui_tea.h"
 
-PathList::PathList(const QString &text, int row) : QListWidgetItem(text)
+ActiveRouteListItem::ActiveRouteListItem(const QString &text, int row) : QListWidgetItem(text)
 {
    /* QListWidgetItem NewItem = new QListWidgetItem(text);
     NewItem->setCheckState(Qt::Checked);
@@ -12,27 +12,27 @@ PathList::PathList(const QString &text, int row) : QListWidgetItem(text)
     this->setFlags( Qt::ItemIsEditable | this->flags() );
 }
 
-PathList::~PathList()
+ActiveRouteListItem::~ActiveRouteListItem()
 {
     ;
 }
 
-QGraphicsPathItem* PathList::getPath()
+QGraphicsPathItem* ActiveRouteListItem::getPath()
 {
     return path;
 }
 
-int PathList::getAuid()
+int ActiveRouteListItem::getAuid()
 {
     return auid;
 }
 
-void PathList::setPath( QGraphicsPathItem *Path)
+void ActiveRouteListItem::setPath( QGraphicsPathItem *Path)
 {
    path = Path;
 }
 
-void PathList::setAuid(int Auid)
+void ActiveRouteListItem::setAuid(int Auid)
 {
     auid = Auid;
 }
