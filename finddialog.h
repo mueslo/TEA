@@ -16,13 +16,14 @@ public:
     ~FindDialog();
 
 private slots:
-	void load();
-	void query();
-	void queryAll();
-	void close();
-	void updateOperators(int index);
-	void showListContextMenu(const QPoint &);
-	void enableLoadButton();
+    void load();
+    void query();
+    void queryAll();
+    void close();
+    void updateOperators(int index);
+    void showListContextMenu(const QPoint &);
+    void enableLoadButton();
+    void editMetadata();
 
 private:
     Ui::FindDialogClass ui;

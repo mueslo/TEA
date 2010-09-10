@@ -5,6 +5,8 @@
 #include <QMenu>
 #include <QModelIndex>
 #include <QTableView>
+#include "activeroutelistitem.h"
+#include "metadatadialog.h"
 
 FindDialog::FindDialog(QWidget *parent)
     : QDialog(parent)
@@ -46,6 +48,7 @@ void FindDialog::connectSignalsAndSlots()
 	connect(ui.btnLoad, SIGNAL(clicked()), this, SLOT(load()));
 	connect(ui.qyClear, SIGNAL(clicked()), this, SLOT(queryAll()));
 	connect(ui.btnCancel, SIGNAL(clicked()), this, SLOT(close()));
+	connect(ui.btnEdtMet, SIGNAL(clicked()), this, SLOT(editMetadata()));
 	connect(ui.lwResult, SIGNAL(itemSelectionChanged()), this, SLOT(enableLoadButton()));
 	connect(ui.lwResult, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(load()));
 	connect(ui.cboxType, SIGNAL(currentIndexChanged(int)), this, SLOT(updateOperators(int)));
@@ -204,7 +207,6 @@ void FindDialog::load()
 	{
 		if (!rrouteLoadedInADB(itemSelection.at(i)->data(Qt::UserRole).toString()) && !itemSelection.isEmpty())
 		{
-		    qDebug("Lade Route mit UID: "+itemSelection.at(i)->data(Qt::UserRole).toString());
 		    loadRoute(itemSelection.at(i)->data(Qt::UserRole).toString());
 		} else exception = true;
 	}
@@ -246,4 +248,34 @@ void FindDialog::fillComboBoxes()
 void FindDialog::enableLoadButton()
 {
     ui.btnLoad->setEnabled(ui.lwResult->selectedItems().size() != 0);
+}
+
+void FindDialog::editMetadata()
+{
+    //get selected item
+    if( ui.lwResult->selectedItems().size() == 0 )
+    {
+	qDebug("Nothing selected");
+	return;
+    }
+    //load to adb, get its auid
+    QListWidgetItem *Item = ui.lwResult->selectedItems().first();
+    if(rrouteLoadedInADB(Item->data(Qt::UserRole).toString()))
+    {
+	QMessageBox::warning(this, "Error",
+			"You have already loaded this Route.\n"
+			"Please edit its metadata in the main window.", QMessageBox::Ok);
+	return;
+
+    }
+    //ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(Item);
+    QString auid = loadRoute(Item->data(Qt::UserRole).toString());
+    //send auid to metadatadialog
+    MetadataDialog d(auid, 1);
+    d.exec();
+    saveRoute(auid);
+    deleteRoute(auid, "adb");
+    metadata = getAllMetadata("rdb");
+    displayResult();
+    //store route in rdb und delete from adb
 }

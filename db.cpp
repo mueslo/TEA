@@ -475,7 +475,7 @@ QSqlQuery getRouteData(QString uid, QString database)
 	return dbquery;
 }
 
-void loadRoute(QString uid)
+QString loadRoute(QString uid)
 {
 	qDebug("Loading route");
 	QString next_auid;
@@ -531,10 +531,11 @@ void loadRoute(QString uid)
 	adbquery.exec(qPrintable("INSERT INTO active_metadata VALUES("+values+")"));
 
 
-	if (!adbquery.isActive())
+	if (!adbquery.isActive()) {
 		QMessageBox::warning(0, "aDatabase Error16",
 				 adbquery.lastError().text());
-		adbquery.finish();
+		adbquery.finish(); }
+	return next_auid;
 
 }
 

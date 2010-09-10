@@ -55,7 +55,7 @@ void generateMetadataFromRoute(QString auid);
 QString importRoute(QString TEAFilePath);
 QSqlRecord getRouteMetadata(QString uid, QString database);
 QSqlQuery getRouteData(QString uid, QString database);
-void loadRoute(QString uid);
+QString loadRoute(QString uid);
 //Returns now the UID under which the route was stored in rdb
 QString saveRoute(QString auid);
 void deleteRoute(QString uid, QString database);
