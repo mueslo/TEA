@@ -73,8 +73,8 @@ bool prepareActiveRoutesDB()
 						"next_auid integer,"
 						"empty integer,"
 						"changes integer)");
-		adbquery.exec(	"INSERT INTO settings(next_auid)"
-						"VALUES (0)");
+		adbquery.exec( "SELECT * FROM settings" );
+		if(adbquery.first() == 0) adbquery.exec("INSERT INTO settings(next_uid) VALUES (0)");
 		qDebug("adb success");
 			return true;
 	} else return false;

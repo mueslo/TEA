@@ -772,6 +772,7 @@ void TEA::drawRoute(QString auid)
     if( ui.lwActiveRoutes->currentIndex().row() != auid.toInt() )
     {
 	Entry->setAuid( auid.toInt() );
+	ui.lwActiveRoutes->selectionModel()->clearSelection();
 	ui.lwActiveRoutes->insertItem(auid.toInt(), Entry );
 	ui.lwActiveRoutes->setCurrentItem(Entry);
     }
@@ -862,10 +863,16 @@ void TEA::removeRoute()
 
 void TEA::drawRoutes(QSqlQuery auidQuery)
 {
-	ui.lwActiveRoutes->clear();
+	//ui.lwActiveRoutes->clear();
 	while (auidQuery.next())
 	{
-		drawRoute(auidQuery.record().value(0).toString());
+	    bool present=false;
+	    for(int i=0; i<ui.lwActiveRoutes->count(); i++)
+	    {
+		ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(ui.lwActiveRoutes->item(i));
+		if(Entry->getAuid() == auidQuery.record().value(0)) present=true;
+	    }
+	    if(!present) drawRoute(auidQuery.record().value(0).toString());
 	}
 }
 
@@ -878,7 +885,7 @@ void TEA::closeEvent(QCloseEvent *event)
 
 bool TEA::maybeExit()
 {
-    //todo: check if there are realy unsaved changes
+    //todo: check if there are really unsaved changes
     QMessageBox::StandardButton
 	    ret = QMessageBox::warning(this, tr("TEA exit dialog"),
 				       tr("There may be unsaved changes!"),

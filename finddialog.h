@@ -22,12 +22,12 @@ private slots:
 	void close();
 	void updateOperators(int index);
 	void showListContextMenu(const QPoint &);
+	void enableLoadButton();
 
 private:
     Ui::FindDialogClass ui;
     void connectSignalsAndSlots();
     void fillComboBoxes();
-
     void displayResult();
     QSqlQuery metadata;
 };

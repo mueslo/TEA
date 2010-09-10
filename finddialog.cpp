@@ -42,10 +42,12 @@ void FindDialog::displayResult()
 
 void FindDialog::connectSignalsAndSlots()
 {
-	connect(ui.bboxQuery, SIGNAL(accepted()), this, SLOT(query()));
-	connect(ui.bboxChoice, SIGNAL(accepted()), this, SLOT(load()));
-	connect(ui.bboxQuery, SIGNAL(rejected()), this, SLOT(queryAll()));
-	connect(ui.bboxChoice, SIGNAL(rejected()), this, SLOT(close()));
+	connect(ui.qyApply, SIGNAL(clicked()), this, SLOT(query()));
+	connect(ui.btnLoad, SIGNAL(clicked()), this, SLOT(load()));
+	connect(ui.qyClear, SIGNAL(clicked()), this, SLOT(queryAll()));
+	connect(ui.btnCancel, SIGNAL(clicked()), this, SLOT(close()));
+	connect(ui.lwResult, SIGNAL(itemSelectionChanged()), this, SLOT(enableLoadButton()));
+	connect(ui.lwResult, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(load()));
 	connect(ui.cboxType, SIGNAL(currentIndexChanged(int)), this, SLOT(updateOperators(int)));
 	connect(ui.lwResult, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showListContextMenu(const QPoint &)));
 }
@@ -202,8 +204,8 @@ void FindDialog::load()
 	{
 		if (!rrouteLoadedInADB(itemSelection.at(i)->data(Qt::UserRole).toString()) && !itemSelection.isEmpty())
 		{
-			cout << "loading a route" << endl; //todo rm
-			loadRoute(itemSelection.at(i)->data(Qt::UserRole).toString());
+		    qDebug("Lade Route mit UID: "+itemSelection.at(i)->data(Qt::UserRole).toString());
+		    loadRoute(itemSelection.at(i)->data(Qt::UserRole).toString());
 		} else exception = true;
 	}
 
@@ -239,4 +241,9 @@ void FindDialog::fillComboBoxes()
 	ui.cboxType->addItem("Mean altitude (in m)");
 	ui.cboxType->addItem("Mean velocity (in km/h)");
 	ui.cboxType->addItem("Route near to Route (in UID)");
+}
+
+void FindDialog::enableLoadButton()
+{
+    ui.btnLoad->setEnabled(ui.lwResult->selectedItems().size() != 0);
 }
