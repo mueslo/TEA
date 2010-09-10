@@ -11,7 +11,7 @@ MetadataDialog::MetadataDialog(QString auid, int type, QWidget *parent)
     : QDialog(parent)
 {
 	ui.setupUi(this);
-	if(type==1) ui.OKButton->setText(tr("&Update"));
+	if(type==1) ui.OKButton->setText(tr("&Apply"));
 	connectSignalsAndSlots();
 	mpAuid = auid;
 	fillKnownMetadata();
@@ -63,31 +63,31 @@ void MetadataDialog::fillKnownMetadata()
 void MetadataDialog::renderRoute()
 {
     /*
-        QPainterPath path;
+	QPainterPath path;
 	QSqlQuery routeData = getRouteData(mpAuid, "adb");
 	QSqlRecord metadata = getRouteMetadata(mpAuid, "adb");
 	mvpScene = new QGraphicsScene;
 	int nodeSkips = metadata.value(20).toInt()/2500+1;
 	ui.graphRoute->setScene(mvpScene);
 
-        ui.graphRoute->setSceneRect(metadata.value(16).toInt(),
-                                    metadata.value(14).toInt(),
-                                    metadata.value(15).toInt()-metadata.value(16).toInt(),
-                                    metadata.value(13).toInt()-metadata.value(14).toInt());
-        //ui.graphRoute->fitInView(ui.graphRoute->sceneRect(),Qt::KeepAspectRatioByExpanding);
+	ui.graphRoute->setSceneRect(metadata.value(16).toInt(),
+				    metadata.value(14).toInt(),
+				    metadata.value(15).toInt()-metadata.value(16).toInt(),
+				    metadata.value(13).toInt()-metadata.value(14).toInt());
+	//ui.graphRoute->fitInView(ui.graphRoute->sceneRect(),Qt::KeepAspectRatioByExpanding);
 	ui.graphRoute->show();
 	routeData.first();
 	path.moveTo(getXFromLon(routeData.value(5).toString()), getYFromLat(routeData.value(4).toString()));
-        int x,y;
+	int x,y;
 	while (nodeNextSkip(routeData,nodeSkips))
 	{
-                qApp->processEvents();
+		qApp->processEvents();
 		x=getXFromLon(routeData.value(5).toString());
 		y=getYFromLat(routeData.value(4).toString());
 		if (nodeNextSkip(routeData,nodeSkips)) path.quadTo(x,y,getXFromLon(routeData.value(5).toString()),getYFromLat(routeData.value(4).toString()));
 	}
 	mvpScene->addPath(path, QPen(Qt::black), QBrush(Qt::transparent));
-        */
+	*/
     mvpScene = new QGraphicsScene;
     ui.graphRoute->setScene(mvpScene);
 
@@ -131,15 +131,15 @@ qDebug(QString::number(__LINE__));
 
     /*
     path.moveTo(getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())),
-                            getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())));
+			    getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())));
 
     double x,y;
     while (nodeNextSkip(routeData,nodeSkips))
     {
-            qApp->processEvents();
-            x=getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString()));
-            y=getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()));
-            if (nodeNextSkip(routeData,nodeSkips)) path.quadTo(x,y,getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())),getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())));
+	    qApp->processEvents();
+	    x=getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString()));
+	    y=getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()));
+	    if (nodeNextSkip(routeData,nodeSkips)) path.quadTo(x,y,getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())),getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())));
     }
     */
     QGraphicsPathItem *pathItem = new QGraphicsPathItem;

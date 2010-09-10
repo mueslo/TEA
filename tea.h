@@ -47,6 +47,7 @@ private slots:
     void updatePath(QListWidgetItem *Item);
     void editMetadata();
     void centerMapOnSelectedRoute();
+    void showListContextMenu(const QPoint &);
     //void graphicsViewResized();
     //void grphPressed();
     //void grphReleased();

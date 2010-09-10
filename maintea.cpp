@@ -266,7 +266,7 @@ void TEA::createToolBar()
 	ui.tbMain->addAction(ui.saveAllAction);
 	ui.tbMain->addSeparator();
 	ui.tbMain->addAction(ui.actionEdit_metadata);
-	ui.tbMain->addAction(ui.actionCenter_Route);
+	ui.tbMain->addAction(ui.actionCenter_Map);
 }
 
 void TEA::rotateClockwise()
@@ -303,10 +303,30 @@ void TEA::connectSignalsAndSlots()
 	connect(ui.listWidget, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(updatePath(QListWidgetItem*)));
 	connect(ui.saveAction, SIGNAL(triggered()), this, SLOT(UpdateAdb()) );
 	connect(ui.actionEdit_metadata, SIGNAL(triggered()), this, SLOT(editMetadata()));
-	connect(ui.actionCenter_Route, SIGNAL(triggered()), this, SLOT(centerMapOnSelectedRoute()));
+	connect(ui.actionCenter_Map, SIGNAL(triggered()), this, SLOT(centerMapOnSelectedRoute()));
+	connect(ui.listWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showListContextMenu(const QPoint &)));
 	//connect(ui.graphicsView, SIGNAL(resizeEvent()), this, SLOT(graphicsViewResized()));
 	//connect(ui.graphicsView, SIGNAL(mousePressed()), this, SLOT(grphPressed()));
 	//ui.tbMain->addAction(QIcon("icons/32x32_0560/map.png"), "Something with maps", this, "mapAction");
+}
+
+
+void TEA::showListContextMenu(const QPoint &pos)
+{
+    QMenu *contextMenu = new QMenu;
+    QModelIndex t = ui.listWidget->indexAt(pos);
+    contextMenu->addAction(ui.saveAction);
+    contextMenu->addAction(ui.actionCenter_Map);
+    contextMenu->addAction(ui.actionEdit_metadata);
+    contextMenu->addAction(ui.actionExport_as_tea);
+    contextMenu->addSeparator();
+    contextMenu->addAction(ui.actionClose_route);
+    contextMenu->addAction(ui.actionDelete_route_from_database);
+
+    //ui.listWidgetResult->item(t.row())->setSelected(true); //select despite right click
+
+    contextMenu->exec(ui.listWidget->mapToGlobal(pos));
+
 }
 
 void TEA::updatePath(QListWidgetItem *Item)

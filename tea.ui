@@ -353,7 +353,7 @@
     <addaction name="kmlExportAction"/>
     <addaction name="actionExport_as_tea"/>
     <addaction name="separator"/>
-    <addaction name="actionCenter_Route"/>
+    <addaction name="actionCenter_Map"/>
     <addaction name="actionEdit_metadata"/>
     <addaction name="separator"/>
     <addaction name="actionClose_route"/>
@@ -545,6 +545,9 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="contextMenuPolicy">
+        <enum>Qt::CustomContextMenu</enum>
        </property>
        <property name="dragEnabled">
         <bool>true</bool>
@@ -952,13 +955,13 @@
     <string>D</string>
    </property>
   </action>
-  <action name="actionCenter_Route">
+  <action name="actionCenter_Map">
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/icons/icons/32x32_0060/arrow_in.png</normaloff>:/icons/icons/32x32_0060/arrow_in.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Center Route</string>
+    <string>&amp;Centre Map On Selected Route</string>
    </property>
   </action>
  </widget>
