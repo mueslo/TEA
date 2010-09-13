@@ -53,6 +53,7 @@ void FindDialog::connectSignalsAndSlots()
 	connect(ui.lwResult, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(load()));
 	connect(ui.cboxType, SIGNAL(currentIndexChanged(int)), this, SLOT(updateOperators(int)));
 	connect(ui.lwResult, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showListContextMenu(const QPoint &)));
+	connect(ui.edtValue, SIGNAL(textChanged(QString)), this, SLOT(enableQueryButton(QString)));
 }
 
 void FindDialog::showListContextMenu(const QPoint &pos)
@@ -248,6 +249,11 @@ void FindDialog::fillComboBoxes()
 void FindDialog::enableLoadButton()
 {
     ui.btnLoad->setEnabled(ui.lwResult->selectedItems().size() != 0);
+}
+
+void FindDialog::enableQueryButton(const QString &text)
+{
+    ui.qyApply->setEnabled(!text.isEmpty());
 }
 
 void FindDialog::editMetadata()

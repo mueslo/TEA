@@ -84,6 +84,9 @@
         </item>
         <item>
          <widget class="QPushButton" name="qyApply">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="text">
            <string>&amp;Apply Filter</string>
           </property>

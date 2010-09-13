@@ -23,6 +23,7 @@ private slots:
     void updateOperators(int index);
     void showListContextMenu(const QPoint &);
     void enableLoadButton();
+    void enableQueryButton(const QString &text);
     void editMetadata();
 
 private:

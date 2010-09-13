@@ -192,7 +192,6 @@ void TEA::getTile(int tileX, int tileY, int zoomLevel)
 	//if ((QString::fromAscii(tile)!="0") ) placeTile(tile, tileX, tileY, zoomLevel);
 	if (QString::fromAscii(tile)!="0"){
 	    placeTile(tile, tileX, tileY, zoomLevel);
-	    qDebug("Tile from DB");
 	}
 	else if(ui.sldZoom->value() == zoomLevel)
 	{
@@ -348,12 +347,19 @@ void TEA::centerMapOnSelectedRoute()
     QListWidgetItem *Item = ui.lwActiveRoutes->selectedItems().first();
     ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(Item);
 
-    QSqlQuery adbquery(QSqlDatabase::database("adb"));
-    adbquery.exec(qPrintable("Select * FROM active_metadata WHERE auid="+QString::number(Entry->getAuid())));
-    adbquery.first();
+    //if the item has no path ->abort
+    if(Entry->getPath() == 0)
+    {
+	ui.textInformation->append("This Item has got no Path");
+	return;
+    }
 
-    double latdiff = fabs(adbquery.record().value(13).asDouble() - adbquery.record().value(14).asDouble())/(PI*10000000);
-    double londiff = fabs(adbquery.record().value(15).asDouble() - adbquery.record().value(16).asDouble())/(PI*10000000);
+    QSqlRecord adbrecord=getRouteMetadata(QString::number(Entry->getAuid()),"adb");//QSqlDatabase::database("adb"));
+   // adbquery.exec(qPrintable("Select * FROM active_metadata WHERE auid="+QString::number(Entry->getAuid())));
+   // adbquery.first();
+
+    double latdiff = fabs(adbrecord.value(13).asDouble() - adbrecord.value(14).asDouble())/(PI*10000000);
+    double londiff = fabs(adbrecord.value(15).asDouble() - adbrecord.value(16).asDouble())/(PI*10000000);
     double height = ui.graphicsView->mapToScene(0,0,ui.graphicsView->width(),ui.graphicsView->height()).boundingRect().height();
     double width = ui.graphicsView->mapToScene(0,0,ui.graphicsView->width(),ui.graphicsView->height()).boundingRect().width();
     int zoom = 0;
@@ -379,6 +385,7 @@ void TEA::centerMapOnSelectedRoute()
     ui.graphicsView->centerOn(dynamic_cast<QGraphicsItem *>(Entry->getPath()));
     //zoom and load tiles
     ui.sldZoom->setValue(zoom+zoomOld);
+    if(zoom==0)TEA::getTilesInRange();
 }
 
 void TEA::editMetadata()
@@ -393,12 +400,10 @@ void TEA::editMetadata()
     MetadataDialog d(QString::number(Entry->getAuid()), 1);
     d.exec();
 
-    QSqlQuery adbquery(QSqlDatabase::database("adb"));
-    adbquery.exec(qPrintable("Select * FROM active_metadata WHERE auid="+QString::number(Entry->getAuid())));
-    adbquery.first();
-    Entry->setText(adbquery.record().value(6).toString());
+    QSqlRecord adbrecord=getRouteMetadata(QString::number(Entry->getAuid()),"adb");
+    Entry->setText(adbrecord.value(6).toString());
     Entry->setModified();
-    adbquery.finish();
+    //adbquery.finish();
 }
 
 void TEA::actionViewDatabase()
@@ -764,7 +769,7 @@ void TEA::loadFromDatabase()
 	drawTrainer(ui.cboxX->currentIndex(),ui.cboxY->currentIndex());
 }
 
-void TEA::drawRoute(QString auid)
+void TEA::drawRoute(QString auid, bool asterisk)
 {
     QSqlQuery routeData = getRouteData(auid, "adb");
     QSqlRecord metadata = getRouteMetadata(auid, "adb");
@@ -852,7 +857,7 @@ void TEA::drawRoute(QString auid)
     scene->setSceneRect(-PI,-PI,2*PI,2*PI);
     prgBar->reset();
     centerMapOnSelectedRoute();
-    Entry->setModified();
+    if(asterisk)Entry->setModified();
 }
 
 void TEA::unloadRoute()
@@ -876,7 +881,7 @@ void TEA::drawRoutes(QSqlQuery auidQuery)
 		ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(ui.lwActiveRoutes->item(i));
 		if(Entry->getAuid() == auidQuery.record().value(0)) present=true;
 	    }
-	    if(!present) drawRoute(auidQuery.record().value(0).toString());
+	    if(!present) drawRoute(auidQuery.record().value(0).toString(), false);
 	}
 }
 

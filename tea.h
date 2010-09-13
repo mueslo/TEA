@@ -67,7 +67,7 @@ private:
     void connectSignalsAndSlots();
     void rerenderRoute();
     void drawRoutes(QSqlQuery auidQuery);
-    void drawRoute(QString auid);
+    void drawRoute(QString auid, bool asterisk = true);
     void placeTile(QByteArray tile, int tileX, int tileY, int zoomLevel);
     void createToolBar();
     int zoomOld;

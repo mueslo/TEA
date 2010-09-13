@@ -1,7 +1,39 @@
 GOALS FOR VERSION 0.1
 ------------------------------------------------------------------------------------------
--Map DB
+-Map DB:
+	-basically working since revision 40
+	-working with different map-sources since rev44
+	-add more tables to the database to determine how often tiles are used to sort unused ones out, limit maximum size of maps.db: infinite(? or e.g. 500MiB) size of maps.db while the program is running, certain size on exit. (maybe one permanent database maps.db + activemaps database in memory? -> this would decrease the program shutdown time)
+	-add options to specify how large the certains databases are allowed to get.
+
 -TreeView interface to display loaded routes + context menu
--Separate menu page
--MetadataDialog no longer used for editing metadata, only for importing (->ImportDialog)
--Metadata displayed in place of current settings (on the very right)
+	-context menu exists since rev41
+	-TreeView with some status information tabs, e.g. has Path, litte statistics, whatever...
+
+-Separate menu page (more information please)
+
+-MetadataDialog no longer used for editing metadata, only for importing (->ImportDialog) -> falki
+
+-Metadata displayed in place of current settings (on the very right) -> falki
+-functions to change active routes / displayed paths, e.g. show all, show none, invert selection, show all in view, etc. maybe we can put this underneath the listview (with some nice litte buttons or so)
+
+-add an option to change the PathSkipFactor (atm:2500) both for: actual path + path preview in MetadataDialog.
+	-maybe the user just enters the number of maximum nodes --> nodeNextSkip functions needs an update:
+		-it should be posibble to to use e.g. for rows of data before one is skipped. atm: one row is used and i>=0 rows are skipped. So an path with originally 2499 noded is rendered with 2499, but a path with orignially 2500 is only rendered with 1250.
+	-create a function to create a path with a desired amount of nodes which returns a pointer to the path and also takes care of the progressBar. Atm.: redundant code exists in various functions (metadata, maintea)
+
+-add an option in the finddialog to delete routes
+	-maybe replace its listWidget with a TreeView as well
+	-detect if a route has been already loaded (code therefore exists in edit metadata of finddialog.cpp -> move this part into a new function) and grey it out so the user can not select it.
+
+-add an option in de listView to revert the metadata, etc. of an adb-route to its rdb-state (if existent) - maybe add a flag to the items whether they where loaded from the database or not
+
+-(this does not needs to be in 0.1) add a function to save the selected route as a picture file
+
+-enable a kind of *batch import*
+
+-combine getRouteMetadata() and getAllMetadata() into 1 function, if uid is specified, go for Route, if not, go for All. e.g. if(uid) QString ext=" Where uid="+uid; query("querytext"+ext); should work pretty well.
+-various:
+	-there are some *.tea files with invalid coordinates, etc. which results in an unwanted behaviour of the program, these bugs also needs to be fixed (I will upload the files if needed)
+	-we should not forget the trainerView
+	-maybe we move some properties to a special options menu, just leaving the most important ones in the DockPanel

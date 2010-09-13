@@ -73,8 +73,9 @@ bool prepareActiveRoutesDB()
 						"next_auid integer,"
 						"empty integer,"
 						"changes integer)");
-		adbquery.exec( "SELECT * FROM settings" );
-		if(adbquery.first() == 0) adbquery.exec("INSERT INTO settings(next_uid) VALUES (0)");
+		//adbquery.exec( "SELECT * FROM settings" );
+		/*if(adbquery.first() == 0)*/ adbquery.exec("INSERT INTO settings(next_auid) VALUES (0)");
+					      adbquery.finish();
 		qDebug("adb success");
 			return true;
 	} else return false;
@@ -251,9 +252,11 @@ bool routePresentInDBs(QString checksum)
 
 QSqlQuery getAllMetadata(QString database)
 {
-	QSqlQuery rdbquery(QSqlDatabase::database(database));
-	rdbquery.exec("SELECT * FROM metadata");
-	return rdbquery;
+	QSqlQuery dbquery(QSqlDatabase::database(database));
+	if (database=="adb")
+	    dbquery.exec("SELECT * FROM active_metadata");
+	else if (database=="rdb") dbquery.exec("SELECT * FROM metadata");
+	return dbquery;
 }
 
 void generateMetadataFromRoute(QString auid)
@@ -733,9 +736,6 @@ void addTileToDB(int zoomLevel, int tileX, int tileY, QByteArray tile, QString m
 {
     QString tileString = tile.toBase64();
     QSqlQuery mdbquery(QSqlDatabase::database("mdb"));
-    qDebug("Zoom: "+QString::number(zoomLevel)+ " - tilex: "+QString::number(tileX));
-    tileString.append("\"");
-    tileString.prepend("\"");
     mdbquery.exec(qPrintable(	"SELECT * FROM zoom"+QString::number(zoomLevel)+
 				" WHERE xtile="+QString::number(tileX)+
 				" AND ytile="+QString::number(tileY)+
@@ -745,7 +745,7 @@ void addTileToDB(int zoomLevel, int tileX, int tileY, QByteArray tile, QString m
 	mdbquery.exec(qPrintable(	"INSERT INTO zoom"+QString::number(zoomLevel)+" VALUES("
 					+QString::number(tileX)+","
 					+QString::number(tileY)+","
-					+tileString+","
+					+tileString.append("\"").prepend("\"")+","
 					+mapsource+")"));
     }
     mdbquery.finish();
@@ -753,7 +753,6 @@ void addTileToDB(int zoomLevel, int tileX, int tileY, QByteArray tile, QString m
 
 QByteArray getTileFromDB(int zoomLevel, int tileX, int tileY, QString mapsource)
 {
-    qDebug("Loading tile "+QString::number(tileX)+","+QString::number(tileY)+","+QString::number(zoomLevel));
 	QSqlQuery mdbquery(QSqlDatabase::database("mdb"));
 	mdbquery.exec(qPrintable(	"SELECT * FROM zoom"+QString::number(zoomLevel)+
 								" WHERE xtile="+QString::number(tileX)+
