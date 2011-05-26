@@ -498,7 +498,7 @@ QString loadRoute(QString uid)
 	//get next_auid and update
 	adbquery.exec("SELECT max(next_auid) FROM settings");
 	adbquery.first();
-	next_auid=rdbquery.record().value(0).toString();
+	next_auid=adbquery.record().value(0).toString();
 	adbquery.exec(qPrintable(	"UPDATE settings SET next_auid="+
 								QString::number(next_auid.toInt()+1)+
 								" WHERE next_auid="+next_auid));
