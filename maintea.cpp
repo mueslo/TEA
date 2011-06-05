@@ -349,9 +349,9 @@ void TEA::centerMapOnSelectedRoute()
     ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(Item);
 
     //if the item has no path, abort
-    if(Entry->getPath() == 0)
+    if(Entry->getPath()->boundingRect().width() == 0.0)
     {
-        ui.textInformation->append("This Item has no Path");
+	ui.textInformation->append("This Item has no valid Path");
 	return;
     }
 
@@ -891,8 +891,8 @@ void TEA::drawRoute(QString auid, bool asterisk)
     pathItem->setZValue(20);
     scene->addItem(pathItem);
     scene->setSceneRect(-PI,-PI,2*PI,2*PI);
-    prgBar->reset();
     centerMapOnSelectedRoute();
+    prgBar->reset();
     if(asterisk)Entry->setModified();
 }
 
