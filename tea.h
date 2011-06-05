@@ -65,6 +65,7 @@ private:
     void createStatusBar();
     void fillTrainerViewCBoxes();
     void connectSignalsAndSlots();
+    QPen getRoutePen(QString auid);
     void rerenderRoute();
     void drawRoutes(QSqlQuery auidQuery);
     void drawRoute(QString auid, bool asterisk = true);
@@ -76,6 +77,7 @@ private:
     QFile *file;
     QNetworkAccessManager *networkManager;
     QGraphicsScene *scene;
+    QList<QColor> colors;
     bool init;
 
 protected:

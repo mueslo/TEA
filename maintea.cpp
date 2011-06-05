@@ -36,6 +36,12 @@ TEA::TEA(QWidget *parent) :
 {
 	init = true;
 
+        colors << Qt::darkBlue << Qt::darkRed
+               << Qt::darkGreen << Qt::darkCyan
+               << Qt::darkMagenta << Qt::darkYellow;
+
+
+
 	if (!initialiseDBs())
 	{
 	    QMessageBox::critical(this, tr("A critical error occured!"),
@@ -56,7 +62,7 @@ TEA::TEA(QWidget *parent) :
 	mapSource = "http://andy.sandbox.cloudmade.com/tiles/cycle/";
 	getTile(0,0,0);
 	//initially zoom always = 0
-	zoomOld = 0;
+        zoomOld = 0;
 	ui.graphicsView->setScene(scene);
 	connectSignalsAndSlots();
 	createToolBar();
@@ -455,6 +461,13 @@ void TEA::trainerSelectionChange()
         drawTrainer();
 }
 
+QPen TEA::getRoutePen(QString auid)
+{
+    QPen pen;
+    pen.setBrush(colors.at(auid.toInt()%colors.count()));
+    return pen;
+}
+
 void TEA::drawTrainer()
 {
 	//get auids
@@ -527,16 +540,8 @@ void TEA::drawTrainer()
                         }
 
                         //curve->setBrush(Qt::cyan); //fill to baseline with QBrush
-                        QPen pen;
-                        QList<QColor> colors;
-                        colors << Qt::darkBlue << Qt::darkRed
-                               << Qt::darkGreen << Qt::darkCyan
-                               << Qt::darkMagenta << Qt::darkYellow;
-                        //pen.setWidth(2); //set width of line
-                        pen.setBrush(colors.at(row%colors.count()));
 
-
-                        curve->setPen(pen);
+                        curve->setPen(getRoutePen(auid));
                         curve->attach(ui.qwtPlot);
 
 
@@ -888,6 +893,7 @@ void TEA::drawRoute(QString auid, bool asterisk)
     QGraphicsPathItem *pathItem = new QGraphicsPathItem;
     Entry->setPath(pathItem);
     pathItem->setPath(path);
+    pathItem->setPen(getRoutePen(auid));
     pathItem->setZValue(20);
     scene->addItem(pathItem);
     scene->setSceneRect(-PI,-PI,2*PI,2*PI);
