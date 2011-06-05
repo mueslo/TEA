@@ -15,8 +15,11 @@ class ActiveRouteListItem : public QObject, public QListWidgetItem
 public:
     ActiveRouteListItem(const QString &text, int row);
     QGraphicsPathItem* getPath();
+    QGraphicsPathItem* getPathOutline();
     int getAuid();
-    void setPath( QGraphicsPathItem *Path);
+    void setOutlineZoom(int zoomLevel);
+    void setPath( QGraphicsPathItem *Path); //TODO: rename setPath to setPathItem
+    void setPathOutline(QGraphicsPathItem *PathOutline);
     void setAuid(int Auid);
     ~ActiveRouteListItem();
     void setModified(bool mod=1);
@@ -25,6 +28,9 @@ public:
 private:
     //Ui::MainWin ui;
     QGraphicsPathItem *path;	//Pointer to PathItem in Memory (which is a child of QGraphicsView)
+    QGraphicsPathItem *pathOutline;  //Pointer to PathItem in Memory
+    QPen routePen;
+    QPen outlinePen;
     int auid;
     bool Modified;
 

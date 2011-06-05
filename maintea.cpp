@@ -341,6 +341,7 @@ void TEA::updatePath(QListWidgetItem *Item)
     ActiveRouteListItem *ListItem = dynamic_cast<ActiveRouteListItem *>(Item);
     if(ListItem == 0) return;
     ListItem->getPath()->setVisible( ListItem->checkState() == Qt::Checked );
+    ListItem->getPathOutline()->setVisible(ListItem->checkState()==Qt::Checked);
     drawTrainer();
 }
 
@@ -658,37 +659,24 @@ void TEA::sldChanged(int value)
 						<< QString::number(viewRect.height()).toStdString() << endl;
 
 	int i = 0;
+        //Iterate through items and delete it if it is in the wrong zoom layer, if not, add 1 to counter.
+        //The next time in the while loop it will skipp the items already in the correct zoom layer.
+        //Once the number of items is equal to the number of skips, all offending tiles have been deleted.
+
 	while (scene->items().size()>i)
-	{
+        {       //ZLevel 19: Feather/Outline/Stroke, ZLevel 20: Paths
 		if (round(scene->items().at(i)->zValue()) > ui.sldZoom->value() &&
-			round(scene->items().at(i)->zValue()) != 19 && round(scene->items().at(i)->zValue()) != 20) //routes are at these zvalues
+                        round(scene->items().at(i)->zValue()) != 19 && round(scene->items().at(i)->zValue()) != 20) //routes are at these zvalues
 			scene->removeItem(scene->items().at(i));
-		else i++;
-
-		/*//todo outline / stroke
-		if (scene->items().at(i)->zValue() == 19 || scene->items().at(i)->zValue() == 20)
-		{
-
-
-			QGraphicsPathItem *pathItemStroke = new QGraphicsPathItem;
-			QPen pen; pen.setStyle(Qt::SolidLine); pen.setColor(QColor::fromRgb(0xFF,0xFF,0xFF));
-			QBrush brush; brush.setStyle(Qt::SolidPattern); brush.setColor(QColor::fromRgb(0xFF,0xFF,0xFF));
-			QPainterPath pathStroke;
-			QPainterPathStroker stroker; stroker.setWidth(0.1*pow(-2.0, zoomNew)); pathStroke = stroker.createStroke(path);
-
-			pathItemStroke->setPath(pathStroke);
-			pathItemStroke->setPen(pen);
-			pathItemStroke->setBrush(brush);
-			pathItemStroke->setZValue(19);
-
-			scene->removeItem(scene->items().at(i));
-			scene->addItem(pathItemStroke);
-
-
-		}
-		*/
+                else i++;
 	}
 
+        for (int i = 0; i<(ui.lwActiveRoutes->count());++i)
+        {
+            QListWidgetItem *Item = ui.lwActiveRoutes->item(i);
+            ActiveRouteListItem *ListItem = dynamic_cast<ActiveRouteListItem *>(Item);
+            ListItem->setOutlineZoom(zoomNew);
+        }
 
 	getTilesInRange();
 	zoomOld = ui.sldZoom->value();
@@ -889,13 +877,24 @@ void TEA::drawRoute(QString auid, bool asterisk)
 		} */
     }
 
-    /*Add Path to the Scene */
+    /*Add Path and Outline to the Scene */
     QGraphicsPathItem *pathItem = new QGraphicsPathItem;
+    QGraphicsPathItem *pathItemOutline = new QGraphicsPathItem;
+
+    QPen outlinePen; outlinePen.setBrush(Qt::white);
+
     Entry->setPath(pathItem);
+    Entry->setPathOutline(pathItemOutline);
     pathItem->setPath(path);
+    pathItemOutline->setPath(path);
     pathItem->setPen(getRoutePen(auid));
+    pathItemOutline->setPen(outlinePen);
     pathItem->setZValue(20);
+    pathItemOutline->setZValue(19);
+    pathItemOutline->setOpacity(0.75);
+
     scene->addItem(pathItem);
+    scene->addItem(pathItemOutline);
     scene->setSceneRect(-PI,-PI,2*PI,2*PI);
     centerMapOnSelectedRoute();
     prgBar->reset();

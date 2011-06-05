@@ -9,11 +9,15 @@ ActiveRouteListItem::ActiveRouteListItem(const QString &text, int row) : QListWi
     NewItem->setFlags( Qt::ItemIsEditable | NewItem->flags());
     ui.listWidget->insertItem(auid.toInt(), NewItem );*/
 
+    outlinePen.setBrush(Qt::white);
+
     Modified = false;
     this->setCheckState(Qt::Checked);
     this->setFlags( Qt::ItemIsEditable | this->flags() );
 
 }
+
+//TODO: implement QwtCurve in this class just like QPathItem with Path and Outline.
 
 ActiveRouteListItem::~ActiveRouteListItem()
 {
@@ -25,6 +29,18 @@ QGraphicsPathItem* ActiveRouteListItem::getPath()
     return path;
 }
 
+QGraphicsPathItem* ActiveRouteListItem::getPathOutline()
+{
+    pathOutline->setPen(outlinePen);
+    return pathOutline;
+}
+
+void ActiveRouteListItem::setOutlineZoom(int zoomLevel)
+{
+   outlinePen.setWidthF(pow(2.0, -zoomLevel-2));
+   pathOutline->setPen(outlinePen);
+}
+
 int ActiveRouteListItem::getAuid()
 {
     return auid;
@@ -33,6 +49,12 @@ int ActiveRouteListItem::getAuid()
 void ActiveRouteListItem::setPath( QGraphicsPathItem *Path)
 {
    path = Path;
+}
+
+void ActiveRouteListItem::setPathOutline(QGraphicsPathItem *PathOutline)
+{
+    pathOutline = PathOutline;
+    pathOutline->setPen(outlinePen);
 }
 
 void ActiveRouteListItem::setAuid(int Auid)
