@@ -10,7 +10,7 @@ GOALS FOR VERSION 0.1
 	-context menu exists since rev41
 	-TreeView with some status information tabs, e.g. has Path, litte statistics, whatever...
 
--Separate menu page (more information please)
+-Separate settings page
 
 -MetadataDialog no longer used for editing metadata, only for importing (->ImportDialog) -> falki
 
@@ -28,9 +28,9 @@ GOALS FOR VERSION 0.1
 
 -add an option in de listView to revert the metadata, etc. of an adb-route to its rdb-state (if existent) - maybe add a flag to the items whether they where loaded from the database or not
 
--(this does not needs to be in 0.1) add a function to save the selected route as a picture file
+-(this does not need to be in 0.1) add a function to save the selected route as a picture file
 
--enable a kind of *batch import*
+-enable batch import
 
 -combine getRouteMetadata() and getAllMetadata() into 1 function, if uid is specified, go for Route, if not, go for All. e.g. if(uid) QString ext=" Where uid="+uid; query("querytext"+ext); should work pretty well.
 -various:

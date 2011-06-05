@@ -1,6 +1,6 @@
 Requirements:
-	- Qt 4.6
-	- Qwt 5.2 SVN version
+        - Qt 4.7.2
+        - Qwt 5.2
 	- Hashlib++ 0.3.1
 		Source:		https://hashlib2plus.svn.sourceforge.net/svnroot/hashlib2plus/tags/RELEASE_0_3_1
 		Structure:	. (relative to source files)
