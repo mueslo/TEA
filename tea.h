@@ -59,7 +59,7 @@ private:
     int getMetadata(QString auid);
     bool nodeNextSkip(QSqlQuery routeData, int timesToSkip);
     bool maybeExit();
-    void drawTrainer(int indexX, int indexY);
+    void drawTrainer();
     void getTile(int tileX, int tileY, int zoomLevel);
     void getTilesInRange();
     void createStatusBar();

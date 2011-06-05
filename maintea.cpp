@@ -335,6 +335,7 @@ void TEA::updatePath(QListWidgetItem *Item)
     ActiveRouteListItem *ListItem = dynamic_cast<ActiveRouteListItem *>(Item);
     if(ListItem == 0) return;
     ListItem->getPath()->setVisible( ListItem->checkState() == Qt::Checked );
+    drawTrainer();
 }
 
 void TEA::centerMapOnSelectedRoute()
@@ -451,20 +452,19 @@ void TEA::trainerModeChanged()
 
 void TEA::trainerSelectionChange()
 {
-	drawTrainer(ui.cboxX->currentIndex(),ui.cboxY->currentIndex());
+        drawTrainer();
 }
 
-void TEA::drawTrainer(int indexX, int indexY)
+void TEA::drawTrainer()
 {
-	//get auids
+        int indexX = ui.cboxX->currentIndex();
+        int indexY = ui.cboxY->currentIndex();
 
+	//get auids
 
 	int value,routeNum = 0; double factor = 1.0;
 
         QSqlQuery auidQuery = getCurrentlyLoadedRoutes();
-
-        //QwtPlotCurve *curve = new QwtPlotCurve; //old
-
 
 	if (ui.rbNode->isChecked()){
 		ui.qwtPlot->clear();
@@ -478,16 +478,31 @@ void TEA::drawTrainer(int indexX, int indexY)
 		}
 
 		switch (ui.cboxX->currentIndex()) {
-			case 0: ui.qwtPlot->setAxisTitle(2,"Time in s"); break;
+                        case 0: ui.qwtPlot->setAxisTitle(2,"Time in s"); break;
 			default: ui.qwtPlot->setAxisTitle(2,"NYI"); break;
 		}
 
 		while (auidQuery.next())
-                    {
+                    {                       
                         QwtArray<double> x,y;
                         QwtPlotCurve *curve = new QwtPlotCurve; //new
 
 			QString auid = auidQuery.record().value(0).toString();
+
+                        //QND search for auid in listwidget to obtain row/Item
+                        int row = -1;
+                        ActiveRouteListItem *ListItem;
+
+                        for (int i = 0; i<(ui.lwActiveRoutes->count());++i)
+                        {
+                            QListWidgetItem *Item = ui.lwActiveRoutes->item(i);
+                            ActiveRouteListItem *ListItemIt = dynamic_cast<ActiveRouteListItem *>(Item);
+                            if (ListItemIt->getAuid()==auid.toInt()) {row = i; ListItem = ListItemIt;}
+                        }
+
+                        //Item = ui.lwActiveRoutes->item(auid.toInt()); //AUID should match position of Item.
+                        //ActiveRouteListItem *ListItem = dynamic_cast<ActiveRouteListItem *>(Item);
+
 
 			QSqlQuery route = getRouteData(auid, "adb");
 
@@ -509,7 +524,11 @@ void TEA::drawTrainer(int indexX, int indexY)
 			//curveList.at(routeNum)->attach(ui.qwtPlot);
 			//plotList.at(routeNum)->attach(ui.qwtPlot);
                         curve->setData(x,y);
-                        //curve->setStyle()
+                        if (row != -1) {
+                            if (ListItem->checkState() == Qt::Checked) curve->setStyle(QwtPlotCurve::Lines);
+                            else curve->setStyle(QwtPlotCurve::NoCurve);
+                        }
+
                         curve->attach(ui.qwtPlot);
 
 
@@ -544,13 +563,14 @@ void TEA::drawTrainer(int indexX, int indexY)
 	    }
 
 	    QSqlQuery metadata = getAllMetadata("adb");
+            QwtPlotCurve *curve = new QwtPlotCurve; //new
+
             QwtArray<double> x,y;
 	    while (metadata.next()) {
 	    x << (factor * metadata.value(value).toDouble());
 	    y << (factor2 * metadata.value(value2).toDouble());
 	    }
 
-            QwtPlotCurve *curve = new QwtPlotCurve; //new
 	    curve->setData(x,y);
 	    curve->setStyle(QwtPlotCurve::Lines);
 	    curve->attach(ui.qwtPlot);
@@ -702,6 +722,7 @@ void TEA::loadFromFile()
 			qDebug("Metadata written");
 
 			drawRoute(auid);
+                        drawTrainer();
 
 		} else ui.textInformation->append("Route seems to have already been loaded or saved.");
 
@@ -759,7 +780,7 @@ void TEA::saveToDatabase(QList<QListWidgetItem*> chosenItems)
 	//TODO: might be useful: implement "getAllSelectedUIDs"
     }
 
-	drawTrainer(ui.cboxX->currentIndex(),ui.cboxY->currentIndex());
+        drawTrainer();
 }
 
 void TEA::saveAllToDatabase()
@@ -773,7 +794,7 @@ void TEA::loadFromDatabase()
 	FindDialog d;
 	d.exec();
 	drawRoutes(getCurrentlyLoadedRoutes());
-	drawTrainer(ui.cboxX->currentIndex(),ui.cboxY->currentIndex());
+        drawTrainer();
 }
 
 void TEA::drawRoute(QString auid, bool asterisk)
