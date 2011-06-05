@@ -332,9 +332,9 @@ void TEA::showListContextMenu(const QPoint &pos)
 
 void TEA::updatePath(QListWidgetItem *Item)
 {
-    ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(Item);
-    if(Entry == 0) return;
-    Entry->getPath()->setVisible( Entry->checkState() == Qt::Checked );
+    ActiveRouteListItem *ListItem = dynamic_cast<ActiveRouteListItem *>(Item);
+    if(ListItem == 0) return;
+    ListItem->getPath()->setVisible( ListItem->checkState() == Qt::Checked );
 }
 
 void TEA::centerMapOnSelectedRoute()
@@ -347,10 +347,10 @@ void TEA::centerMapOnSelectedRoute()
     QListWidgetItem *Item = ui.lwActiveRoutes->selectedItems().first();
     ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(Item);
 
-    //if the item has no path ->abort
+    //if the item has no path, abort
     if(Entry->getPath() == 0)
     {
-	ui.textInformation->append("This Item has got no Path");
+        ui.textInformation->append("This Item has no Path");
 	return;
     }
 
@@ -434,10 +434,10 @@ void TEA::setGeneralSettings()
     if (address != "") {
 	QString ip = address.section(":",0,0);
 	int port = address.section(":", -1).toInt();
-	QNetworkProxy proxy = QNetworkProxy::QNetworkProxy(QNetworkProxy::HttpCachingProxy,ip,port);
+        QNetworkProxy proxy = QNetworkProxy(QNetworkProxy::HttpCachingProxy,ip,port);
 	networkManager->setProxy(proxy);
     } else {
-	QNetworkProxy proxy = QNetworkProxy::QNetworkProxy(QNetworkProxy::NoProxy);
+        QNetworkProxy proxy = QNetworkProxy(QNetworkProxy::NoProxy);
 	networkManager->setProxy(proxy);
     }
 
@@ -458,12 +458,12 @@ void TEA::drawTrainer(int indexX, int indexY)
 {
 	//get auids
 
-	QwtArray<double> x,y;
+
 	int value,routeNum = 0; double factor = 1.0;
 
-	QSqlQuery auidQuery = getCurrentlyLoadedRoutes();
+        QSqlQuery auidQuery = getCurrentlyLoadedRoutes();
 
-	QwtPlotCurve *curve = new QwtPlotCurve;
+        //QwtPlotCurve *curve = new QwtPlotCurve; //old
 
 
 	if (ui.rbNode->isChecked()){
@@ -483,30 +483,36 @@ void TEA::drawTrainer(int indexX, int indexY)
 		}
 
 		while (auidQuery.next())
-		{
+                    {
+                        QwtArray<double> x,y;
+                        QwtPlotCurve *curve = new QwtPlotCurve; //new
 
 			QString auid = auidQuery.record().value(0).toString();
 
 			QSqlQuery route = getRouteData(auid, "adb");
 
 			int i=0;
-			//x.clear(); y.clear();
+                        x.clear(); y.clear();
+                        //iterate over all nodes
 			while (route.next())
-			{
-				if ((route.record().value(value).toDouble() != 0.0) && value == 6)
-			    {  x << (double)i; y << (factor * route.record().value(value).toDouble());} else if (value != 6){
+                        {
+
+                            if ((route.record().value(value).toDouble() != 0.0) && value == 6)
+                                {  x << (double)i; y << (factor * route.record().value(value).toDouble());}
+                                else if (value != 6){
 				    x << (double)i; y << (factor * route.record().value(value).toDouble()); }
-				i++;
+                            i++;
+
 			}
 
 			//curveList.at(routeNum)->setData(x,y);
 			//curveList.at(routeNum)->attach(ui.qwtPlot);
 			//plotList.at(routeNum)->attach(ui.qwtPlot);
+                        curve->setData(x,y);
+                        //curve->setStyle()
+                        curve->attach(ui.qwtPlot);
 
 
-			curve->setData(x,y);
-			//curve->setStyle()
-			curve->attach(ui.qwtPlot);
 			ui.qwtPlot->replot();
 
 
@@ -538,12 +544,13 @@ void TEA::drawTrainer(int indexX, int indexY)
 	    }
 
 	    QSqlQuery metadata = getAllMetadata("adb");
-
+            QwtArray<double> x,y;
 	    while (metadata.next()) {
 	    x << (factor * metadata.value(value).toDouble());
 	    y << (factor2 * metadata.value(value2).toDouble());
 	    }
 
+            QwtPlotCurve *curve = new QwtPlotCurve; //new
 	    curve->setData(x,y);
 	    curve->setStyle(QwtPlotCurve::Lines);
 	    curve->attach(ui.qwtPlot);
