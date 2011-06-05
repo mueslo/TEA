@@ -316,8 +316,17 @@ void generateMetadataFromRoute(QString auid)
 
 	//Duration
 	adbquery.exec(qPrintable("SELECT time FROM route"+auid));
-	adbquery.first(); QTime time1=QTime::fromString(adbquery.record().value(0).toString(),"hhmmss");
-	adbquery.last(); QTime time2=QTime::fromString(adbquery.record().value(0).toString(),"hhmmss");
+	adbquery.first();
+	data=adbquery.record().value(0).toString(); //QND
+	if(data.length() != 6) data.prepend("0");
+	QTime time1=QTime::fromString(data,"hmmss");
+	qDebug(time1.toString());
+
+	adbquery.last();
+	data=adbquery.record().value(0).toString(); //QND
+	if(data.length() != 6) data.prepend("0");
+	QTime time2=QTime::fromString(data,"hmmss");
+	qDebug(time2.toString());
 	adbquery.exec(qPrintable("UPDATE active_metadata "
 							"SET duration='"+(QTime::fromString("000","hms").addSecs(time1.secsTo(time2))).toString("HHmmss")+
 							"' WHERE auid="+auid));
@@ -371,14 +380,24 @@ void generateMetadataFromRoute(QString auid)
 
 
 	//Average velocity
-	adbquery.exec(qPrintable("SELECT duration, distance FROM active_metadata WHERE auid="+auid));
+
+	/*adbquery.exec(qPrintable("SELECT duration, distance FROM active_metadata WHERE auid="+auid));
 	adbquery.first();
 	data=adbquery.record().value(0).toString(); data1=adbquery.record().value(1).toString();
 	double timeInSecs=QTime::fromString("000000","HHmmss").secsTo(QTime::fromString(data,"HHmmss"));
 	temp4=data1.toDouble() / (timeInSecs/3600);
 	adbquery.exec(qPrintable("UPDATE active_metadata "
 							"SET average_velocity="+QString::number(temp4)+
-							" WHERE auid="+auid));
+							" WHERE auid="+auid));*/
+
+	adbquery.exec(qPrintable("SELECT avg(velocity) FROM route"+auid));
+	adbquery.first();
+	temp4=adbquery.record().value(0).toDouble() * 0.01;
+	data=QString::number(temp4, 'g', 3);
+	//data=adbquery.record().value(0).toString();
+	adbquery.exec(qPrintable("UPDATE active_metadata "
+				 "Set average_velocity="+data+
+				 " WHERE auid="+auid));
 }
 
 QString importRoute(QString TEAFilePath)
