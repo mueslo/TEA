@@ -457,9 +457,6 @@ void TEA::trainerSelectionChange()
 
 void TEA::drawTrainer()
 {
-        int indexX = ui.cboxX->currentIndex();
-        int indexY = ui.cboxY->currentIndex();
-
 	//get auids
 
 	int value,routeNum = 0; double factor = 1.0;
@@ -491,7 +488,7 @@ void TEA::drawTrainer()
 
                         //QND search for auid in listwidget to obtain row/Item
                         int row = -1;
-                        ActiveRouteListItem *ListItem;
+                        ActiveRouteListItem *ListItem = 0;
 
                         for (int i = 0; i<(ui.lwActiveRoutes->count());++i)
                         {
@@ -529,6 +526,17 @@ void TEA::drawTrainer()
                             else curve->setStyle(QwtPlotCurve::NoCurve);
                         }
 
+                        //curve->setBrush(Qt::cyan); //fill to baseline with QBrush
+                        QPen pen;
+                        QList<QColor> colors;
+                        colors << Qt::darkBlue << Qt::darkRed
+                               << Qt::darkGreen << Qt::darkCyan
+                               << Qt::darkMagenta << Qt::darkYellow;
+                        //pen.setWidth(2); //set width of line
+                        pen.setBrush(colors.at(row%colors.count()));
+
+
+                        curve->setPen(pen);
                         curve->attach(ui.qwtPlot);
 
 
