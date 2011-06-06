@@ -1,5 +1,4 @@
 #include "activeroutelistitem.h"
-#include "ui_tea.h"
 #include "tea.h"
 
 ActiveRouteListItem::ActiveRouteListItem(const QString &text, int row) : QListWidgetItem(text)
@@ -21,7 +20,10 @@ ActiveRouteListItem::ActiveRouteListItem(const QString &text, int row) : QListWi
 
 ActiveRouteListItem::~ActiveRouteListItem()
 {
-    ;
+    curve->detach();
+    pathOutline->~QGraphicsPathItem();
+    path->~QGraphicsPathItem();
+    curve->~QwtPlotCurve();
 }
 
 QGraphicsPathItem* ActiveRouteListItem::getPath()
@@ -86,4 +88,14 @@ void ActiveRouteListItem::setModified(bool mod)
 bool ActiveRouteListItem::isModified()
 {
     return Modified;
+}
+
+void ActiveRouteListItem::setCurve(QwtPlotCurve *Curve)
+{
+    curve=Curve;
+}
+
+QwtPlotCurve* ActiveRouteListItem::getCurve()
+{
+    return curve;
 }

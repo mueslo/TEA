@@ -4,6 +4,7 @@
 #include <QListWidgetItem>
 #include <QGraphicsPathItem>
 
+#include "qwt_plot_curve.h"
 //#include "tea.h"
 #include <QtGui>
 
@@ -24,6 +25,8 @@ public:
     ~ActiveRouteListItem();
     void setModified(bool mod=1);
     bool isModified();
+    void setCurve(QwtPlotCurve *Curve);
+    QwtPlotCurve* getCurve();
 
 private:
     //Ui::MainWin ui;
@@ -31,6 +34,7 @@ private:
     QGraphicsPathItem *pathOutline;  //Pointer to PathItem in Memory
     QPen routePen;
     QPen outlinePen;
+    QwtPlotCurve *curve;
     int auid;
     bool Modified;
 

@@ -405,6 +405,7 @@ void TEA::connectSignalsAndSlots()
 	connect(ui.actionCenter_Map, SIGNAL(triggered()), this, SLOT(centerMapOnSelectedRoute()));
 	connect(ui.lwActiveRoutes, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showListContextMenu(const QPoint &)));
 	connect(ui.saveAllAction, SIGNAL(triggered()), this, SLOT(saveAllToDatabase()));
+	connect(ui.actionClose_route, SIGNAL(triggered()), this, SLOT(unloadRoute()));
 	//connect(ui.graphicsView, SIGNAL(resizeEvent()), this, SLOT(graphicsViewResized()));
 	//connect(ui.graphicsView, SIGNAL(mousePressed()), this, SLOT(grphPressed()));
 	//ui.tbMain->addAction(QIcon("icons/32x32_0560/map.png"), "Something with maps", this, "mapAction");
@@ -435,7 +436,16 @@ void TEA::updatePath(QListWidgetItem *Item)
     if(ListItem == 0) return;
     ListItem->getPath()->setVisible( ListItem->checkState() == Qt::Checked );
     ListItem->getPathOutline()->setVisible(ListItem->checkState()==Qt::Checked);
-    drawTrainer();
+    //drawTrainer();  //to be optimised
+    if(ListItem->checkState()==Qt::Checked)
+    {
+	ListItem->getCurve()->attach(ui.qwtPlot);
+    }
+    else
+    {
+	ListItem->getCurve()->detach();
+    }
+    ui.qwtPlot->replot();
 }
 
 void TEA::centerMapOnSelectedRoute()
@@ -603,6 +613,11 @@ void TEA::drawTrainer()
                             ActiveRouteListItem *ListItemIt = dynamic_cast<ActiveRouteListItem *>(Item);
                             if (ListItemIt->getAuid()==auid) {row = i; ListItem = ListItemIt;}
                         }
+			if( row == -1)
+			{
+			    qDebug("Kurve konnte nicht erstellt werden, keinen passenden ListItemEintrag gefunden.");
+			    continue;
+			}
 
                         //Item = ui.lwActiveRoutes->item(auid.toInt()); //AUID should match position of Item.
                         //ActiveRouteListItem *ListItem = dynamic_cast<ActiveRouteListItem *>(Item);
@@ -627,17 +642,18 @@ void TEA::drawTrainer()
 			//curveList.at(routeNum)->setData(x,y);
 			//curveList.at(routeNum)->attach(ui.qwtPlot);
 			//plotList.at(routeNum)->attach(ui.qwtPlot);
-                        curve->setData(x,y);
-                        if (row != -1) {
-                            if (ListItem->checkState() == Qt::Checked) curve->setStyle(QwtPlotCurve::Lines);
-                            else curve->setStyle(QwtPlotCurve::NoCurve);
-                        }
+			curve->setData(x,y);
 
                         //curve->setBrush(Qt::cyan); //fill to baseline with QBrush
 
-                        curve->setPen(getRoutePen(auid));
-                        curve->attach(ui.qwtPlot);
-
+			//curve->setCurveAttribute(QwtPlotCurve::Fitted);	//THINK ABOUT
+			curve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+			curve->setPen(getRoutePen(auid));
+			ListItem->setCurve(curve);
+			if( ListItem->checkState() == Qt::Checked)
+			{
+			    curve->attach(ui.qwtPlot);
+			}
 
 			ui.qwtPlot->replot();
 
@@ -997,12 +1013,44 @@ void TEA::drawRoute(QString auid, bool asterisk)
 
 void TEA::unloadRoute()
 {
+    //item ausfindig machen
 
+    QList<QListWidgetItem*> selectedItems = ui.lwActiveRoutes->selectedItems();
+    if(selectedItems.isEmpty())
+    {
+	ui.textInformation->append(tr("No Item selected"));
+	return;
+    }
+    //for (int i=0; i<selectedItems.count(); i++)
+    for (int i=selectedItems.count()-1; i>-1; i--)
+    {
+	//get ActiveRouteListItem
+	ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(selectedItems.at(i));
+
+	//save all changes from adb to rdb
+	if (Entry != 0)
+	{
+	    //routendaten löschen
+	    //aus active_metadata löschen
+	    deleteRoute(QString::number(Entry->getAuid()), "adb");
+
+	    Entry->~ActiveRouteListItem();
+	    ui.qwtPlot->replot();
+	    //pfad löschen
+	    //pfadumrandung löschen
+	    //kurve löschen
+
+	}
+	else
+	{
+	    qDebug("Could not take object");
+	}
+    }
 }
 
 void TEA::removeRoute()
 {
-
+    ;
 }
 
 void TEA::drawRoutes(QSqlQuery auidQuery)
