@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>TEA export of __NAME__</name>
+    <description>TEA export</description>
+    <Placemark>
+      <name>__NAME__</name>
+      <description>TEA export</description>
+      <LineString>
+        <extrude>1</extrude>
+        <altitudeMode>absolute</altitudeMode>
+        <coordinates> __COORDINATES__
+        </coordinates>
+      </LineString>
+    </Placemark>
+  </Document>
+</kml> 

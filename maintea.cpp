@@ -31,6 +31,8 @@
 
 using namespace std;
 
+//Most important TODO: Split (main)tea
+
 TEA::TEA(QWidget *parent) :
 	QMainWindow(parent)
 {
@@ -287,6 +289,92 @@ void TEA::rotateCClockwise()
 	ui.graphicsView->rotate(20);
 }
 
+void TEA::exportSelected(QString format)
+{
+        for(int i=0;i<ui.lwActiveRoutes->selectedItems().count();++i)
+        {
+            ActiveRouteListItem *item = dynamic_cast<ActiveRouteListItem *>(ui.lwActiveRoutes->selectedItems().at(i));
+            if (format.compare("kml",Qt::CaseInsensitive)==0) exportKML(item->getAuid());
+            else qDebug("No such export format available.");
+        }
+
+
+
+}
+
+void TEA::exportKML(QString auid)
+{
+    qDebug("exportKML");
+
+    QString filePath = QFileDialog::getSaveFileName(this, tr("Export route as KML file"),
+                                                       QDir::homePath(),
+                                                       tr("Keyhole markup language files (*.kml)"));
+    if (QFile::exists(filePath)) QFile::remove(filePath);
+    if (filePath != "")
+    {
+        QFile templateFile("template.kml"); //TODO: introduce global variable of filename / relative directory to binary
+        if (templateFile.exists())
+        {
+            if (templateFile.open(QIODevice::ReadOnly))
+            {
+                QFile file(filePath);
+                if (file.open(QIODevice::WriteOnly | QIODevice::Append))
+                {
+                    QTextStream s(&file);
+                    QSqlRecord metadata = getRouteMetadata(auid,"adb");
+                    QSqlQuery routedata = getRouteData(auid,"adb");
+                    QString name = metadata.value(6).toString();
+                    while (!templateFile.atEnd())
+                    {
+
+                        QString line = templateFile.readLine();
+                        if (line.contains("__NAME__")) line.replace("__NAME__",name);
+                        else if (line.contains("__COORDINATES__"))
+                        {
+                            QString coordinates;
+                            QString lat;
+                            QString lon;
+                            QString alt;
+
+                            //could be that first node is left out, check it
+                            while (routedata.next())
+                            {
+                                //todo: progress
+                                lat = QString::number(getLatFromRawLat(routedata.value(4).toString()));
+                                lon = QString::number(getLonFromRawLon(routedata.value(5).toString()));
+                                alt = QString::number(routedata.value(6).toInt()/10.0);
+                                coordinates.append(lon+","+lat+","+alt+"\n");
+                                //todo: tab spacing
+                            }
+                            line.replace("__COORDINATES__",coordinates);
+                        }
+                        s << line;
+                    }
+                }
+
+                file.close();
+                templateFile.close();
+            }
+        } else qDebug("KML template missing.");
+
+    }
+
+
+}
+
+void TEA::exportTEA(QString auid)
+{
+    qDebug("exportTEA");
+}
+
+/* Uninteresting functions */
+void TEA::exportSelectedKML() {exportSelected("kml");}
+void TEA::exportSelectedTEA() {exportSelected("tea");}
+
+
+
+/* */
+
 void TEA::connectSignalsAndSlots()
 {
 	connect(ui.loadFromFileAction, SIGNAL(triggered()), this, SLOT(loadFromFile()));
@@ -302,6 +390,8 @@ void TEA::connectSignalsAndSlots()
 	connect(ui.dwBottom, SIGNAL(visibilityChanged(bool)), this, SLOT(consoleChanged()));
 	connect(ui.consoleAction, SIGNAL(triggered()), this, SLOT(consoleButtonTriggered()));
 	connect(ui.rbMapnik, SIGNAL(toggled(bool)), this, SLOT(mapSourceChanged()));
+        connect(ui.kmlExportAction, SIGNAL(triggered()), this, SLOT(exportSelectedKML()));
+        connect(ui.actionExport_as_tea, SIGNAL(triggered()),this,SLOT(exportSelectedTEA()));
 	connect(ui.cboxX, SIGNAL(currentIndexChanged(int)), this, SLOT(trainerSelectionChange()));
 	connect(ui.cboxY, SIGNAL(currentIndexChanged(int)), this, SLOT(trainerSelectionChange()));
 	connect(ui.rbNode, SIGNAL(toggled(bool)), this, SLOT(trainerModeChanged()));
@@ -365,7 +455,7 @@ void TEA::centerMapOnSelectedRoute()
 	return;
     }
 
-    QSqlRecord adbrecord=getRouteMetadata(QString::number(Entry->getAuid()),"adb");//QSqlDatabase::database("adb"));
+    QSqlRecord adbrecord=getRouteMetadata(Entry->getAuid(),"adb");//QSqlDatabase::database("adb"));
    // adbquery.exec(qPrintable("Select * FROM active_metadata WHERE auid="+QString::number(Entry->getAuid())));
    // adbquery.first();
 
@@ -408,10 +498,10 @@ void TEA::editMetadata()
     }
     QListWidgetItem *Item = ui.lwActiveRoutes->selectedItems().first();
     ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(Item);
-    MetadataDialog d(QString::number(Entry->getAuid()), 1);
+    MetadataDialog d(Entry->getAuid(), 1);
     d.exec();
 
-    QSqlRecord adbrecord=getRouteMetadata(QString::number(Entry->getAuid()),"adb");
+    QSqlRecord adbrecord=getRouteMetadata(Entry->getAuid(),"adb");
     Entry->setText(adbrecord.value(6).toString());
     Entry->setModified();
     //adbquery.finish();
@@ -431,7 +521,7 @@ void TEA::updateADB()
     QString Name = Entry->text();
     Name.append("'").prepend("'");
     QSqlQuery adbquery(QSqlDatabase::database("adb"));
-    adbquery.exec(qPrintable("UPDATE active_metadata SET name="+Name+" WHERE auid="+QString::number(Entry->getAuid())));
+    adbquery.exec(qPrintable("UPDATE active_metadata SET name="+Name+" WHERE auid="+Entry->getAuid()));
 
     adbquery.finish();
 }
@@ -511,7 +601,7 @@ void TEA::drawTrainer()
                         {
                             QListWidgetItem *Item = ui.lwActiveRoutes->item(i);
                             ActiveRouteListItem *ListItemIt = dynamic_cast<ActiveRouteListItem *>(Item);
-                            if (ListItemIt->getAuid()==auid.toInt()) {row = i; ListItem = ListItemIt;}
+                            if (ListItemIt->getAuid()==auid) {row = i; ListItem = ListItemIt;}
                         }
 
                         //Item = ui.lwActiveRoutes->item(auid.toInt()); //AUID should match position of Item.
@@ -649,12 +739,13 @@ void TEA::sldChanged(int value)
 	int dZoom = zoomNew-zoomOld;
 	//QRectF oldSceneRect = scene->sceneRect();
 	ui.graphicsView->scale(pow(2,(dZoom)),pow(2,(dZoom)));
-	/*
+        /*
 	scene->setSceneRect(oldSceneRect.x()+oldSceneRect.width()*(0.5 - pow(2.0,-dZoom-1)),
 						oldSceneRect.y()+oldSceneRect.height()*(0.5 - pow(2.0,-dZoom-1)),
 						oldSceneRect.width()*pow(2.0,-dZoom),
 						oldSceneRect.height()*pow(2.0,-dZoom));
 						*/
+
 	QRectF viewRect = ui.graphicsView->mapToScene(0,0,ui.graphicsView->width(),ui.graphicsView->height()).boundingRect();
 	cout << "x,y,w,h: " << QString::number(viewRect.x()).toStdString() << " "
 						<< QString::number(viewRect.y()).toStdString() << " "
@@ -663,7 +754,7 @@ void TEA::sldChanged(int value)
 
 	int i = 0;
         //Iterate through items and delete it if it is in the wrong zoom layer, if not, add 1 to counter.
-        //The next time in the while loop it will skipp the items already in the correct zoom layer.
+        //The next time in the while loop it will skip the items already in the correct zoom layer.
         //Once the number of items is equal to the number of skips, all offending tiles have been deleted.
 
 	while (scene->items().size()>i)
@@ -702,9 +793,9 @@ void TEA::loadFromFile()
 {
 
 	QString TEAFilePath = QFileDialog::getOpenFileName(this, tr("Open TEA route file"),
-			"C:/Users/jf/Desktop/BeLL/Programm/sample_routes",
+                        QDir::homePath(),
 			tr("TEA route files (*.tea)"));
-	if (TEAFilePath != "")
+        if (TEAFilePath != "" && QFile::exists(TEAFilePath))
 	{
 		ui.textInformation->append("Path chosen: " + TEAFilePath);
 		ui.textInformation->append("Checksum: " + generateChecksumFromFile(TEAFilePath));
@@ -759,6 +850,7 @@ void TEA::saveSelectedToDatabase()
 
 void TEA::saveToDatabase(QList<QListWidgetItem*> chosenItems)
 {
+
     if(chosenItems.isEmpty())
     {
 	ui.textInformation->append(tr("No Item selected"));
@@ -769,22 +861,21 @@ void TEA::saveToDatabase(QList<QListWidgetItem*> chosenItems)
 	//get ActiveRouteListItem
 	ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(chosenItems.at(i));
 
+        //Falki: I don't see how this does what it says it does at all
 	//save all changes from adb to rdb
 	if (Entry != 0)
 	{
-	    QString uid = saveRoute(QString::number(Entry->getAuid()));
-	    if(!uid.isEmpty()) //should work
+            QString next_uid = saveRoute(Entry->getAuid());
+            if(!next_uid.isEmpty()) //should work
 	    {
 		QSqlQuery adbquery(QSqlDatabase::database("adb"));
-		adbquery.exec(qPrintable("UPDATE active_metadata SET uid="+uid+" WHERE auid="+QString::number(Entry->getAuid())));
+                adbquery.exec(qPrintable("UPDATE active_metadata SET uid="+next_uid+" WHERE auid="+Entry->getAuid()));
 		Entry->setModified(0);
 	    }
 
 	}
 	//TODO: might be useful: implement "getAllSelectedUIDs"
     }
-
-        drawTrainer();
 }
 
 void TEA::saveAllToDatabase()
@@ -816,7 +907,7 @@ void TEA::drawRoute(QString auid, bool asterisk)
 	ui.lwActiveRoutes->insertItem(auid.toInt(), Entry );
 	ui.lwActiveRoutes->setCurrentItem(Entry);
     }
-    else    //this case should not occour theoretically, but just to be sure.
+    else    //this case should not occur theoretically, but just to be sure.
     {
 	ui.textInformation->append(QString("Item has been already added"));
 	return;
@@ -894,7 +985,7 @@ void TEA::drawRoute(QString auid, bool asterisk)
     pathItemOutline->setPen(outlinePen);
     pathItem->setZValue(20);
     pathItemOutline->setZValue(19);
-    pathItemOutline->setOpacity(0.75);
+    pathItemOutline->setOpacity(0.7);
 
     scene->addItem(pathItem);
     scene->addItem(pathItemOutline);
@@ -938,7 +1029,7 @@ void TEA::closeEvent(QCloseEvent *event)
 
 bool TEA::maybeExit()
 {
-    //todo: check if there are really unsaved changes
+    //todo: check if there really are unsaved changes
     //get listitem, check if modified
     QList<QListWidgetItem*> allItems = ui.lwActiveRoutes->findItems("", Qt::MatchContains);
     bool modified = false;
@@ -973,6 +1064,8 @@ bool TEA::maybeExit()
     {
 	//TODO check if this makes sense
 	//save every route from ADB in RDB
+
+        //Falki: use 'saveAllToDatabase'
 	QSqlQuery adbquery(QSqlDatabase::database("adb"));
 	QString auid;
 	adbquery.exec("SELECT * FROM active_metadata");	//get all active routes

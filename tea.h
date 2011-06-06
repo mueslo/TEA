@@ -23,8 +23,7 @@ public slots:
 private slots:
     void downloaded(QNetworkReply* reply);
     void zoom(int steps);
-    void zoomIn();
-    void zoomOut();
+
     void sldChanged(int value);
     void viewChange();
     void rotateClockwise();
@@ -37,18 +36,30 @@ private slots:
     void unloadRoute();
     void removeRoute();
     void setGeneralSettings();
-    void actionViewDatabase();
+
     void updateADB();
     void updatePath(QListWidgetItem *Item);
     void editMetadata();
     void centerMapOnSelectedRoute();
+
+
     void saveAllToDatabase();
     void saveSelectedToDatabase();
     void loadFromFile();
     void loadFromDatabase();
     void saveToDatabase(QList<QListWidgetItem*> chosenItems);
+
     void About();
     void showListContextMenu(const QPoint &);
+
+    /* Uninteresting functions */
+    void exportSelectedTEA();
+    void exportSelectedKML();
+    void zoomIn();
+    void zoomOut();
+    void actionViewDatabase();
+
+    /* */
     //void graphicsViewResized();
     //void grphPressed();
     //void grphReleased();
@@ -63,6 +74,9 @@ private:
     void getTile(int tileX, int tileY, int zoomLevel);
     void getTilesInRange();
     void createStatusBar();
+    void exportKML(QString auid);
+    void exportSelected(QString format);
+    void exportTEA(QString auid);
     void fillTrainerViewCBoxes();
     void connectSignalsAndSlots();
     QPen getRoutePen(QString auid);

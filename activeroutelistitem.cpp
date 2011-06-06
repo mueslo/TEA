@@ -41,9 +41,9 @@ void ActiveRouteListItem::setOutlineZoom(int zoomLevel)
    pathOutline->setPen(outlinePen);
 }
 
-int ActiveRouteListItem::getAuid()
+QString ActiveRouteListItem::getAuid()
 {
-    return auid;
+    return QString::number(auid);
 }
 
 void ActiveRouteListItem::setPath( QGraphicsPathItem *Path)

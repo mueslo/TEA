@@ -16,7 +16,7 @@ public:
     ActiveRouteListItem(const QString &text, int row);
     QGraphicsPathItem* getPath();
     QGraphicsPathItem* getPathOutline();
-    int getAuid();
+    QString getAuid();
     void setOutlineZoom(int zoomLevel);
     void setPath( QGraphicsPathItem *Path); //TODO: rename setPath to setPathItem
     void setPathOutline(QGraphicsPathItem *PathOutline);

@@ -338,7 +338,7 @@
      <x>0</x>
      <y>0</y>
      <width>870</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuRoute">
@@ -417,7 +417,7 @@
    <property name="minimumSize">
     <size>
      <width>80</width>
-     <height>93</height>
+     <height>95</height>
     </size>
    </property>
    <property name="windowIcon">
@@ -591,7 +591,7 @@
    <property name="minimumSize">
     <size>
      <width>183</width>
-     <height>329</height>
+     <height>373</height>
     </size>
    </property>
    <property name="windowIcon">

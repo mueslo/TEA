@@ -33,42 +33,42 @@ bool prepareActiveRoutesDB()
 	if (QSqlDatabase::database("adb").open())
 	{
 		QSqlQuery adbquery(QSqlDatabase::database("adb"));
-		adbquery.exec(	"CREATE TABLE active_metadata (" //0
-						"auid integer primary key," //1
-						"uid integer," //2
-						"date text," //3
-						"id integer," //4
-						"location text," //5
-						"tags text," //6
-						"name text," //7
-						"checksum text," //8
-						"distance text," //9 in kilometres
-						"altitude_gain integer," //10 in decimetres
-						"altitude_loss integer, " //11 in decimetres
-						"total_altitude_difference integer, " //12 in decimetres
-						"duration text," //13 in format hhmmss
-						"maximum_latitude integer," //14 in format ddmmmmmm
-						"minimum_latitude integer," // 15 -"-
-						"maximum_longitude integer," //16 in format dddmmmmmm
-						"minimum_longitude integer," //17 -"-
-						"average_elevation integer," //18 in decimetres
-						"average_velocity integer," //19 in kilometres per hour
-						"picture blob," //20
-						"num_nodes integer," //21
-						"standard text," //22
-						"time_between_nodes integer)"); //23
+                adbquery.exec(	"CREATE TABLE active_metadata ("
+                                                "auid integer primary key," //0
+                                                "uid integer," //1
+                                                "date text," //2
+                                                "id integer," //3
+                                                "location text," //4
+                                                "tags text," //5
+                                                "name text," //6
+                                                "checksum text," //7
+                                                "distance text," //8 in kilometres
+                                                "altitude_gain integer," //9 in decimetres
+                                                "altitude_loss integer, " //10 in decimetres
+                                                "total_altitude_difference integer, " //11 in decimetres
+                                                "duration text," //12 in format hhmmss
+                                                "maximum_latitude integer," //13 in format ddmmmmmm
+                                                "minimum_latitude integer," // 14 -"-
+                                                "maximum_longitude integer," //15 in format dddmmmmmm
+                                                "minimum_longitude integer," //16 -"-
+                                                "average_elevation integer," //17 in decimetres
+                                                "average_velocity integer," //18 in kilometres per hour
+                                                "picture blob," //19
+                                                "num_nodes integer," //20
+                                                "standard text," //21
+                                                "time_between_nodes integer)"); //22
 
 
 		adbquery.exec(	"CREATE TABLE route("
-						"node integer primary key,"
-						"velocity integer,"
-						"frequency integer,"
-						"slope integer,"
-						"latitude integer,"
-						"longitude integer,"
-						"altitude integer,"
-						"time text,"
-						"date text)"); //flag erstmal nicht
+                                                "node integer primary key," //0
+                                                "velocity integer," //1
+                                                "frequency integer," //2
+                                                "slope integer," //3
+                                                "latitude integer," //4
+                                                "longitude integer," //5
+                                                "altitude integer," //6
+                                                "time text," //7
+                                                "date text)"); //8, flag erstmal nicht
 		adbquery.exec(	"CREATE TABLE settings("
 						"next_auid integer,"
 						"empty integer,"
