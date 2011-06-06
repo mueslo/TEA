@@ -129,6 +129,7 @@ void TEA::fillTrainerViewCBoxes()
 
 		ui.cboxX->addItem("Time");
 		ui.cboxX->addItem("Distance");
+		ui.cboxY->setCurrentIndex(2);
 	} else {
 	ui.cboxY->addItem("Mean velocity");
 	ui.cboxY->addItem("Mean altitude");
@@ -143,6 +144,8 @@ void TEA::fillTrainerViewCBoxes()
 	ui.cboxX->addItem("Mean altitude");
 	ui.cboxX->addItem("Altitude gain");
 	ui.cboxX->addItem("Altitude loss");
+
+
 
 	}
 }
@@ -862,7 +865,7 @@ void TEA::drawRoute(QString auid, bool asterisk)
 	tempY=getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()));
 	//ui.textInformation->append(QString::number(tempX)+' '+QString::number(tempY));
 
-	/* schöne Variante */
+	/* schöne Variante
 	if (nodeNextSkip(routeData,nodeSkips)) {
 
 	    if (((tempY != 0.0) || (tempX != 0.0)) && ((getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())) != 0) || (getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())) != 0) ))  {
@@ -870,11 +873,11 @@ void TEA::drawRoute(QString auid, bool asterisk)
 		path.quadTo(x,y,getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())),getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())));
 		//qDebug(QString::number(x)+" "+QString::number(y)+" "+QString::number(getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())))+","+QString::number(getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()))));
 	    }
-	}
-	/* schnelle Variante. TODO: Wahl per Menüoption
+	}*/
+	/* schnelle Variante. TODO: Wahl per Menüoption*/
 		if( ( tempX != 0 ) || ( tempY != 0) ) {
 		    path.lineTo(tempX, tempY);
-		} */
+		}
     }
 
     /*Add Path and Outline to the Scene */
