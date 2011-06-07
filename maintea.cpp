@@ -656,7 +656,7 @@ void TEA::drawTrainer()
 			}
 
 			ui.qwtPlot->replot();
-
+			ui.lwActiveRoutes->blockSignals(false);
 
 
 			//todo use largest and not last path diagram
@@ -914,6 +914,7 @@ void TEA::drawRoute(QString auid, bool asterisk)
     QSqlRecord metadata = getRouteMetadata(auid, "adb");
 
     ActiveRouteListItem *Entry = new ActiveRouteListItem(metadata.value(6).toString(), auid.toInt());
+    ui.lwActiveRoutes->blockSignals(true);
 
     //TODO: check if item is already present in ItemView (+Path)
     if( ui.lwActiveRoutes->currentIndex().row() != auid.toInt() )
@@ -1032,7 +1033,7 @@ void TEA::unloadRoute()
 	{
 	    //routendaten löschen
 	    //aus active_metadata löschen
-	    deleteRoute(QString::number(Entry->getAuid()), "adb");
+	    deleteRoute(Entry->getAuid(), "adb");
 
 	    Entry->~ActiveRouteListItem();
 	    ui.qwtPlot->replot();
