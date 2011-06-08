@@ -79,7 +79,6 @@ private:
     void exportTEA(QString auid);
     void fillTrainerViewCBoxes();
     void connectSignalsAndSlots();
-    QPen getRoutePen(QString auid);
     void rerenderRoute();
     void drawRoutes(QSqlQuery auidQuery);
     void drawRoute(QString auid, bool asterisk = true);
@@ -88,10 +87,10 @@ private:
     int zoomOld;
     QProgressBar *prgBar;
     QString mapSource;
-    QFile *file;
     QNetworkAccessManager *networkManager;
+    QStack<QNetworkRequest> requestStack;
+    int currentRequests;
     QGraphicsScene *scene;
-    QList<QColor> colors;
     bool init;
 
 protected:

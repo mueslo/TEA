@@ -19,7 +19,6 @@ MetadataDialog::MetadataDialog(QString auid, int type, QWidget *parent)
 
 MetadataDialog::~MetadataDialog()
 {
-	delete mvpScene;
 }
 
 void MetadataDialog::connectSignalsAndSlots()
@@ -88,7 +87,7 @@ void MetadataDialog::renderRoute()
 	}
 	mvpScene->addPath(path, QPen(Qt::black), QBrush(Qt::transparent));
 	*/
-    mvpScene = new QGraphicsScene;
+    mvpScene = new QGraphicsScene(ui.graphRoute);
     ui.graphRoute->setScene(mvpScene);
 
     QSqlQuery routeData = getRouteData(mpAuid, "adb");

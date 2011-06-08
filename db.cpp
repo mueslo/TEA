@@ -758,8 +758,8 @@ void addTileToDB(int zoomLevel, int tileX, int tileY, QByteArray tile, QString m
     mdbquery.exec(qPrintable(	"SELECT * FROM zoom"+QString::number(zoomLevel)+
 				" WHERE xtile="+QString::number(tileX)+
 				" AND ytile="+QString::number(tileY)+
-				" AND mapsource="+mapsource.append("\"").prepend("\"")));
-    if(!mdbquery.first())
+                                " AND mapsource="+mapsource.append("\"").prepend("\"")));
+    if(!mdbquery.first()) //Check if tile does not yet exist in db
     {
 	mdbquery.exec(qPrintable(	"INSERT INTO zoom"+QString::number(zoomLevel)+" VALUES("
 					+QString::number(tileX)+","
@@ -777,7 +777,7 @@ QByteArray getTileFromDB(int zoomLevel, int tileX, int tileY, QString mapsource)
 								" WHERE xtile="+QString::number(tileX)+
 								" AND ytile="+QString::number(tileY)+
 								" AND mapsource="+mapsource.append("\"").prepend("\"")));
-	if (mdbquery.first())
+        if (mdbquery.first()) //Check if tile exists in db
 	{
 	    QByteArray temparray;
 	    QString tile = mdbquery.record().value(2).toString();

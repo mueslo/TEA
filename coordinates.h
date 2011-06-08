@@ -138,20 +138,20 @@ inline QList<QPoint> getXYTileInRange(int zoomLevel, double max_longitude, doubl
 	if (max_longitude >= 180) max_longitude = 179.999999999999;
 	if (min_longitude <= -180) min_longitude = -179.999999999999;
 
-	cout << "minlon " << min_longitude << endl;
-	cout << "maxlon " << max_longitude << endl;
-	cout << "minlat " << min_latitude << endl;
-	cout << "maxlat " << max_latitude << endl;
+        //cout << "minlon " << min_longitude << endl;
+        //cout << "maxlon " << max_longitude << endl;
+        //cout << "minlat " << min_latitude << endl;
+        //cout << "maxlat " << max_latitude << endl;
 
 	int max_ytile = (latitudeToYTile(max_latitude, zoomLevel));
 	int min_ytile = (latitudeToYTile(min_latitude, zoomLevel));
 	int max_xtile = (longitudeToXTile(max_longitude, zoomLevel));
 	int min_xtile = (longitudeToXTile(min_longitude, zoomLevel));
 
-	cout << "max_ytile=" << max_ytile << endl;
-	cout << "min_ytile=" << min_ytile << endl;
-	cout << "max_xtile=" << max_xtile << endl;
-	cout << "min_xtile=" << min_xtile << endl;
+        //cout << "max_ytile=" << max_ytile << endl;
+        //cout << "min_ytile=" << min_ytile << endl;
+        //cout << "max_xtile=" << max_xtile << endl;
+        //cout << "min_xtile=" << min_xtile << endl;
 
 	cout << "Zoom level: " << zoomLevel << endl;
 	for (i=min_xtile;i<=max_xtile;i++)
@@ -159,7 +159,7 @@ inline QList<QPoint> getXYTileInRange(int zoomLevel, double max_longitude, doubl
 		for (j=min_ytile;j<=max_ytile;j++)
 		{
 			XYList << QPoint(i,j);
-			cout << "Tile: x=" << i << ", y=" << j << endl;
+                        //cout << "Tile: x=" << i << ", y=" << j << endl;
 		}
 	}
 	return XYList;

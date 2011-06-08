@@ -14,7 +14,7 @@ class ActiveRouteListItem : public QObject, public QListWidgetItem
     Q_OBJECT
 
 public:
-    ActiveRouteListItem(const QString &text, int row);
+    ActiveRouteListItem(const QString &name, int row);
     QGraphicsPathItem* getPath();
     QGraphicsPathItem* getPathOutline();
     QString getAuid();
@@ -35,6 +35,7 @@ private:
     QPen routePen;
     QPen outlinePen;
     QwtPlotCurve *curve;
+    QList<QColor> colors;
     int auid;
     bool Modified;
 

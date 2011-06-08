@@ -38,12 +38,6 @@ TEA::TEA(QWidget *parent) :
 {
 	init = true;
 
-        colors << Qt::darkBlue << Qt::darkRed
-               << Qt::darkGreen << Qt::darkCyan
-               << Qt::darkMagenta << Qt::darkYellow;
-
-
-
 	if (!initialiseDBs())
 	{
 	    QMessageBox::critical(this, tr("A critical error occured!"),
@@ -51,44 +45,31 @@ TEA::TEA(QWidget *parent) :
 				  QMessageBox::Abort | QMessageBox::Ignore);
 	}
 
+        currentRequests = 0;
 	networkManager = new QNetworkAccessManager(this);
-
 	connect(networkManager, SIGNAL(finished(QNetworkReply*)),
 		 this, SLOT(downloaded(QNetworkReply*)));
-	ui.setupUi(this);
+
+        ui.setupUi(this);
 	ui.textInformation->append("<b>TEA console</b>");
-	scene = new QGraphicsScene;
+        scene = new QGraphicsScene(ui.graphicsView);
 
 	//tile size: 256px x 256px, in coordinates: 2*PI x 2*PI
 	ui.graphicsView->scale(128/PI,128/PI);
+
 	mapSource = "http://andy.sandbox.cloudmade.com/tiles/cycle/";
-	getTile(0,0,0);
-	//initially zoom always = 0
+
+        getTile(0,0,0);
+
+        //initially zoom always = 0
         zoomOld = 0;
-	ui.graphicsView->setScene(scene);
-	connectSignalsAndSlots();
+
+        ui.graphicsView->setScene(scene);
+
+        connectSignalsAndSlots();
 	createToolBar();
 	createStatusBar();
 	fillTrainerViewCBoxes();
-
-	QwtPlot *trainer = new QwtPlot;
-	trainer->setAxisAutoScale(true);
-	trainer->setAxisTitle(0,"test");
-
-	/*
-	QProgressBar *progress = new QProgressBar(ui.statusbar);
-	progress->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-	ui.statusbar->addPermanentWidget(progress);
-	progress->setAlignment(Qt::AlignRight);
-	*/
-
-	/*
-	if (!db.createAndLoadActiveRoutesDB())
-	{
-	     QMessageBox::critical(this, tr("A critical error occured!"),
-					     "A critical error occured while intialising active routes (new)",
-					     QMessageBox::Abort | QMessageBox::Ignore);
-	}*/
 }
 
 TEAView::TEAView(QWidget *parent) : QGraphicsView(parent)
@@ -158,8 +139,7 @@ void TEA::resizeEvent(QResizeEvent* event)
 	{
 		scene->setSceneRect(-PI,-PI,2*PI,2*PI);
 	} else {
-		cout << "graphicsView initialised" << endl; //todo rm
-		ui.textInformation->append("graphicsView initialised"); //todo rm
+                ui.textInformation->append("graphicsView initialised"); //todo rm
 		init = false;
 	}
 
@@ -180,16 +160,16 @@ void TEA::getTilesInRange()
 									getLatFromMercatorY(viewRect.y()));
 	for(int i=0;i<XYTileList.size();i++){ getTile(XYTileList.at(i).x(),XYTileList.at(i).y(),ui.sldZoom->value());
 	}
-
-
 }
+
 
 void TEA::placeTile(QByteArray tile, int tileX, int tileY, int zoomLevel)
 {
 	QPixmap tilePixmap;
 	tilePixmap.loadFromData(tile);
-	QGraphicsPixmapItem *tilePixmapItem = new QGraphicsPixmapItem;
-	tilePixmapItem->setPixmap(tilePixmap);
+        QGraphicsPixmapItem *tilePixmapItem = new QGraphicsPixmapItem(tilePixmap);
+        //todo: could the tiles create dangling/orphaned pointers? i thought so, but they don't seem to
+        // because the error only occurs when you have loaded a route
 	tilePixmapItem->setPos(tileToCoord(tileX,tileY,zoomLevel));
 	tilePixmapItem->scale(PI / pow(2.0, 7 + zoomLevel),PI / pow(2.0, 7 + zoomLevel));
 	tilePixmapItem->setZValue(zoomLevel);
@@ -198,73 +178,63 @@ void TEA::placeTile(QByteArray tile, int tileX, int tileY, int zoomLevel)
 
 void TEA::getTile(int tileX, int tileY, int zoomLevel)
 {
-	//todo: check if present in DB
+    //todo: check if present in DB
     QByteArray tile = getTileFromDB(zoomLevel,tileX,tileY,mapSource);
-	//if ((QString::fromAscii(tile)!="0") ) placeTile(tile, tileX, tileY, zoomLevel);
-	if (QString::fromAscii(tile)!="0"){
-	    placeTile(tile, tileX, tileY, zoomLevel);
-	}
-	else if(ui.sldZoom->value() == zoomLevel)
-	{
-	    networkManager->get(QNetworkRequest(QUrl(qPrintable(
-		mapSource+QString::number(zoomLevel)+"/"+QString::number(tileX)+"/"+QString::number(tileY)+".png"))));
-	}
-	 //manager->get(QNetworkRequest(QUrl("http://tile.openstreetmap.org/cgi-bin/export?bbox=7.28,48.35,7.29,48.36&scale=10000&format=png")));
-
+    //if ((QString::fromAscii(tile)!="0") ) placeTile(tile, tileX, tileY, zoomLevel);
+    if (QString::fromAscii(tile)!="0"){
+        placeTile(tile, tileX, tileY, zoomLevel);
+    } else if (ui.sldZoom->value() == zoomLevel)
+    {   QNetworkRequest request(QUrl(qPrintable(
+                                         mapSource+QString::number(zoomLevel)+"/"+
+                                         QString::number(tileX)+"/"+
+                                         QString::number(tileY)+".png")));
+        if (currentRequests<5)
+        {
+            networkManager->get(request);
+            ++currentRequests;
+        } else {
+        requestStack.push(request);
+        }
+        qDebug(QString::number(currentRequests)+" "+QString::number(requestStack.count()));
+    }
 }
 
 void TEA::downloaded(QNetworkReply* reply)
 {
-	QByteArray data = reply->readAll();
-	QString path = reply->url().path();
-	path.chop(4);
-	if (ui.rbCycleMap->isChecked()) path.remove(0,12);
+    //NYI: limit maximum number of current downloads to 2 as specified in the CycleMap tileserver terms,
+    //this would severely degrade download performance, though. Maybe keep limit at ~5?
 
-	int zoomLevel = path.section('/',1,1).toInt();
-	int tileX = path.section('/',2,2).toInt();
-	int tileY = path.section('/',3,3).toInt();
-
-	//todo: functioning addtiletodb
-	addTileToDB(zoomLevel,tileX,tileY,data,mapSource);
-
-	//IF-Bedingung ist mehr oder weniger QND. ;)
-	//BTW. ich zweifle bischen dran dass, wenn du die downloadaufforderung einmal an den QNetworkManager geschickt hast, du die abarbeitungsreihenfolge noch ändern kannst.
-	if( ui.sldZoom->value() == zoomLevel ) placeTile(data, tileX, tileY, zoomLevel);
-
-	//newTile->setPos(-PI, -PI);
-	//newTile->scale(PI/128, PI/128);
-	ui.textInformation->append("Tile image file size:" + QString::number(data.length()) + " bits (x:"+QString::number(tileX)+" y:"+QString::number(tileY)+" z:"+QString::number(zoomLevel)+")");
-	//scene->addItem(newTile);
-
-	//set position:
-
-	/*//WITH FILE HANDLING
-	QString fileName = QString::fromUtf8("temp");
-    if (QFile::exists(fileName)) {
-	if (QMessageBox::question(this, tr("HTTP"),
-				  tr("There already exists a file called %1 in "
-				     "the current directory. Overwrite?").arg(fileName),
-				  QMessageBox::Yes|QMessageBox::No, QMessageBox::No)
-	    == QMessageBox::No)
-	    return;
-	QFile::remove(fileName);
+    --currentRequests;
+    if (!requestStack.isEmpty())
+    {
+    networkManager->get(requestStack.pop());
+    ++currentRequests;
     }
+    qDebug(QString::number(currentRequests)+" "+QString::number(requestStack.count()));
 
-	file = new QFile(fileName);
+    QByteArray data = reply->readAll();
+    QString path = reply->url().path();
+    path.chop(4);
+    QString noNetworkMessage("Warning: Tileserver is not reachable.");
+    if (ui.rbCycleMap->isChecked()) path.remove(0,12);
 
-    if (!file->open(QIODevice::WriteOnly)) {
-	QMessageBox::information(this, tr("HTTP"),
-				 tr("Unable to save the file %1: %2.")
-				 .arg(fileName).arg(file->errorString()));
-	delete file;
-	file = 0;
-	return;
+    int zoomLevel = path.section('/',1,1).toInt();
+    int tileX = path.section('/',2,2).toInt();
+    int tileY = path.section('/',3,3).toInt();
+
+    if (data.length()!=0) //check whether tile request returned data
+    {
+        addTileToDB(zoomLevel,tileX,tileY,data,mapSource); //this method also checks presence of tile in db
+        ui.textInformation->append("Tile image file size:" + QString::number(data.length()) + " bits"
+                                   "(x:"+QString::number(tileX)+" y:"+QString::number(tileY)+" z:"+QString::number(zoomLevel)+")");
     }
+    else if (!ui.textInformation->text().endsWith(noNetworkMessage)) ui.textInformation->append(noNetworkMessage);
 
-	file->write(data);
-	file->close();
-	*/
-	reply->deleteLater();
+    //IF-Bedingung ist mehr oder weniger QND. ;)
+    //BTW. ich zweifle bischen dran dass, wenn du die downloadaufforderung einmal an den QNetworkManager geschickt hast, du die abarbeitungsreihenfolge noch ändern kannst.
+    if( ui.sldZoom->value() == zoomLevel ) placeTile(data, tileX, tileY, zoomLevel);
+
+    reply->deleteLater();
 }
 
 void TEA::createToolBar()
@@ -414,7 +384,7 @@ void TEA::connectSignalsAndSlots()
 
 void TEA::showListContextMenu(const QPoint &pos)
 {
-    QMenu *contextMenu = new QMenu;
+    QMenu *contextMenu = new QMenu(ui.lwActiveRoutes);
     QModelIndex t = ui.lwActiveRoutes->indexAt(pos);
     contextMenu->addAction(ui.saveAction);
     contextMenu->addAction(ui.actionCenter_Map);
@@ -437,13 +407,16 @@ void TEA::updatePath(QListWidgetItem *Item)
     ListItem->getPath()->setVisible( ListItem->checkState() == Qt::Checked );
     ListItem->getPathOutline()->setVisible(ListItem->checkState()==Qt::Checked);
     //drawTrainer();  //to be optimised
+
+    QwtPlotCurve *curve = ListItem->getCurve();
+    if (curve == 0) return; //check if curve has not yet been set
     if(ListItem->checkState()==Qt::Checked)
     {
-	ListItem->getCurve()->attach(ui.qwtPlot);
+        curve->attach(ui.qwtPlot);
     }
     else
     {
-	ListItem->getCurve()->detach();
+        curve->detach();
     }
     ui.qwtPlot->replot();
 }
@@ -458,16 +431,18 @@ void TEA::centerMapOnSelectedRoute()
     QListWidgetItem *Item = ui.lwActiveRoutes->selectedItems().first();
     ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(Item);
 
-    //if the item has no path, abort
+    //if the item has no path data, abort
     if(Entry->getPath()->boundingRect().width() == 0.0)
     {
-	ui.textInformation->append("This Item has no valid Path");
+        ui.textInformation->append("This Item has no valid path");
 	return;
     }
 
     QSqlRecord adbrecord=getRouteMetadata(Entry->getAuid(),"adb");//QSqlDatabase::database("adb"));
    // adbquery.exec(qPrintable("Select * FROM active_metadata WHERE auid="+QString::number(Entry->getAuid())));
    // adbquery.first();
+
+    //TODO: implement nicer version of below
 
     double latdiff = fabs(adbrecord.value(13).asDouble() - adbrecord.value(14).asDouble())/(PI*10000000);
     double londiff = fabs(adbrecord.value(15).asDouble() - adbrecord.value(16).asDouble())/(PI*10000000);
@@ -491,12 +466,13 @@ void TEA::centerMapOnSelectedRoute()
 	    width = width * 2;
 	}while((latdiff > height) || (londiff > width));
     }
-
     //center on selected Path
     ui.graphicsView->centerOn(dynamic_cast<QGraphicsItem *>(Entry->getPath()));
     //zoom and load tiles
     ui.sldZoom->setValue(zoom+zoomOld);
-    if(zoom==0)TEA::getTilesInRange();
+    ui.tabwCentre->setCurrentIndex(0);
+    if (zoom==0) getTilesInRange();     //why? getTiles is called when the zoom changes,
+                                        //when it doesn't change (zoom==0), the tiles should already be loaded
 }
 
 void TEA::editMetadata()
@@ -565,15 +541,9 @@ void TEA::trainerSelectionChange()
         drawTrainer();
 }
 
-QPen TEA::getRoutePen(QString auid)
-{
-    QPen pen;
-    pen.setBrush(colors.at(auid.toInt()%colors.count()));
-    return pen;
-}
-
 void TEA::drawTrainer()
 {
+        //todo: implement route comparison mode
 	//get auids
 
 	int value,routeNum = 0; double factor = 1.0;
@@ -648,15 +618,17 @@ void TEA::drawTrainer()
 
 			//curve->setCurveAttribute(QwtPlotCurve::Fitted);	//THINK ABOUT
 			curve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
-			curve->setPen(getRoutePen(auid));
+
+                        //both lead to crashes on loading second route, why?
+                        //maybe because it emits a signal and updatePath is called
+
 			ListItem->setCurve(curve);
 			if( ListItem->checkState() == Qt::Checked)
 			{
-			    curve->attach(ui.qwtPlot);
+                            ListItem->getCurve()->attach(ui.qwtPlot);
 			}
 
 			ui.qwtPlot->replot();
-			ui.lwActiveRoutes->blockSignals(false);
 
 
 			//todo use largest and not last path diagram
@@ -695,7 +667,7 @@ void TEA::drawTrainer()
 	    }
 
 	    curve->setData(x,y);
-	    curve->setStyle(QwtPlotCurve::Lines);
+            curve->setStyle(QwtPlotCurve::Dots);
 	    curve->attach(ui.qwtPlot);
 	    ui.qwtPlot->replot();
 
@@ -763,20 +735,31 @@ void TEA::sldChanged(int value)
 						*/
 
 	QRectF viewRect = ui.graphicsView->mapToScene(0,0,ui.graphicsView->width(),ui.graphicsView->height()).boundingRect();
-	cout << "x,y,w,h: " << QString::number(viewRect.x()).toStdString() << " "
+        /*
+        cout << "x,y,w,h: " << QString::number(viewRect.x()).toStdString() << " "
 						<< QString::number(viewRect.y()).toStdString() << " "
 						<< QString::number(viewRect.width()).toStdString() << " "
 						<< QString::number(viewRect.height()).toStdString() << endl;
-
+        */
 	int i = 0;
         //Iterate through items and delete it if it is in the wrong zoom layer, if not, add 1 to counter.
         //The next time in the while loop it will skip the items already in the correct zoom layer.
         //Once the number of items is equal to the number of skips, all offending tiles have been deleted.
 
+        //todo: unload all tiles (that are not in new zoom layer), always get tiles from the database
+
 	while (scene->items().size()>i)
-        {       //ZLevel 19: Feather/Outline/Stroke, ZLevel 20: Paths
-		if (round(scene->items().at(i)->zValue()) > ui.sldZoom->value() &&
-                        round(scene->items().at(i)->zValue()) != 19 && round(scene->items().at(i)->zValue()) != 20) //routes are at these zvalues
+        {
+            //ZLevel 19: Path Outlines, ZLevel 20: Paths
+            //limiting the number of layers that are above each other at any given moment
+            // increases performance (at least on linux) extremely
+            //TODO: implement that if tiles at a given zoom layer are not available,
+            // the ones in the zoom layer above will be loaded, current: workaround, 2-3 layers are shown
+            // maybe you should be able to choose maxLayers as a sort of performance setting
+            int z = round(scene->items().at(i)->zValue());
+            int maxLayers = 2;
+                if ((z > ui.sldZoom->value() || z<ui.sldZoom->value()-(maxLayers-1)) &&
+                        z != 19 && z != 20) //routes are at these zvalues
 			scene->removeItem(scene->items().at(i));
                 else i++;
 	}
@@ -794,7 +777,12 @@ void TEA::sldChanged(int value)
 
 TEA::~TEA()
 {
-
+/* Is probably unnecessary, since ActiveRouteListItem should inherit ui.lwActiveRoutes as parent item
+for (int i = 0;i<ui.lwActiveRoutes->count();++i)
+{ActiveRouteListItem *ListItem = dynamic_cast<ActiveRouteListItem *>(ui.lwActiveRoutes->item(i));
+    ListItem->~ActiveRouteListItem();
+}
+*/
 }
 
 void TEA::About()
@@ -914,14 +902,14 @@ void TEA::drawRoute(QString auid, bool asterisk)
     QSqlRecord metadata = getRouteMetadata(auid, "adb");
 
     ActiveRouteListItem *Entry = new ActiveRouteListItem(metadata.value(6).toString(), auid.toInt());
-    ui.lwActiveRoutes->blockSignals(true);
+
 
     //TODO: check if item is already present in ItemView (+Path)
     if( ui.lwActiveRoutes->currentIndex().row() != auid.toInt() )
     {
 	Entry->setAuid( auid.toInt() );
 	ui.lwActiveRoutes->selectionModel()->clearSelection();
-	ui.lwActiveRoutes->insertItem(auid.toInt(), Entry );
+        ui.lwActiveRoutes->insertItem(auid.toInt(), Entry );  //location should be irrelevant, maybe just ->addItem?
 	ui.lwActiveRoutes->setCurrentItem(Entry);
     }
     else    //this case should not occur theoretically, but just to be sure.
@@ -982,7 +970,7 @@ void TEA::drawRoute(QString auid, bool asterisk)
 		//qDebug(QString::number(x)+" "+QString::number(y)+" "+QString::number(getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())))+","+QString::number(getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()))));
 	    }
 	}*/
-	/* schnelle Variante. TODO: Wahl per Menüoption*/
+        /* schnelle Variante */
 		if( ( tempX != 0 ) || ( tempY != 0) ) {
 		    path.lineTo(tempX, tempY);
 		}
@@ -992,22 +980,23 @@ void TEA::drawRoute(QString auid, bool asterisk)
     QGraphicsPathItem *pathItem = new QGraphicsPathItem;
     QGraphicsPathItem *pathItemOutline = new QGraphicsPathItem;
 
-    QPen outlinePen; outlinePen.setBrush(Qt::white);
-
     Entry->setPath(pathItem);
     Entry->setPathOutline(pathItemOutline);
+    Entry->setOutlineZoom(ui.sldZoom->value()); //to get outline
     pathItem->setPath(path);
     pathItemOutline->setPath(path);
-    pathItem->setPen(getRoutePen(auid));
-    pathItemOutline->setPen(outlinePen);
+
     pathItem->setZValue(20);
     pathItemOutline->setZValue(19);
     pathItemOutline->setOpacity(0.7);
 
-    scene->addItem(pathItem);
-    scene->addItem(pathItemOutline);
+    scene->addItem(Entry->getPath());
+    scene->addItem(Entry->getPathOutline());
     scene->setSceneRect(-PI,-PI,2*PI,2*PI);
-    centerMapOnSelectedRoute();
+
+    ui.lwActiveRoutes->setCurrentItem(Entry);
+    centerMapOnSelectedRoute(); //todo: implement centerMapOnRoute(QString auid);
+
     prgBar->reset();
     if(asterisk)Entry->setModified();
 }
@@ -1128,5 +1117,6 @@ bool TEA::maybeExit()
     }
     if ((ret == QMessageBox::Discard) || (ret == QMessageBox::Yes)) return true;
     else if (ret == QMessageBox::Cancel) return false;
+
     return false;
 }

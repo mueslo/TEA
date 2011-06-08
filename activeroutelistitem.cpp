@@ -1,12 +1,23 @@
 #include "activeroutelistitem.h"
 #include "tea.h"
 
-ActiveRouteListItem::ActiveRouteListItem(const QString &text, int row) : QListWidgetItem(text)
+ActiveRouteListItem::ActiveRouteListItem(const QString &name, int auid) : QListWidgetItem(name)
 {
    /* QListWidgetItem NewItem = new QListWidgetItem(text);
     NewItem->setCheckState(Qt::Checked);
     NewItem->setFlags( Qt::ItemIsEditable | NewItem->flags());
     ui.listWidget->insertItem(auid.toInt(), NewItem );*/
+
+    //initialise pointers to null
+    curve = 0;
+    path = 0;
+    pathOutline = 0;
+
+    this->setTextColor(Qt::black);
+
+    colors << Qt::darkBlue << Qt::darkRed
+           << Qt::darkGreen << Qt::darkCyan
+           << Qt::darkMagenta << Qt::darkYellow;
 
     outlinePen.setBrush(Qt::white);
 
@@ -28,12 +39,23 @@ ActiveRouteListItem::~ActiveRouteListItem()
 
 QGraphicsPathItem* ActiveRouteListItem::getPath()
 {
+    //todo: set/create pen here, color is in TextColor
+    if (path != 0)
+    {
+    QPen pen;
+    pen.setBrush(this->textColor());
+    path->setPen(pen);
+    }
     return path;
 }
 
 QGraphicsPathItem* ActiveRouteListItem::getPathOutline()
 {
+    if (pathOutline != 0)
+    {
     pathOutline->setPen(outlinePen);
+    }
+
     return pathOutline;
 }
 
@@ -62,6 +84,7 @@ void ActiveRouteListItem::setPathOutline(QGraphicsPathItem *PathOutline)
 void ActiveRouteListItem::setAuid(int Auid)
 {
     auid = Auid;
+    this->setTextColor(colors.at(auid%colors.count()));
 }
 
 void ActiveRouteListItem::setModified(bool mod)
@@ -97,5 +120,11 @@ void ActiveRouteListItem::setCurve(QwtPlotCurve *Curve)
 
 QwtPlotCurve* ActiveRouteListItem::getCurve()
 {
+    if (curve != 0)
+    {
+    QPen pen;
+    pen.setBrush(this->textColor());
+    curve->setPen(pen);
+    }
     return curve;
 }
