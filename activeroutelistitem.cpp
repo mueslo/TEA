@@ -1,45 +1,34 @@
 #include "activeroutelistitem.h"
 #include "tea.h"
 
-ActiveRouteListItem::ActiveRouteListItem(const QString &name, int auid) : QListWidgetItem(name)
+ActiveRouteListItem::ActiveRouteListItem(const QString &name, int Auid, bool mod, QListWidget *parent) : QListWidgetItem(name,parent)
 {
-   /* QListWidgetItem NewItem = new QListWidgetItem(text);
-    NewItem->setCheckState(Qt::Checked);
-    NewItem->setFlags( Qt::ItemIsEditable | NewItem->flags());
-    ui.listWidget->insertItem(auid.toInt(), NewItem );*/
+    colors << Qt::darkBlue << Qt::darkRed
+           << Qt::darkGreen << Qt::darkCyan
+           << Qt::darkMagenta << Qt::darkYellow;
 
     //initialise pointers to null
     curve = 0;
     path = 0;
     pathOutline = 0;
 
-    this->setTextColor(Qt::black);
-
-    colors << Qt::darkBlue << Qt::darkRed
-           << Qt::darkGreen << Qt::darkCyan
-           << Qt::darkMagenta << Qt::darkYellow;
+    setTextColor(Qt::black);
+    setModified(mod);
+    setName(name);
+    setAuid(Auid);
 
     outlinePen.setBrush(Qt::white);
-
-    Modified = false;
-    this->setCheckState(Qt::Checked);
-    this->setFlags( Qt::ItemIsEditable | this->flags() );
-
+    setCheckState(Qt::Checked);
+    setFlags( Qt::ItemIsEditable | flags() );
 }
-
-//TODO: implement QwtCurve in this class just like QPathItem with Path and Outline.
 
 ActiveRouteListItem::~ActiveRouteListItem()
 {
-    curve->detach();
-    pathOutline->~QGraphicsPathItem();
-    path->~QGraphicsPathItem();
-    curve->~QwtPlotCurve();
+    //The QGraphicsScene deletes all items on it, and the QwtPlot too.
 }
 
 QGraphicsPathItem* ActiveRouteListItem::getPath()
 {
-    //todo: set/create pen here, color is in TextColor
     if (path != 0)
     {
     QPen pen;
@@ -84,28 +73,32 @@ void ActiveRouteListItem::setPathOutline(QGraphicsPathItem *PathOutline)
 void ActiveRouteListItem::setAuid(int Auid)
 {
     auid = Auid;
-    this->setTextColor(colors.at(auid%colors.count()));
+    QColor color = colors.at(Auid%colors.count());
+    setTextColor(color);
 }
 
 void ActiveRouteListItem::setModified(bool mod)
 {
-    if(mod)
+    /*
+    m M = Action
+    0 0 0 do Nothing
+    1 0 1 append *
+    0 1 0 chop *
+    1 1 1 do nothing
+    */
+
+    if (mod!=Modified)
     {
-	if(!Modified)
-	{
-	    Modified = true;
-	    setText(text().append("*"));
-	}
-    }else
-    {
-	if(Modified)
-	{
-	    Modified = false;
-	    QString temp = text();
-	    temp.chop(1);
-	    setText(temp);
-	}
+     if (mod) setText(text().append("*"));
+     else setText(text().left(text().length()-1));
     }
+    Modified = mod;
+}
+
+void ActiveRouteListItem::setName(QString newName)
+{
+    if (Modified) newName.append("*");
+    setText(newName);
 }
 
 bool ActiveRouteListItem::isModified()
@@ -123,7 +116,7 @@ QwtPlotCurve* ActiveRouteListItem::getCurve()
     if (curve != 0)
     {
     QPen pen;
-    pen.setBrush(this->textColor());
+    pen.setBrush(textColor());
     curve->setPen(pen);
     }
     return curve;

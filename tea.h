@@ -80,8 +80,8 @@ private:
     void fillTrainerViewCBoxes();
     void connectSignalsAndSlots();
     void rerenderRoute();
-    void drawRoutes(QSqlQuery auidQuery);
-    void drawRoute(QString auid, bool asterisk = true);
+    void drawRoutes(QSqlQuery auidQuery, bool modified = false);
+    void drawRoute(QString auid, bool modified = false);
     void placeTile(QByteArray tile, int tileX, int tileY, int zoomLevel);
     void createToolBar();
     int zoomOld;

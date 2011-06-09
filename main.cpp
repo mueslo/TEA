@@ -8,11 +8,13 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
+        QApplication::setGraphicsSystem("raster");
 	QApplication a(argc, argv);
         QPixmap splashImage("splash.png");
         QSplashScreen splash(splashImage);
+        splash.setMask(splashImage.mask());
         splash.show();
-	a.setApplicationVersion("0.1");
+        a.setApplicationVersion("0.1");
 	a.setApplicationName("TEA - Tour Evaluation and Analysis");
 
 	TEA w;

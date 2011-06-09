@@ -14,27 +14,31 @@ class ActiveRouteListItem : public QObject, public QListWidgetItem
     Q_OBJECT
 
 public:
-    ActiveRouteListItem(const QString &name, int row);
+    explicit ActiveRouteListItem(const QString &name, int auid, bool mod = 0, QListWidget *parent = 0);
+    ~ActiveRouteListItem();
+
     QGraphicsPathItem* getPath();
     QGraphicsPathItem* getPathOutline();
+    QwtPlotCurve* getCurve();
     QString getAuid();
+    bool isModified();
+
     void setOutlineZoom(int zoomLevel);
+    void setName(QString newName);
     void setPath( QGraphicsPathItem *Path); //TODO: rename setPath to setPathItem
     void setPathOutline(QGraphicsPathItem *PathOutline);
     void setAuid(int Auid);
-    ~ActiveRouteListItem();
-    void setModified(bool mod=1);
-    bool isModified();
+    void setModified(bool mod=true);
     void setCurve(QwtPlotCurve *Curve);
-    QwtPlotCurve* getCurve();
+
 
 private:
     //Ui::MainWin ui;
     QGraphicsPathItem *path;	//Pointer to PathItem in Memory (which is a child of QGraphicsView)
     QGraphicsPathItem *pathOutline;  //Pointer to PathItem in Memory
-    QPen routePen;
-    QPen outlinePen;
     QwtPlotCurve *curve;
+    QPen outlinePen;
+
     QList<QColor> colors;
     int auid;
     bool Modified;
