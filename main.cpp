@@ -14,9 +14,8 @@ int main(int argc, char *argv[])
         QSplashScreen splash(splashImage);
         splash.setMask(splashImage.mask());
         splash.show();
-        a.setApplicationVersion("0.1");
+        a.setApplicationVersion("0.01");
 	a.setApplicationName("TEA - Tour Evaluation and Analysis");
-
 	TEA w;
 	w.show();
         splash.finish(&w);

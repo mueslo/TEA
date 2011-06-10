@@ -21,6 +21,7 @@ public:
     QGraphicsPathItem* getPathOutline();
     QwtPlotCurve* getCurve();
     QString getAuid();
+    QString getName();
     bool isModified();
 
     void setOutlineZoom(int zoomLevel);
@@ -41,6 +42,7 @@ private:
 
     QList<QColor> colors;
     int auid;
+    QString name;
     bool Modified;
 
 };

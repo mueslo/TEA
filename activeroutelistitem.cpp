@@ -89,16 +89,22 @@ void ActiveRouteListItem::setModified(bool mod)
 
     if (mod!=Modified)
     {
-     if (mod) setText(text().append("*"));
-     else setText(text().left(text().length()-1));
+     if (mod) setText(name+"*");
+     else setText(name);
     }
     Modified = mod;
 }
 
 void ActiveRouteListItem::setName(QString newName)
 {
+    name = newName;
     if (Modified) newName.append("*");
     setText(newName);
+}
+
+QString ActiveRouteListItem::getName()
+{
+    return name;
 }
 
 bool ActiveRouteListItem::isModified()

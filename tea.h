@@ -17,6 +17,7 @@ class TEA : public QMainWindow
 public:
     TEA(QWidget *parent = 0);
     ~TEA();
+    enum Save { ForceSave, AskToSave, DoNotSave };
 
 public slots:
 
@@ -33,7 +34,7 @@ private slots:
     void mapSourceChanged();
     void trainerModeChanged();
     void trainerSelectionChange();
-    void unloadRoute();
+
     void removeRoute();
     void setGeneralSettings();
 
@@ -58,6 +59,8 @@ private slots:
     void zoomIn();
     void zoomOut();
     void actionViewDatabase();
+    void unloadAll();
+    void unloadSelected();
 
     /* */
     //void graphicsViewResized();
@@ -71,19 +74,32 @@ private:
     bool nodeNextSkip(QSqlQuery routeData, int timesToSkip);
     bool maybeExit();
     void drawTrainer();
+
     void getTile(int tileX, int tileY, int zoomLevel);
     void getTilesInRange();
+
+    void unload(ActiveRouteListItem* route);
+    void unload(QList<QListWidgetItem*> routes);
+
+    bool save(QList<QListWidgetItem*> routes, TEA::Save behaviour = TEA::AskToSave);
+    bool save(ActiveRouteListItem *route, TEA::Save behaviour = TEA::AskToSave);
+
     void createStatusBar();
+
     void exportKML(QString auid);
     void exportSelected(QString format);
     void exportTEA(QString auid);
+
     void fillTrainerViewCBoxes();
     void connectSignalsAndSlots();
+
     void rerenderRoute();
     void drawRoutes(QSqlQuery auidQuery, bool modified = false);
     void drawRoute(QString auid, bool modified = false);
     void placeTile(QByteArray tile, int tileX, int tileY, int zoomLevel);
     void createToolBar();
+
+
     int zoomOld;
     QProgressBar *prgBar;
     QString mapSource;

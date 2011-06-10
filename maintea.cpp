@@ -325,9 +325,14 @@ void TEA::exportKML(QString auid)
                     QSqlRecord metadata = getRouteMetadata(auid,"adb");
                     QSqlQuery routedata = getRouteData(auid,"adb");
                     QString name = metadata.value(6).toString();
+                    /*
+                    QString tags = metadata.value(5).toString();
+                    QString location = metadata.value(4).toString();
+                    QString date = metadata.value(2).toDate().toString();
+                    QString duration = metadata.value(12).toTime().toString(); */
+
                     while (!templateFile.atEnd())
                     {
-
                         QString line = templateFile.readLine();
                         if (line.contains("__NAME__")) line.replace("__NAME__",name);
                         else if (line.contains("__COORDINATES__"))
@@ -338,19 +343,28 @@ void TEA::exportKML(QString auid)
                             QString alt;
 
                             //could be that first node is left out, check it
+
+                            int max = metadata.value(20).toInt();
+                            prgBar->setMaximum(100);
+                            int i = 0;
+
                             while (routedata.next())
                             {
+                                if (i%(max/100)==0) prgBar->setValue(++i);  //would lead to error for no entries but ten routedate.next() should never return anything
+                                prgBar->setValue(++i);
                                 //todo: progress
                                 lat = QString::number(getLatFromRawLat(routedata.value(4).toString()));
                                 lon = QString::number(getLonFromRawLon(routedata.value(5).toString()));
                                 alt = QString::number(routedata.value(6).toInt()/10.0);
-                                coordinates.append(lon+","+lat+","+alt+"\n");
+                                coordinates.append(lon+","+lat+","+alt+"\r\n");
                                 //todo: tab spacing
                             }
                             line.replace("__COORDINATES__",coordinates);
                         }
                         s << line;
                     }
+                    prgBar->reset();
+                    ui.textInformation->append("Route successfully exported to "+filePath);
                 }
 
                 file.close();
@@ -406,7 +420,7 @@ void TEA::connectSignalsAndSlots()
 	connect(ui.actionCenter_Map, SIGNAL(triggered()), this, SLOT(centerMapOnSelectedRoute()));
 	connect(ui.lwActiveRoutes, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showListContextMenu(const QPoint &)));
 	connect(ui.saveAllAction, SIGNAL(triggered()), this, SLOT(saveAllToDatabase()));
-	connect(ui.actionClose_route, SIGNAL(triggered()), this, SLOT(unloadRoute()));
+        connect(ui.actionClose_route, SIGNAL(triggered()), this, SLOT(unloadSelected()));
 	//connect(ui.graphicsView, SIGNAL(resizeEvent()), this, SLOT(graphicsViewResized()));
 	//connect(ui.graphicsView, SIGNAL(mousePressed()), this, SLOT(grphPressed()));
 	//ui.tbMain->addAction(QIcon("icons/32x32_0560/map.png"), "Something with maps", this, "mapAction");
@@ -420,7 +434,9 @@ void TEA::showListContextMenu(const QPoint &pos)
     contextMenu->addAction(ui.saveAction);
     contextMenu->addAction(ui.actionCenter_Map);
     contextMenu->addAction(ui.actionEdit_metadata);
+    contextMenu->addSeparator();
     contextMenu->addAction(ui.actionExport_as_tea);
+    contextMenu->addAction(ui.kmlExportAction);
     contextMenu->addSeparator();
     contextMenu->addAction(ui.actionClose_route);
     contextMenu->addAction(ui.actionDelete_route_from_database);
@@ -885,7 +901,6 @@ void TEA::saveSelectedToDatabase()
 {
     //get selection
     QList<QListWidgetItem*> selectedItems = ui.lwActiveRoutes->selectedItems();
-    //run saveToDatabase method
     saveToDatabase(selectedItems);
 }
 
@@ -1024,49 +1039,121 @@ void TEA::drawRoute(QString auid, bool modified)
     prgBar->reset();
 }
 
-//TODO: TEA::unloadRoute(QString auid);
-//TODO: TEA::unloadRoutes(QList<QListWidgetItem> selection);
-void TEA::unloadRoute()
+bool TEA::save(QList<QListWidgetItem*> routes, TEA::Save behaviour)
 {
-    //item ausfindig machen
+    //todo: check if there are actually changes
+
+    TEA::Save newBehaviour;
+    if (routes.count() != 1) {
+    if (behaviour != TEA::AskToSave) newBehaviour=behaviour;
+    else
+    {
+    QMessageBox saveModeBox(QMessageBox::Warning,"Closing routes", "There are unsaved changes in your routes.");
+    QPushButton *SaveAllButton = saveModeBox.addButton(QMessageBox::SaveAll);
+    QPushButton *PromptForEachButton = saveModeBox.addButton(tr("Prompt for each"), QMessageBox::AcceptRole);
+    QPushButton *DiscardAllButton = saveModeBox.addButton(tr("Discard all"), QMessageBox::DestructiveRole);
+    QPushButton *CancelButton = saveModeBox.addButton(tr("Cancel"), QMessageBox::RejectRole);
+
+    saveModeBox.exec();
+
+    if (saveModeBox.clickedButton() == SaveAllButton) newBehaviour = TEA::ForceSave;
+    else if (saveModeBox.clickedButton() == PromptForEachButton) newBehaviour = TEA::AskToSave;
+    else if (saveModeBox.clickedButton() == DiscardAllButton) newBehaviour = TEA::DoNotSave;
+    else if (saveModeBox.clickedButton() == CancelButton) return false;
+    }
+    } else newBehaviour = behaviour;
+
+    if(routes.isEmpty())
+    {
+        ui.textInformation->append(tr("No Item selected"));
+        return false;
+    }
+    //for (int i=0; i<selectedItems.count(); i++)
+    //for (int i=routes.count()-1; i>-1; i--)
+    int i = routes.count()-1;
+    bool accepted = true;
+    while (i>-1 && accepted == true)
+    {
+        //get ActiveRouteListItem
+        ActiveRouteListItem *route = dynamic_cast<ActiveRouteListItem *>(routes.at(i));
+        accepted = save(route,newBehaviour);
+        i--;
+    }
+    return accepted;
+}
+
+bool TEA::save(ActiveRouteListItem *route, TEA::Save behaviour)
+{
+    //save changes
+    QMessageBox::StandardButton ret;
+
+    if(route->isModified() && behaviour==TEA::AskToSave)
+    {
+
+            ret = QMessageBox::warning(this, tr("Closing route "+route->getName()),
+                                       tr("There are unsaved changes in your route "+route->getName()+"!"),
+                                       QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+
+    }
+                if (ret==QMessageBox::Save || behaviour == TEA::ForceSave) saveRoute(route->getAuid());
+                //uninitialised ret is always != QMessageBox::Cancel
+                if (ret != QMessageBox::Cancel) return true; else return false;
+}
+
+void TEA::unload(ActiveRouteListItem *route)
+{
+    if (route != 0)
+    {
+        //routendaten löschen
+        //aus active_metadata löschen
+        route->getCurve()->detach();
+        deleteRoute(route->getAuid(), "adb");
+
+        //pfad löschen
+        //pfadumrandung löschen
+        //kurve löschen
+        //eintrag löschen
+        delete route->getCurve();
+        delete route->getPath();
+        delete route->getPathOutline();
+        delete route;
+
+        ui.qwtPlot->replot();
+
+    }
+    else
+    {
+        qDebug("Route is null.");
+    }
+}
+
+void TEA::unloadSelected()
+{
 
     QList<QListWidgetItem*> selectedItems = ui.lwActiveRoutes->selectedItems();
-    if(selectedItems.isEmpty())
+    if (save(selectedItems)) unload(selectedItems);
+}
+
+void TEA::unloadAll()
+{
+    QList<QListWidgetItem*> allItems = ui.lwActiveRoutes->findItems("",Qt::MatchContains);
+    if (save(allItems)) unload(allItems);
+}
+
+void TEA::unload(QList<QListWidgetItem*> routes)
+{
+    //item ausfindig machen
+    if(routes.isEmpty())
     {
 	ui.textInformation->append(tr("No Item selected"));
 	return;
     }
     //for (int i=0; i<selectedItems.count(); i++)
-    for (int i=selectedItems.count()-1; i>-1; i--)
+    for (int i=routes.count()-1; i>-1; i--)
     {
 	//get ActiveRouteListItem
-	ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(selectedItems.at(i));
-
-	//save all changes from adb to rdb
-	if (Entry != 0)
-	{
-	    //routendaten löschen
-	    //aus active_metadata löschen
-            Entry->getCurve()->detach();
-	    deleteRoute(Entry->getAuid(), "adb");
-
-            //pfad löschen
-            //pfadumrandung löschen
-            //kurve löschen
-            //eintrag löschen
-            delete Entry->getCurve();
-            delete Entry->getPath();
-            delete Entry->getPathOutline();
-            delete Entry;
-
-	    ui.qwtPlot->replot();
-
-
-	}
-	else
-	{
-	    qDebug("Could not take object");
-	}
+        ActiveRouteListItem *route = dynamic_cast<ActiveRouteListItem *>(routes.at(i));
+        unload(route);
     }
 }
 
@@ -1122,7 +1209,7 @@ bool TEA::maybeExit()
     {
 	    ret = QMessageBox::warning(this, tr("TEA exit dialog"),
 				       tr("There are unsaved changes!"),
-				       QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+                                       QMessageBox::SaveAll | QMessageBox::Discard | QMessageBox::Cancel);
 	}
     else
     {
@@ -1130,7 +1217,7 @@ bool TEA::maybeExit()
 				   tr("Do you really want to quit?"),
 				   QMessageBox::Yes | QMessageBox::Cancel);
     }
-    if (ret ==QMessageBox::Save)
+    if (ret ==QMessageBox::SaveAll)
     {
 	//TODO check if this makes sense
 	//save every route from ADB in RDB
