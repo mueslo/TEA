@@ -72,8 +72,9 @@ private:
     Ui::MainWin ui;
     int getMetadata(QString auid);
     bool nodeNextSkip(QSqlQuery routeData, int timesToSkip);
+    bool nodeNextSkip(QSqlQuery* routeData, int timesToSkip);
     bool maybeExit();
-    void drawTrainer();
+
 
     void getTile(int tileX, int tileY, int zoomLevel);
     void getTilesInRange();
@@ -94,10 +95,16 @@ private:
     void connectSignalsAndSlots();
 
     void rerenderRoute();
-    void drawRoutes(QSqlQuery auidQuery, bool modified = false);
-    void drawRoute(QString auid, bool modified = false);
+    void addNewRoutes(QSqlQuery auidQuery, bool modified = false);
+    void addRoute(QString auid, bool modified);
+    void addPath(ActiveRouteListItem *route, QSqlQuery *routeData, QSqlRecord *metadata);
+    void addCurve(ActiveRouteListItem *route, QSqlQuery *routeData, QSqlRecord *metadata);
+    void redrawTrainer();
     void placeTile(QByteArray tile, int tileX, int tileY, int zoomLevel);
     void createToolBar();
+    bool routeAdded(QString auid);
+    bool routesModified();
+    ActiveRouteListItem* find(QString auid);
 
 
     int zoomOld;

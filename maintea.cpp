@@ -453,7 +453,7 @@ void TEA::updatePath(QListWidgetItem *Item)
 
     ActiveRouteListItem *ListItem = dynamic_cast<ActiveRouteListItem *>(Item);
 
-    if(ListItem == 0) return;  //check if ListItem is actually valid
+    if(ListItem == 0) {qDebug("listitem is null"); return; }  //check if ListItem is actually valid
 
     QGraphicsPathItem *path = ListItem->getPath();
     QGraphicsPathItem *pathOutline = ListItem->getPathOutline();
@@ -462,11 +462,12 @@ void TEA::updatePath(QListWidgetItem *Item)
     {
     path->setVisible( ListItem->checkState() == Qt::Checked );
     pathOutline->setVisible(ListItem->checkState()==Qt::Checked);
-    }
+    } else qDebug("updatePath path or pathoutline null");
 
     QwtPlotCurve *curve = ListItem->getCurve();
 
-    if (curve == 0) return; //check if curve has not yet been set
+    if (curve == 0) {qDebug("updatePath curve null"); return;} //check if curve has not yet been set
+    qDebug("All routes and paths non-null.");
     if(ListItem->checkState()==Qt::Checked)
     {
         curve->attach(ui.qwtPlot);
@@ -595,18 +596,19 @@ void TEA::trainerModeChanged()
 
 void TEA::trainerSelectionChange()
 {
-        drawTrainer();
+        redrawTrainer();
 }
 
-void TEA::drawTrainer()
+void TEA::redrawTrainer()
 {
         //todo: implement route comparison mode
 	//get auids
 
 	int value,routeNum = 0; double factor = 1.0;
 
-        QSqlQuery auidQuery = getCurrentlyLoadedRoutes();
-
+        QSqlQuery allMetadata = getCurrentlyLoadedRoutes();
+        QString auid;
+/*
 	if (ui.rbNode->isChecked()){
 		ui.qwtPlot->clear();
 
@@ -622,9 +624,21 @@ void TEA::drawTrainer()
                         case 0: ui.qwtPlot->setAxisTitle(2,"Time in s"); break;
 			default: ui.qwtPlot->setAxisTitle(2,"NYI"); break;
 		}
+*/
+                while (allMetadata.next())
+                    {
+                        QSqlRecord* metadata = new QSqlRecord(allMetadata.record());
+                        //TAT: move delete curve here from addcurve
+                        auid = metadata->value(0).toString();
 
-		while (auidQuery.next())
-                    {                       
+                        QSqlQuery *routedata = new QSqlQuery(getRouteData(auid, "adb"));
+                        addCurve(find(auid),routedata,metadata);
+
+
+                        delete routedata;
+                        delete metadata;
+
+                        /*
                         QwtArray<double> x,y;
                         QwtPlotCurve *curve = new QwtPlotCurve; //new
 
@@ -692,9 +706,12 @@ void TEA::drawTrainer()
 			//trainerScene->setSceneRect(path.boundingRect());
 			//ui.graphicsViewTrainer->fitInView(path.boundingRect(),Qt::IgnoreAspectRatio);
 			routeNum++;
+                        */
+                    //}//new
 
-		}
+                    }
 
+/*
 	} else {
 	    ui.qwtPlot->clear();
 	    switch (ui.cboxY->currentIndex()) {
@@ -733,6 +750,21 @@ void TEA::drawTrainer()
 
 	//get relevant data either from route or from metadata
 	//draw
+        */
+}
+
+ActiveRouteListItem* TEA::find(QString auid)
+{
+    ActiveRouteListItem* route = 0;
+    QList<QListWidgetItem*> allItems = ui.lwActiveRoutes->findItems("",Qt::MatchContains);
+    int i = 0;
+    while (i<allItems.count() && route==0)
+    {
+        ActiveRouteListItem* item = dynamic_cast<ActiveRouteListItem*>(allItems.at(i));
+        if (item->getAuid()==auid) route=item;
+        ++i;
+    }
+    return route;
 }
 
 void TEA::mapSourceChanged()
@@ -873,8 +905,7 @@ void TEA::loadFromFile()
 			ui.textInformation->append("Metadata written.");
 			qDebug("Metadata written");
 
-                        drawRoute(auid,true);
-                        drawTrainer();
+                        addRoute(auid, true);
 
 		} else ui.textInformation->append("Route seems to have already been loaded or saved.");
 
@@ -888,6 +919,13 @@ bool TEA::nodeNextSkip(QSqlQuery routeData, int timesToSkip)
 	int i;
 	for(i=1; i<timesToSkip; i++) routeData.next();
 	return routeData.next();
+}
+
+bool TEA::nodeNextSkip(QSqlQuery *routeData, int timesToSkip)
+{
+        int i;
+        for(i=1; i<timesToSkip; i++) routeData->next();
+        return routeData->next();
 }
 
 int TEA::getMetadata(QString auid)
@@ -943,60 +981,119 @@ void TEA::loadFromDatabase()
 {
 	FindDialog d;
 	d.exec();
-        drawRoutes(getCurrentlyLoadedRoutes(),false);
-        drawTrainer();
+        addNewRoutes(getCurrentlyLoadedRoutes(),false);
 }
 
 //TODO: addRoute to replace drawRoute, addRoute does necessary modifications to the ListWidget,
 // and calls drawMap(drawRoute) and drawTrainer
 
-void TEA::drawRoute(QString auid, bool modified)
+void TEA::addRoute(QString auid, bool modified)
 {
-    QSqlQuery routeData = getRouteData(auid, "adb");
-    QSqlRecord metadata = getRouteMetadata(auid, "adb");
+    qDebug("addRoute");
+    QSqlQuery *routedata = new QSqlQuery(getRouteData(auid, "adb"));
+    QSqlRecord *metadata = new QSqlRecord(getRouteMetadata(auid, "adb"));
+    ActiveRouteListItem *route = new ActiveRouteListItem(metadata->value(6).toString(), auid.toInt(), modified, ui.lwActiveRoutes);
 
-    ActiveRouteListItem *Entry = new ActiveRouteListItem(metadata.value(6).toString(), auid.toInt(), modified, ui.lwActiveRoutes);
+    ui.lwActiveRoutes->selectionModel()->clearSelection();
+    ui.lwActiveRoutes->insertItem(auid.toInt(), route ); //maybe just additem?
+    ui.lwActiveRoutes->setCurrentItem(route);
 
-    //TODO: check if item is already present in ItemView (+Path)
-    if( ui.lwActiveRoutes->currentIndex().row() != auid.toInt() )
-    {
-	ui.lwActiveRoutes->selectionModel()->clearSelection();
-        ui.lwActiveRoutes->insertItem(auid.toInt(), Entry );  //location should be irrelevant, maybe just ->addItem()?
-	ui.lwActiveRoutes->setCurrentItem(Entry);
-    }
-    else    //this case should not occur theoretically, but just to be sure.
-    {
-	ui.textInformation->append(QString("Item has been already added"));
-	return;
-    }
+    addPath(route,routedata,metadata);
+    addCurve(route,routedata,metadata);
 
-    int nodeSkips = metadata.value(20).toInt()/2500+1;
+    updatePath(route);
+
+    delete routedata;
+    delete metadata;
+}
+
+void TEA::addCurve(ActiveRouteListItem *route, QSqlQuery *routedata, QSqlRecord *metadata)
+{
+    qDebug("Generating curve.");
+
+    //todo: implement route comparison mode
+    //todo: check if new trainer value differs from old one
+
+    if (ui.rbNode->isChecked()){
+        qDebug("Node comparison");
+        int value = 0; double factor = 1.0;
+
+        switch (ui.cboxY->currentIndex()) {
+        case 1: value = 6; ui.qwtPlot->setAxisTitle(0,"Altitude in m"); factor = 0.1; break;
+        case 2:	value = 1; ui.qwtPlot->setAxisTitle(0,"Velocity in km/h"); factor = 0.01; break;
+        case 3: value = 3; ui.qwtPlot->setAxisTitle(0,"Slope in deg"); factor = 0.1; break;
+        case 4: value = 2; ui.qwtPlot->setAxisTitle(0,"Pedal frequency in RPM"); factor = 0.1; break;
+        default: value = 1; ui.qwtPlot->setAxisTitle(0,"NYI"); factor = 0.0; break;
+        }
+
+        switch (ui.cboxX->currentIndex()) {
+        case 0: ui.qwtPlot->setAxisTitle(2,"Time in s"); break;
+        default: ui.qwtPlot->setAxisTitle(2,"NYI"); break;
+        }
+
+        QwtArray<double> x,y;
+        if (route->getCurve()!=0) {qDebug("Deleting old curve"); route->getCurve()->detach(); delete route->getCurve();}
+
+        QwtPlotCurve *curve = new QwtPlotCurve;
+        int i=0;
+        x.clear(); y.clear();
+        //iterate over all nodes
+        while (routedata->next())
+        {
+            if (((routedata->record().value(value).toDouble() != 0.0) && value==6) || value != 6)
+            {  x << (double)i; y << (factor * routedata->record().value(value).toDouble());}
+            i++;
+
+        }
+
+        curve->setData(x,y);
+
+        //curve->setBrush(Qt::cyan); //fill to baseline with QBrush
+
+        //curve->setCurveAttribute(QwtPlotCurve::Fitted);	//THINK ABOUT
+        curve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+
+        route->setCurve(curve);
+        if(route->checkState() == Qt::Checked)
+        {
+            route->getCurve()->attach(ui.qwtPlot);
+        }
+
+        ui.qwtPlot->replot();
+    } else qDebug("Route comparison not yet implemented");
+    routedata->first();
+
+}
+
+void TEA::addPath(ActiveRouteListItem *route, QSqlQuery *routedata, QSqlRecord *metadata)
+{
+    qDebug("Generating path.");
+    int nodeSkips = metadata->value(20).toInt()/2500+1;
     QPainterPath path;
 
-    routeData.first();
-    prgBar->setMaximum(metadata.value(20).toInt());
-
+    routedata->first();
+    prgBar->setMaximum(metadata->value(20).toInt());
 
     double x,y,tempX,tempY;
     //skip zeroes
 
-    while ((getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString())) == 0) && (nodeNextSkip(routeData,0)));
+    while ((getMercatorYFromLat(getLatFromRawLat(routedata->value(4).toString())) == 0) && (nodeNextSkip(routedata,0)));
 
-    if (routeData.isValid()) {
-	x=getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString()));
-	y=getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()));
+    if (routedata->isValid()) {
+        x=getMercatorXFromLon(getLonFromRawLon(routedata->value(5).toString()));
+        y=getMercatorYFromLat(getLatFromRawLat(routedata->value(4).toString()));
 	qDebug("First coordinate: "+QString::number(x)+"; "+QString::number(y));
         path.moveTo(x,y);
     }
 
     /* Draw Path */
-    while (nodeNextSkip(routeData,nodeSkips))
+    while (nodeNextSkip(routedata,nodeSkips))
     {
-	prgBar->setValue(routeData.value(0).toInt());
+        prgBar->setValue(routedata->value(0).toInt());
 	qApp->processEvents();
 
-	tempX=getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString()));
-	tempY=getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()));
+        tempX=getMercatorXFromLon(getLonFromRawLon(routedata->value(5).toString()));
+        tempY=getMercatorYFromLat(getLatFromRawLat(routedata->value(4).toString()));
 	//ui.textInformation->append(QString::number(tempX)+' '+QString::number(tempY));
 
 	/* schöne Variante
@@ -1018,9 +1115,9 @@ void TEA::drawRoute(QString auid, bool modified)
     QGraphicsPathItem *pathItem = new QGraphicsPathItem;
     QGraphicsPathItem *pathItemOutline = new QGraphicsPathItem;
 
-    Entry->setPath(pathItem);
-    Entry->setPathOutline(pathItemOutline);
-    Entry->setOutlineZoom(ui.sldZoom->value()); //to get outline
+    route->setPath(pathItem);
+    route->setPathOutline(pathItemOutline);
+    route->setOutlineZoom(ui.sldZoom->value()); //to get outline
     pathItem->setPath(path);
     pathItemOutline->setPath(path);
 
@@ -1028,58 +1125,62 @@ void TEA::drawRoute(QString auid, bool modified)
     pathItemOutline->setZValue(19);
     pathItemOutline->setOpacity(0.7);
 
-    scene->addItem(Entry->getPath());
-    scene->addItem(Entry->getPathOutline());
+    scene->addItem(route->getPath());
+    scene->addItem(route->getPathOutline());
     scene->setSceneRect(-PI,-PI,2*PI,2*PI);
 
-    ui.lwActiveRoutes->setCurrentItem(Entry);
+    ui.lwActiveRoutes->setCurrentItem(route);
     centerMapOnSelectedRoute();
     //TODO: implement centerMapOnRoute(QString auid);
 
     prgBar->reset();
+    routedata->first();
 }
 
 bool TEA::save(QList<QListWidgetItem*> routes, TEA::Save behaviour)
 {
-    //todo: check if there are actually changes
-
-    TEA::Save newBehaviour;
-    if (routes.count() != 1) {
-    if (behaviour != TEA::AskToSave) newBehaviour=behaviour;
-    else
+    if (routesModified())
     {
-    QMessageBox saveModeBox(QMessageBox::Warning,"Closing routes", "There are unsaved changes in your routes.");
-    QPushButton *SaveAllButton = saveModeBox.addButton(QMessageBox::SaveAll);
-    QPushButton *PromptForEachButton = saveModeBox.addButton(tr("Prompt for each"), QMessageBox::AcceptRole);
-    QPushButton *DiscardAllButton = saveModeBox.addButton(tr("Discard all"), QMessageBox::DestructiveRole);
-    QPushButton *CancelButton = saveModeBox.addButton(tr("Cancel"), QMessageBox::RejectRole);
 
-    saveModeBox.exec();
+        if(routes.isEmpty())
+        {
+            ui.textInformation->append(tr("No Item selected"));
+            return true;
+        }
 
-    if (saveModeBox.clickedButton() == SaveAllButton) newBehaviour = TEA::ForceSave;
-    else if (saveModeBox.clickedButton() == PromptForEachButton) newBehaviour = TEA::AskToSave;
-    else if (saveModeBox.clickedButton() == DiscardAllButton) newBehaviour = TEA::DoNotSave;
-    else if (saveModeBox.clickedButton() == CancelButton) return false;
-    }
-    } else newBehaviour = behaviour;
+        TEA::Save newBehaviour;
+        if (routes.count() != 1) {
+            if (behaviour != TEA::AskToSave) newBehaviour=behaviour;
+            else
+            {
+                QMessageBox saveModeBox(QMessageBox::Warning,"Closing routes", "There are unsaved changes in your routes.");
+                QPushButton *SaveAllButton = saveModeBox.addButton(QMessageBox::SaveAll);
+                QPushButton *PromptForEachButton = saveModeBox.addButton(tr("Prompt for each"), QMessageBox::AcceptRole);
+                QPushButton *DiscardAllButton = saveModeBox.addButton(tr("Discard all"), QMessageBox::DestructiveRole);
+                QPushButton *CancelButton = saveModeBox.addButton(tr("Cancel"), QMessageBox::RejectRole);
 
-    if(routes.isEmpty())
-    {
-        ui.textInformation->append(tr("No Item selected"));
-        return false;
-    }
-    //for (int i=0; i<selectedItems.count(); i++)
-    //for (int i=routes.count()-1; i>-1; i--)
-    int i = routes.count()-1;
-    bool accepted = true;
-    while (i>-1 && accepted == true)
-    {
-        //get ActiveRouteListItem
-        ActiveRouteListItem *route = dynamic_cast<ActiveRouteListItem *>(routes.at(i));
-        accepted = save(route,newBehaviour);
-        i--;
-    }
-    return accepted;
+                saveModeBox.exec();
+
+                if (saveModeBox.clickedButton() == SaveAllButton) newBehaviour = TEA::ForceSave;
+                else if (saveModeBox.clickedButton() == PromptForEachButton) newBehaviour = TEA::AskToSave;
+                else if (saveModeBox.clickedButton() == DiscardAllButton) newBehaviour = TEA::DoNotSave;
+                else if (saveModeBox.clickedButton() == CancelButton) return false;
+            }
+        } else newBehaviour = behaviour;
+
+        //for (int i=0; i<selectedItems.count(); i++)
+        //for (int i=routes.count()-1; i>-1; i--)
+        int i = routes.count()-1;
+        bool accepted = true;
+        while (i>-1 && accepted == true)
+        {
+            //get ActiveRouteListItem
+            ActiveRouteListItem *route = dynamic_cast<ActiveRouteListItem *>(routes.at(i));
+            accepted = save(route,newBehaviour);
+            i--;
+        }
+        return accepted;
+    } else return true;
 }
 
 bool TEA::save(ActiveRouteListItem *route, TEA::Save behaviour)
@@ -1151,7 +1252,6 @@ void TEA::unload(QList<QListWidgetItem*> routes)
     //for (int i=0; i<selectedItems.count(); i++)
     for (int i=routes.count()-1; i>-1; i--)
     {
-	//get ActiveRouteListItem
         ActiveRouteListItem *route = dynamic_cast<ActiveRouteListItem *>(routes.at(i));
         unload(route);
     }
@@ -1162,19 +1262,21 @@ void TEA::removeRoute()
     ;
 }
 
-void TEA::drawRoutes(QSqlQuery auidQuery, bool modified)
+bool TEA::routeAdded(QString auid)
 {
-	//ui.lwActiveRoutes->clear();
-	while (auidQuery.next())
-	{
-	    bool present=false;
-	    for(int i=0; i<ui.lwActiveRoutes->count(); i++)
-	    {
-		ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(ui.lwActiveRoutes->item(i));
-		if(Entry->getAuid() == auidQuery.record().value(0)) present=true;
-	    }
-            if(!present) drawRoute(auidQuery.record().value(0).toString(), modified);
-	}
+    return (find(auid) != 0);
+}
+
+void TEA::addNewRoutes(QSqlQuery auidQuery, bool modified)
+{
+    qDebug("Adding new routes.");
+    QString auid;
+    while (auidQuery.next())
+    {
+        auid = auidQuery.value(0).toString();
+        qDebug("Auid: "+auid);
+        if (!routeAdded(auid)) {qDebug("Adding new route "+auid); addRoute(auid, modified);}
+    }
 }
 
 void TEA::closeEvent(QCloseEvent *event)
@@ -1184,26 +1286,33 @@ void TEA::closeEvent(QCloseEvent *event)
 		event->accept();} else event->ignore();
 }
 
-bool TEA::maybeExit()
+bool TEA::routesModified()
 {
-    //todo: check if there really are unsaved changes
-    //get listitem, check if modified
     QList<QListWidgetItem*> allItems = ui.lwActiveRoutes->findItems("", Qt::MatchContains);
-    bool modified = false;
     if(!allItems.isEmpty())
     {
-	for (int i=0; i<allItems.count(); i++)
-	{
-	    //get ActiveRouteListItem
-	    ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(allItems.at(i));
+        for (int i=0; i<allItems.count(); i++)
+        {
+            //get ActiveRouteListItem
+            ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(allItems.at(i));
 
-	    //save all changes from adb to rdb
-	    if (Entry != 0)
-	    {
-		if(Entry->isModified()) modified = true;
-	    }
-	}
+            //save all changes from adb to rdb
+            if (Entry != 0)
+            {
+                if(Entry->isModified()) return true;
+            }
+        }
+        return false;
     }
+}
+
+bool TEA::maybeExit()
+{
+    QList<QListWidgetItem*> allItems = ui.lwActiveRoutes->findItems("", Qt::MatchContains);
+    return save(allItems);
+    /*
+    QList<QListWidgetItem*> allItems = ui.lwActiveRoutes->findItems("", Qt::MatchContains);
+    bool modified = routesModified();
     QMessageBox::StandardButton ret;
     if(modified)
     {
@@ -1238,4 +1347,5 @@ bool TEA::maybeExit()
     else if (ret == QMessageBox::Cancel) return false;
 
     return false;
+    */
 }
