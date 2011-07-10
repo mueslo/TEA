@@ -61,30 +61,30 @@ TEA::TEA(QWidget *parent) :
 				  QMessageBox::Abort | QMessageBox::Ignore);
 	}
 
-        currentRequests = 0;
+	currentRequests = 0;
 	networkManager = new QNetworkAccessManager(this);
 	connect(networkManager, SIGNAL(finished(QNetworkReply*)),
 		 this, SLOT(downloaded(QNetworkReply*)));
 
-        ui.setupUi(this);
+	ui.setupUi(this);
 	ui.textInformation->append("<b>TEA console</b>");
-        scene = new QGraphicsScene(ui.graphicsView);
-        ui.graphicsView->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+	scene = new QGraphicsScene(ui.graphicsView);
+	ui.graphicsView->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 
 	//tile size: 256px x 256px, in coordinates: 2*PI x 2*PI
 	ui.graphicsView->scale(128/PI,128/PI);
 
-        //todo: rewrite map source selection strategy to make it more elegant
-	mapSource = "http://andy.sandbox.cloudmade.com/tiles/cycle/";
+	//todo: rewrite map source selection strategy to make it more elegant
+	mapSource = "http://tile.opencyclemap.org/cycle/";
 
-        getTile(0,0,0);
+	getTile(0,0,0);
 
-        //initially zoom always = 0
-        zoomOld = 0;
+	//initially zoom always = 0
+	zoomOld = 0;
 
-        ui.graphicsView->setScene(scene);
+	ui.graphicsView->setScene(scene);
 
-        connectSignalsAndSlots();
+	connectSignalsAndSlots();
 	createToolBar();
 	createStatusBar();
 	fillTrainerViewCBoxes();
@@ -157,7 +157,7 @@ void TEA::resizeEvent(QResizeEvent* event)
 	{
 		scene->setSceneRect(-PI,-PI,2*PI,2*PI);
 	} else {
-                ui.textInformation->append("graphicsView initialised"); //todo rm
+		ui.textInformation->append("graphicsView initialised"); //todo rm
 		init = false;
 	}
 
@@ -170,8 +170,8 @@ void TEA::viewChange()
 
 void TEA::getTilesInRange()
 {
-        //TODO: extend this function so that the tiles are not requested from upper left to lower right
-        // corner, but from the center outward.
+	//TODO: extend this function so that the tiles are not requested from upper left to lower right
+	// corner, but from the center outward.
 	QRectF viewRect = ui.graphicsView->mapToScene(0,0,ui.graphicsView->width(),ui.graphicsView->height()).boundingRect();
 	QList<QPoint> XYTileList = getXYTileInRange(ui.sldZoom->value(),
 									getLongFromMercatorX(viewRect.x()+viewRect.width()),
@@ -187,9 +187,9 @@ void TEA::placeTile(QByteArray tile, int tileX, int tileY, int zoomLevel)
 {
 	QPixmap tilePixmap;
 	tilePixmap.loadFromData(tile);
-        QGraphicsPixmapItem *tilePixmapItem = new QGraphicsPixmapItem(tilePixmap);
-        //TAT: could the tiles create dangling/orphaned pointers? i thought so, but they don't seem to
-        // because the error only occurs when you have loaded a route
+	QGraphicsPixmapItem *tilePixmapItem = new QGraphicsPixmapItem(tilePixmap);
+	//TAT: could the tiles create dangling/orphaned pointers? i thought so, but they don't seem to
+	// because the error only occurs when you have loaded a route
 	tilePixmapItem->setPos(tileToCoord(tileX,tileY,zoomLevel));
 	tilePixmapItem->scale(PI / pow(2.0, 7 + zoomLevel),PI / pow(2.0, 7 + zoomLevel));
 	tilePixmapItem->setZValue(zoomLevel);
@@ -202,31 +202,32 @@ void TEA::getTile(int tileX, int tileY, int zoomLevel)
     QByteArray tile = getTileFromDB(zoomLevel,tileX,tileY,mapSource);
     //if ((QString::fromAscii(tile)!="0") ) placeTile(tile, tileX, tileY, zoomLevel);
     if (QString::fromAscii(tile)!="0"){
-        placeTile(tile, tileX, tileY, zoomLevel);
+	placeTile(tile, tileX, tileY, zoomLevel);
     } else if (ui.sldZoom->value() == zoomLevel)
     {   QNetworkRequest request(QUrl(qPrintable(
-                                         mapSource+QString::number(zoomLevel)+"/"+
-                                         QString::number(tileX)+"/"+
-                                         QString::number(tileY)+".png")));
+					 mapSource+QString::number(zoomLevel)+"/"+
+					 QString::number(tileX)+"/"+
+					 QString::number(tileY)+".png")));
 
-        //POI: another possibility would be to save all requests in a variable of type
-        // QStack<QQueue<QNetworkRequest>>. This way, the order in which the tiles are downloaded
-        // and subsequently displayed could be kept, but the redundant downloading below would be a bit
-        // less easy to implement.
 
-        if (currentRequests<5)
-        {
-            //POI: a problem in the current system would be that the same data could be downloaded twice,
-            // for example when one request is put in the stack then you zoom somewhere else, then you go back to the tile that is in the stack
-            // and it is put in the stack again. I'm not sure if it is worth the computational effort here to check every time whether this
-            // request is already in the request stack:
-            // if (newTileRequest(request)) { ... }
-            networkManager->get(request);
-            ++currentRequests;
-        } else {
-        requestStack.push(request);
-        }
-        qDebug(QString::number(currentRequests)+" "+QString::number(requestStack.count()));
+	//POI: another possibility would be to save all requests in a variable of type
+	// QStack<QQueue<QNetworkRequest>>. This way, the order in which the tiles are downloaded
+	// and subsequently displayed could be kept, but the redundant downloading below would be a bit
+	// less easy to implement.
+
+	if (currentRequests<5)
+	{
+	    //POI: a problem in the current system would be that the same data could be downloaded twice,
+	    // for example when one request is put in the stack then you zoom somewhere else, then you go back to the tile that is in the stack
+	    // and it is put in the stack again. I'm not sure if it is worth the computational effort here to check every time whether this
+	    // request is already in the request stack:
+	    // if (newTileRequest(request)) { ... }
+	    networkManager->get(request);
+	    ++currentRequests;
+	} else {
+	requestStack.push(request);
+	}
+	qDebug(QString::number(currentRequests)+" "+QString::number(requestStack.count()));
     }
 }
 
@@ -246,20 +247,23 @@ void TEA::downloaded(QNetworkReply* reply)
 
     QByteArray data = reply->readAll();
     QString path = reply->url().path();
-    path.chop(4);
-    QString noNetworkMessage("Tileserver is not reachable.");
-    if (ui.rbCycleMap->isChecked()) path.remove(0,12);
 
-    int zoomLevel = path.section('/',1,1).toInt();
-    int tileX = path.section('/',2,2).toInt();
-    int tileY = path.section('/',3,3).toInt();
+    QString noNetworkMessage("Tileserver is not reachable.");
+
+    //Format/Meanings: http://domain.tld/path
+    //The following assumes that the path has the following form */zoomLevel/tileX/tileY.end
+
+    path.chop(4); //removes suffix (.end)
+    int zoomLevel = path.section('/',-3,-3).toInt();
+    int tileX = path.section('/',-2,-2).toInt();
+    int tileY = path.section('/',-1,-1).toInt();
 
     //actual data returned
-    if (data.length()!=0) //check whether tile request returned data
+    if (data.length()!=0) //check whether tile request returned data, TODO: check if >= arbitrary value
     {
-        addTileToDB(zoomLevel,tileX,tileY,data,mapSource); //this method also checks presence of tile in db
-        ui.textInformation->append("Tile image file size:" + QString::number(data.length()) + " bits"
-                                   "(x:"+QString::number(tileX)+" y:"+QString::number(tileY)+" z:"+QString::number(zoomLevel)+")");
+	addTileToDB(zoomLevel,tileX,tileY,data,mapSource); //this method also checks presence of tile in db
+	ui.textInformation->append("Tile image file size:" + QString::number(data.length()) + " bits"
+				   "(x:"+QString::number(tileX)+" y:"+QString::number(tileY)+" z:"+QString::number(zoomLevel)+")");
     } //if warning message not yet displayed
     else if (!ui.textInformation->text().endsWith(noNetworkMessage)) ui.textInformation->append("<font color=red>Warning: </font>"+noNetworkMessage);
 
@@ -292,12 +296,12 @@ void TEA::rotateCClockwise()
 
 void TEA::exportSelected(QString format)
 {
-        for(int i=0;i<ui.lwActiveRoutes->selectedItems().count();++i)
-        {
-            ActiveRouteListItem *item = dynamic_cast<ActiveRouteListItem *>(ui.lwActiveRoutes->selectedItems().at(i));
-            if (format.compare("kml",Qt::CaseInsensitive)==0) exportKML(item->getAuid());
-            else qDebug("No such export format available.");
-        }
+	for(int i=0;i<ui.lwActiveRoutes->selectedItems().count();++i)
+	{
+	    ActiveRouteListItem *item = dynamic_cast<ActiveRouteListItem *>(ui.lwActiveRoutes->selectedItems().at(i));
+	    if (format.compare("kml",Qt::CaseInsensitive)==0) exportKML(item->getAuid());
+	    else qDebug("No such export format available.");
+	}
 
 
 
@@ -308,69 +312,69 @@ void TEA::exportKML(QString auid)
     qDebug("exportKML");
 
     QString filePath = QFileDialog::getSaveFileName(this, tr("Export route as KML file"),
-                                                       QDir::homePath(),
-                                                       tr("Keyhole markup language files (*.kml)"));
+						       QDir::homePath(),
+						       tr("Keyhole markup language files (*.kml)"));
     if (QFile::exists(filePath)) QFile::remove(filePath);
     if (filePath != "")
     {
-        QFile templateFile("template.kml"); //TODO: introduce global variable of filename / relative directory to binary
-        if (templateFile.exists())
-        {
-            if (templateFile.open(QIODevice::ReadOnly))
-            {
-                QFile file(filePath);
-                if (file.open(QIODevice::WriteOnly | QIODevice::Append))
-                {
-                    QTextStream s(&file);
-                    QSqlRecord metadata = getRouteMetadata(auid,"adb");
-                    QSqlQuery routedata = getRouteData(auid,"adb");
-                    QString name = metadata.value(6).toString();
-                    /*
-                    QString tags = metadata.value(5).toString();
-                    QString location = metadata.value(4).toString();
-                    QString date = metadata.value(2).toDate().toString();
-                    QString duration = metadata.value(12).toTime().toString(); */
+	QFile templateFile("template.kml"); //TODO: introduce global variable of filename / relative directory to binary
+	if (templateFile.exists())
+	{
+	    if (templateFile.open(QIODevice::ReadOnly))
+	    {
+		QFile file(filePath);
+		if (file.open(QIODevice::WriteOnly | QIODevice::Append))
+		{
+		    QTextStream s(&file);
+		    QSqlRecord metadata = getRouteMetadata(auid,"adb");
+		    QSqlQuery routedata = getRouteData(auid,"adb");
+		    QString name = metadata.value(6).toString();
+		    /*
+		    QString tags = metadata.value(5).toString();
+		    QString location = metadata.value(4).toString();
+		    QString date = metadata.value(2).toDate().toString();
+		    QString duration = metadata.value(12).toTime().toString(); */
 
-                    while (!templateFile.atEnd())
-                    {
-                        QString line = templateFile.readLine();
-                        if (line.contains("__NAME__")) line.replace("__NAME__",name);
-                        else if (line.contains("__COORDINATES__"))
-                        {
-                            QString coordinates;
-                            QString lat;
-                            QString lon;
-                            QString alt;
+		    while (!templateFile.atEnd())
+		    {
+			QString line = templateFile.readLine();
+			if (line.contains("__NAME__")) line.replace("__NAME__",name);
+			else if (line.contains("__COORDINATES__"))
+			{
+			    QString coordinates;
+			    QString lat;
+			    QString lon;
+			    QString alt;
 
-                            //could be that first node is left out, check it
+			    //could be that first node is left out, check it
 
-                            int max = metadata.value(20).toInt();
-                            prgBar->setMaximum(100);
-                            int i = 0;
+			    int max = metadata.value(20).toInt();
+			    prgBar->setMaximum(100);
+			    int i = 0;
 
-                            while (routedata.next())
-                            {
-                                if (i%(max/100)==0) prgBar->setValue(++i);  //would lead to error for no entries but ten routedate.next() should never return anything
-                                prgBar->setValue(++i);
-                                //todo: progress
-                                lat = QString::number(getLatFromRawLat(routedata.value(4).toString()));
-                                lon = QString::number(getLonFromRawLon(routedata.value(5).toString()));
-                                alt = QString::number(routedata.value(6).toInt()/10.0);
-                                coordinates.append(lon+","+lat+","+alt+"\r\n");
-                                //todo: tab spacing
-                            }
-                            line.replace("__COORDINATES__",coordinates);
-                        }
-                        s << line;
-                    }
-                    prgBar->reset();
-                    ui.textInformation->append("Route successfully exported to "+filePath);
-                }
+			    while (routedata.next())
+			    {
+				if (i%(max/100)==0) prgBar->setValue(++i);  //would lead to error for no entries but ten routedate.next() should never return anything
+				prgBar->setValue(++i);
+				//todo: progress
+				lat = QString::number(getLatFromRawLat(routedata.value(4).toString()));
+				lon = QString::number(getLonFromRawLon(routedata.value(5).toString()));
+				alt = QString::number(routedata.value(6).toInt()/10.0);
+				coordinates.append(lon+","+lat+","+alt+"\r\n");
+				//todo: tab spacing
+			    }
+			    line.replace("__COORDINATES__",coordinates);
+			}
+			s << line;
+		    }
+		    prgBar->reset();
+		    ui.textInformation->append("Route successfully exported to "+filePath);
+		}
 
-                file.close();
-                templateFile.close();
-            }
-        } else qDebug("KML template missing.");
+		file.close();
+		templateFile.close();
+	    }
+	} else qDebug("KML template missing.");
 
     }
 
@@ -405,8 +409,8 @@ void TEA::connectSignalsAndSlots()
 	connect(ui.dwBottom, SIGNAL(visibilityChanged(bool)), this, SLOT(consoleChanged()));
 	connect(ui.consoleAction, SIGNAL(triggered()), this, SLOT(consoleButtonTriggered()));
 	connect(ui.rbMapnik, SIGNAL(toggled(bool)), this, SLOT(mapSourceChanged()));
-        connect(ui.kmlExportAction, SIGNAL(triggered()), this, SLOT(exportSelectedKML()));
-        connect(ui.actionExport_as_tea, SIGNAL(triggered()),this,SLOT(exportSelectedTEA()));
+	connect(ui.kmlExportAction, SIGNAL(triggered()), this, SLOT(exportSelectedKML()));
+	connect(ui.actionExport_as_tea, SIGNAL(triggered()),this,SLOT(exportSelectedTEA()));
 	connect(ui.cboxX, SIGNAL(currentIndexChanged(int)), this, SLOT(trainerSelectionChange()));
 	connect(ui.cboxY, SIGNAL(currentIndexChanged(int)), this, SLOT(trainerSelectionChange()));
 	connect(ui.rbNode, SIGNAL(toggled(bool)), this, SLOT(trainerModeChanged()));
@@ -420,7 +424,7 @@ void TEA::connectSignalsAndSlots()
 	connect(ui.actionCenter_Map, SIGNAL(triggered()), this, SLOT(centerMapOnSelectedRoute()));
 	connect(ui.lwActiveRoutes, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showListContextMenu(const QPoint &)));
 	connect(ui.saveAllAction, SIGNAL(triggered()), this, SLOT(saveAllToDatabase()));
-        connect(ui.actionClose_route, SIGNAL(triggered()), this, SLOT(unloadSelected()));
+	connect(ui.actionClose_route, SIGNAL(triggered()), this, SLOT(unloadSelected()));
 	//connect(ui.graphicsView, SIGNAL(resizeEvent()), this, SLOT(graphicsViewResized()));
 	//connect(ui.graphicsView, SIGNAL(mousePressed()), this, SLOT(grphPressed()));
 	//ui.tbMain->addAction(QIcon("icons/32x32_0560/map.png"), "Something with maps", this, "mapAction");
@@ -470,11 +474,11 @@ void TEA::updatePath(QListWidgetItem *Item)
     qDebug("All routes and paths non-null.");
     if(ListItem->checkState()==Qt::Checked)
     {
-        curve->attach(ui.qwtPlot);
+	curve->attach(ui.qwtPlot);
     }
     else
     {
-        curve->detach();
+	curve->detach();
     }
     ui.qwtPlot->replot();
 }
@@ -492,7 +496,7 @@ void TEA::centerMapOnSelectedRoute()
     //if the item has no path data, abort
     if(Entry->getPath()->boundingRect().width() == 0.0)
     {
-        ui.textInformation->append("This Item has no valid path");
+	ui.textInformation->append("This Item has no valid path");
 	return;
     }
 
@@ -530,7 +534,7 @@ void TEA::centerMapOnSelectedRoute()
     ui.sldZoom->setValue(zoom+zoomOld);
     ui.tabwCentre->setCurrentIndex(0);
     if (zoom==0) getTilesInRange();     //why? getTiles is called when the zoom changes,
-                                        //when it doesn't change (zoom==0), the tiles should already be loaded
+					//when it doesn't change (zoom==0), the tiles should already be loaded
 }
 
 void TEA::editMetadata()
@@ -579,10 +583,10 @@ void TEA::setGeneralSettings()
     if (address != "") {
 	QString ip = address.section(":",0,0);
 	int port = address.section(":", -1).toInt();
-        QNetworkProxy proxy = QNetworkProxy(QNetworkProxy::HttpCachingProxy,ip,port);
+	QNetworkProxy proxy = QNetworkProxy(QNetworkProxy::HttpCachingProxy,ip,port);
 	networkManager->setProxy(proxy);
     } else {
-        QNetworkProxy proxy = QNetworkProxy(QNetworkProxy::NoProxy);
+	QNetworkProxy proxy = QNetworkProxy(QNetworkProxy::NoProxy);
 	networkManager->setProxy(proxy);
     }
 
@@ -596,18 +600,18 @@ void TEA::trainerModeChanged()
 
 void TEA::trainerSelectionChange()
 {
-        redrawTrainer();
+	redrawTrainer();
 }
 
 void TEA::redrawTrainer()
 {
-        //todo: implement route comparison mode
+	//todo: implement route comparison mode
 	//get auids
 
 	int value,routeNum = 0; double factor = 1.0;
 
-        QSqlQuery allMetadata = getCurrentlyLoadedRoutes();
-        QString auid;
+	QSqlQuery allMetadata = getCurrentlyLoadedRoutes();
+	QString auid;
 /*
 	if (ui.rbNode->isChecked()){
 		ui.qwtPlot->clear();
@@ -621,62 +625,62 @@ void TEA::redrawTrainer()
 		}
 
 		switch (ui.cboxX->currentIndex()) {
-                        case 0: ui.qwtPlot->setAxisTitle(2,"Time in s"); break;
+			case 0: ui.qwtPlot->setAxisTitle(2,"Time in s"); break;
 			default: ui.qwtPlot->setAxisTitle(2,"NYI"); break;
 		}
 */
-                while (allMetadata.next())
-                    {
-                        QSqlRecord* metadata = new QSqlRecord(allMetadata.record());
-                        //TAT: move delete curve here from addcurve
-                        auid = metadata->value(0).toString();
+		while (allMetadata.next())
+		    {
+			QSqlRecord* metadata = new QSqlRecord(allMetadata.record());
+			//TAT: move delete curve here from addcurve
+			auid = metadata->value(0).toString();
 
-                        QSqlQuery *routedata = new QSqlQuery(getRouteData(auid, "adb"));
-                        addCurve(find(auid),routedata,metadata);
+			QSqlQuery *routedata = new QSqlQuery(getRouteData(auid, "adb"));
+			addCurve(find(auid),routedata,metadata);
 
 
-                        delete routedata;
-                        delete metadata;
+			delete routedata;
+			delete metadata;
 
-                        /*
-                        QwtArray<double> x,y;
-                        QwtPlotCurve *curve = new QwtPlotCurve; //new
+			/*
+			QwtArray<double> x,y;
+			QwtPlotCurve *curve = new QwtPlotCurve; //new
 
 			QString auid = auidQuery.record().value(0).toString();
 
-                        //QND search for auid in listwidget to obtain row/Item
-                        int row = -1;
-                        ActiveRouteListItem *ListItem = 0;
+			//QND search for auid in listwidget to obtain row/Item
+			int row = -1;
+			ActiveRouteListItem *ListItem = 0;
 
-                        for (int i = 0; i<(ui.lwActiveRoutes->count());++i)
-                        {
-                            QListWidgetItem *Item = ui.lwActiveRoutes->item(i);
-                            ActiveRouteListItem *ListItemIt = dynamic_cast<ActiveRouteListItem *>(Item);
-                            if (ListItemIt->getAuid()==auid) {row = i; ListItem = ListItemIt;}
-                        }
+			for (int i = 0; i<(ui.lwActiveRoutes->count());++i)
+			{
+			    QListWidgetItem *Item = ui.lwActiveRoutes->item(i);
+			    ActiveRouteListItem *ListItemIt = dynamic_cast<ActiveRouteListItem *>(Item);
+			    if (ListItemIt->getAuid()==auid) {row = i; ListItem = ListItemIt;}
+			}
 			if( row == -1)
 			{
 			    qDebug("Kurve konnte nicht erstellt werden, keinen passenden ListItemEintrag gefunden.");
 			    continue;
 			}
 
-                        //Item = ui.lwActiveRoutes->item(auid.toInt()); //AUID should match position of Item.
-                        //ActiveRouteListItem *ListItem = dynamic_cast<ActiveRouteListItem *>(Item);
+			//Item = ui.lwActiveRoutes->item(auid.toInt()); //AUID should match position of Item.
+			//ActiveRouteListItem *ListItem = dynamic_cast<ActiveRouteListItem *>(Item);
 
 
 			QSqlQuery route = getRouteData(auid, "adb");
 
 			int i=0;
-                        x.clear(); y.clear();
-                        //iterate over all nodes
+			x.clear(); y.clear();
+			//iterate over all nodes
 			while (route.next())
-                        {
+			{
 
-                            if ((route.record().value(value).toDouble() != 0.0) && value == 6)
-                                {  x << (double)i; y << (factor * route.record().value(value).toDouble());}
-                                else if (value != 6){
+			    if ((route.record().value(value).toDouble() != 0.0) && value == 6)
+				{  x << (double)i; y << (factor * route.record().value(value).toDouble());}
+				else if (value != 6){
 				    x << (double)i; y << (factor * route.record().value(value).toDouble()); }
-                            i++;
+			    i++;
 
 			}
 
@@ -685,18 +689,18 @@ void TEA::redrawTrainer()
 			//plotList.at(routeNum)->attach(ui.qwtPlot);
 			curve->setData(x,y);
 
-                        //curve->setBrush(Qt::cyan); //fill to baseline with QBrush
+			//curve->setBrush(Qt::cyan); //fill to baseline with QBrush
 
 			//curve->setCurveAttribute(QwtPlotCurve::Fitted);	//THINK ABOUT
 			curve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
 
-                        //both lead to crashes on loading second route, why?
-                        //maybe because it emits a signal and updatePath is called
+			//both lead to crashes on loading second route, why?
+			//maybe because it emits a signal and updatePath is called
 
 			ListItem->setCurve(curve);
 			if( ListItem->checkState() == Qt::Checked)
 			{
-                            ListItem->getCurve()->attach(ui.qwtPlot);
+			    ListItem->getCurve()->attach(ui.qwtPlot);
 			}
 
 			ui.qwtPlot->replot();
@@ -706,10 +710,10 @@ void TEA::redrawTrainer()
 			//trainerScene->setSceneRect(path.boundingRect());
 			//ui.graphicsViewTrainer->fitInView(path.boundingRect(),Qt::IgnoreAspectRatio);
 			routeNum++;
-                        */
-                    //}//new
+			*/
+		    //}//new
 
-                    }
+		    }
 
 /*
 	} else {
@@ -732,16 +736,16 @@ void TEA::redrawTrainer()
 	    }
 
 	    QSqlQuery metadata = getAllMetadata("adb");
-            QwtPlotCurve *curve = new QwtPlotCurve; //new
+	    QwtPlotCurve *curve = new QwtPlotCurve; //new
 
-            QwtArray<double> x,y;
+	    QwtArray<double> x,y;
 	    while (metadata.next()) {
 	    x << (factor * metadata.value(value).toDouble());
 	    y << (factor2 * metadata.value(value2).toDouble());
 	    }
 
 	    curve->setData(x,y);
-            curve->setStyle(QwtPlotCurve::Dots);
+	    curve->setStyle(QwtPlotCurve::Dots);
 	    curve->attach(ui.qwtPlot);
 	    ui.qwtPlot->replot();
 
@@ -750,7 +754,7 @@ void TEA::redrawTrainer()
 
 	//get relevant data either from route or from metadata
 	//draw
-        */
+	*/
 }
 
 ActiveRouteListItem* TEA::find(QString auid)
@@ -760,9 +764,9 @@ ActiveRouteListItem* TEA::find(QString auid)
     int i = 0;
     while (i<allItems.count() && route==0)
     {
-        ActiveRouteListItem* item = dynamic_cast<ActiveRouteListItem*>(allItems.at(i));
-        if (item->getAuid()==auid) route=item;
-        ++i;
+	ActiveRouteListItem* item = dynamic_cast<ActiveRouteListItem*>(allItems.at(i));
+	if (item->getAuid()==auid) route=item;
+	++i;
     }
     return route;
 }
@@ -770,7 +774,7 @@ ActiveRouteListItem* TEA::find(QString auid)
 void TEA::mapSourceChanged()
 {
 	if (ui.rbMapnik->isChecked()) mapSource = "http://tile.openstreetmap.org/";
-	else mapSource = "http://andy.sandbox.cloudmade.com/tiles/cycle/";
+	else mapSource = "http://tile.opencyclemap.org/cycle/";
 	int i = 0;
 	while (scene->items().size()>i)
 	{
@@ -816,7 +820,7 @@ void TEA::sldChanged(int value)
 	int dZoom = zoomNew-zoomOld;
 	//QRectF oldSceneRect = scene->sceneRect();
 	ui.graphicsView->scale(pow(2,(dZoom)),pow(2,(dZoom)));
-        /*
+	/*
 	scene->setSceneRect(oldSceneRect.x()+oldSceneRect.width()*(0.5 - pow(2.0,-dZoom-1)),
 						oldSceneRect.y()+oldSceneRect.height()*(0.5 - pow(2.0,-dZoom-1)),
 						oldSceneRect.width()*pow(2.0,-dZoom),
@@ -824,43 +828,43 @@ void TEA::sldChanged(int value)
 						*/
 
 	QRectF viewRect = ui.graphicsView->mapToScene(0,0,ui.graphicsView->width(),ui.graphicsView->height()).boundingRect();
-        /*
-        cout << "x,y,w,h: " << QString::number(viewRect.x()).toStdString() << " "
+	/*
+	cout << "x,y,w,h: " << QString::number(viewRect.x()).toStdString() << " "
 						<< QString::number(viewRect.y()).toStdString() << " "
 						<< QString::number(viewRect.width()).toStdString() << " "
 						<< QString::number(viewRect.height()).toStdString() << endl;
-        */
+	*/
 	int i = 0;
-        //Iterate through items and delete it if it is in the wrong zoom layer, if not, add 1 to counter.
-        //The next time in the while loop it will skip the items already in the correct zoom layer.
-        //Once the number of items is equal to the number of skips, all offending tiles have been deleted.
+	//Iterate through items and delete it if it is in the wrong zoom layer, if not, add 1 to counter.
+	//The next time in the while loop it will skip the items already in the correct zoom layer.
+	//Once the number of items is equal to the number of skips, all offending tiles have been deleted.
 
-        //todo: unload all tiles (that are not in new zoom layer), always get tiles from the database
+	//todo: unload all tiles (that are not in new zoom layer), always get tiles from the database
 
 	while (scene->items().size()>i)
-        {
-            //ZLevel 19: Path Outlines, ZLevel 20: Paths
-            //limiting the number of layers that are above each other at any given moment
-            // increases performance (at least on linux) extremely
-            //TODO: implement that if tiles at a given zoom layer are not available,
-            // the ones in the zoom layer above will be loaded, current: workaround, 4 layers are shown
-            // maybe you should be able to choose maxLayers as a sort of performance setting
-            // another possibility would be to have one 'master' background which always gets the last recent
-            // map data and only the newest tiles are displayed
-            int z = round(scene->items().at(i)->zValue());
-            int maxLayers = 4;
-                if ((z > ui.sldZoom->value() || z<ui.sldZoom->value()-(maxLayers-1)) &&
-                        z != 19 && z != 20) //routes are at these zvalues
+	{
+	    //ZLevel 19: Path Outlines, ZLevel 20: Paths
+	    //limiting the number of layers that are above each other at any given moment
+	    // increases performance (at least on linux) extremely
+	    //TODO: implement that if tiles at a given zoom layer are not available,
+	    // the ones in the zoom layer above will be loaded, current: workaround, 4 layers are shown
+	    // maybe you should be able to choose maxLayers as a sort of performance setting
+	    // another possibility would be to have one 'master' background which always gets the last recent
+	    // map data and only the newest tiles are displayed
+	    int z = round(scene->items().at(i)->zValue());
+	    int maxLayers = 4;
+		if ((z > ui.sldZoom->value() || z<ui.sldZoom->value()-(maxLayers-1)) &&
+			z != 19 && z != 20) //routes are at these zvalues
 			scene->removeItem(scene->items().at(i));
-                else i++;
+		else i++;
 	}
 
-        for (int i = 0; i<(ui.lwActiveRoutes->count());++i)
-        {
-            QListWidgetItem *Item = ui.lwActiveRoutes->item(i);
-            ActiveRouteListItem *ListItem = dynamic_cast<ActiveRouteListItem *>(Item);
-            ListItem->setOutlineZoom(zoomNew);
-        }
+	for (int i = 0; i<(ui.lwActiveRoutes->count());++i)
+	{
+	    QListWidgetItem *Item = ui.lwActiveRoutes->item(i);
+	    ActiveRouteListItem *ListItem = dynamic_cast<ActiveRouteListItem *>(Item);
+	    ListItem->setOutlineZoom(zoomNew);
+	}
 
 	getTilesInRange();
 	zoomOld = ui.sldZoom->value();
@@ -882,9 +886,9 @@ void TEA::loadFromFile()
 {
 
 	QString TEAFilePath = QFileDialog::getOpenFileName(this, tr("Open TEA route file"),
-                        QDir::homePath(),
+			QDir::homePath(),
 			tr("TEA route files (*.tea)"));
-        if (TEAFilePath != "" && QFile::exists(TEAFilePath))
+	if (TEAFilePath != "" && QFile::exists(TEAFilePath))
 	{
 		ui.textInformation->append("Path chosen: " + TEAFilePath);
 		ui.textInformation->append("Checksum: " + generateChecksumFromFile(TEAFilePath));
@@ -905,7 +909,7 @@ void TEA::loadFromFile()
 			ui.textInformation->append("Metadata written.");
 			qDebug("Metadata written");
 
-                        addRoute(auid, true);
+			addRoute(auid, true);
 
 		} else ui.textInformation->append("Route seems to have already been loaded or saved.");
 
@@ -923,9 +927,9 @@ bool TEA::nodeNextSkip(QSqlQuery routeData, int timesToSkip)
 
 bool TEA::nodeNextSkip(QSqlQuery *routeData, int timesToSkip)
 {
-        int i;
-        for(i=1; i<timesToSkip; i++) routeData->next();
-        return routeData->next();
+	int i;
+	for(i=1; i<timesToSkip; i++) routeData->next();
+	return routeData->next();
 }
 
 int TEA::getMetadata(QString auid)
@@ -958,11 +962,11 @@ void TEA::saveToDatabase(QList<QListWidgetItem*> chosenItems)
 	//save all changes from adb to rdb
 	if (Entry != 0)
 	{
-            QString next_uid = saveRoute(Entry->getAuid()); //save occurs here
-            if(!next_uid.isEmpty()) //should work
+	    QString next_uid = saveRoute(Entry->getAuid()); //save occurs here
+	    if(!next_uid.isEmpty()) //should work
 	    {
 		QSqlQuery adbquery(QSqlDatabase::database("adb"));
-                adbquery.exec(qPrintable("UPDATE active_metadata SET uid="+next_uid+" WHERE auid="+Entry->getAuid()));
+		adbquery.exec(qPrintable("UPDATE active_metadata SET uid="+next_uid+" WHERE auid="+Entry->getAuid()));
 		Entry->setModified(0);
 	    }
 
@@ -980,8 +984,10 @@ void TEA::saveAllToDatabase()
 void TEA::loadFromDatabase()
 {
 	FindDialog d;
-	d.exec();
-        addNewRoutes(getCurrentlyLoadedRoutes(),false);
+	if (d.exec() == 1)
+	{
+	addNewRoutes(getCurrentlyLoadedRoutes(),false);
+    }
 }
 
 //TODO: addRoute to replace drawRoute, addRoute does necessary modifications to the ListWidget,
@@ -1015,51 +1021,51 @@ void TEA::addCurve(ActiveRouteListItem *route, QSqlQuery *routedata, QSqlRecord 
     //todo: check if new trainer value differs from old one
 
     if (ui.rbNode->isChecked()){
-        qDebug("Node comparison");
-        int value = 0; double factor = 1.0;
+	qDebug("Node comparison");
+	int value = 0; double factor = 1.0;
 
-        switch (ui.cboxY->currentIndex()) {
-        case 1: value = 6; ui.qwtPlot->setAxisTitle(0,"Altitude in m"); factor = 0.1; break;
-        case 2:	value = 1; ui.qwtPlot->setAxisTitle(0,"Velocity in km/h"); factor = 0.01; break;
-        case 3: value = 3; ui.qwtPlot->setAxisTitle(0,"Slope in deg"); factor = 0.1; break;
-        case 4: value = 2; ui.qwtPlot->setAxisTitle(0,"Pedal frequency in RPM"); factor = 0.1; break;
-        default: value = 1; ui.qwtPlot->setAxisTitle(0,"NYI"); factor = 0.0; break;
-        }
+	switch (ui.cboxY->currentIndex()) {
+	case 1: value = 6; ui.qwtPlot->setAxisTitle(0,"Altitude in m"); factor = 0.1; break;
+	case 2:	value = 1; ui.qwtPlot->setAxisTitle(0,"Velocity in km/h"); factor = 0.01; break;
+	case 3: value = 3; ui.qwtPlot->setAxisTitle(0,"Slope in deg"); factor = 0.1; break;
+	case 4: value = 2; ui.qwtPlot->setAxisTitle(0,"Pedal frequency in RPM"); factor = 0.1; break;
+	default: value = 1; ui.qwtPlot->setAxisTitle(0,"NYI"); factor = 0.0; break;
+	}
 
-        switch (ui.cboxX->currentIndex()) {
-        case 0: ui.qwtPlot->setAxisTitle(2,"Time in s"); break;
-        default: ui.qwtPlot->setAxisTitle(2,"NYI"); break;
-        }
+	switch (ui.cboxX->currentIndex()) {
+	case 0: ui.qwtPlot->setAxisTitle(2,"Time in s"); break;
+	default: ui.qwtPlot->setAxisTitle(2,"NYI"); break;
+	}
 
-        QwtArray<double> x,y;
-        if (route->getCurve()!=0) {qDebug("Deleting old curve"); route->getCurve()->detach(); delete route->getCurve();}
+	QwtArray<double> x,y;
+	if (route->getCurve()!=0) {qDebug("Deleting old curve"); route->getCurve()->detach(); delete route->getCurve();}
 
-        QwtPlotCurve *curve = new QwtPlotCurve;
-        int i=0;
-        x.clear(); y.clear();
-        //iterate over all nodes
-        while (routedata->next())
-        {
-            if (((routedata->record().value(value).toDouble() != 0.0) && value==6) || value != 6)
-            {  x << (double)i; y << (factor * routedata->record().value(value).toDouble());}
-            i++;
+	QwtPlotCurve *curve = new QwtPlotCurve;
+	int i=0;
+	x.clear(); y.clear();
+	//iterate over all nodes
+	while (routedata->next())
+	{
+	    if (((routedata->record().value(value).toDouble() != 0.0) && value==6) || value != 6)
+	    {  x << (double)i; y << (factor * routedata->record().value(value).toDouble());}
+	    i++;
 
-        }
+	}
 
-        curve->setData(x,y);
+	curve->setData(x,y);
 
-        //curve->setBrush(Qt::cyan); //fill to baseline with QBrush
+	//curve->setBrush(Qt::cyan); //fill to baseline with QBrush
 
-        //curve->setCurveAttribute(QwtPlotCurve::Fitted);	//THINK ABOUT
-        curve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+	//curve->setCurveAttribute(QwtPlotCurve::Fitted);	//THINK ABOUT
+	curve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
 
-        route->setCurve(curve);
-        if(route->checkState() == Qt::Checked)
-        {
-            route->getCurve()->attach(ui.qwtPlot);
-        }
+	route->setCurve(curve);
+	if(route->checkState() == Qt::Checked)
+	{
+	    route->getCurve()->attach(ui.qwtPlot);
+	}
 
-        ui.qwtPlot->replot();
+	ui.qwtPlot->replot();
     } else qDebug("Route comparison not yet implemented");
     routedata->first();
 
@@ -1080,20 +1086,20 @@ void TEA::addPath(ActiveRouteListItem *route, QSqlQuery *routedata, QSqlRecord *
     while ((getMercatorYFromLat(getLatFromRawLat(routedata->value(4).toString())) == 0) && (nodeNextSkip(routedata,0)));
 
     if (routedata->isValid()) {
-        x=getMercatorXFromLon(getLonFromRawLon(routedata->value(5).toString()));
-        y=getMercatorYFromLat(getLatFromRawLat(routedata->value(4).toString()));
+	x=getMercatorXFromLon(getLonFromRawLon(routedata->value(5).toString()));
+	y=getMercatorYFromLat(getLatFromRawLat(routedata->value(4).toString()));
 	qDebug("First coordinate: "+QString::number(x)+"; "+QString::number(y));
-        path.moveTo(x,y);
+	path.moveTo(x,y);
     }
 
     /* Draw Path */
     while (nodeNextSkip(routedata,nodeSkips))
     {
-        prgBar->setValue(routedata->value(0).toInt());
+	prgBar->setValue(routedata->value(0).toInt());
 	qApp->processEvents();
 
-        tempX=getMercatorXFromLon(getLonFromRawLon(routedata->value(5).toString()));
-        tempY=getMercatorYFromLat(getLatFromRawLat(routedata->value(4).toString()));
+	tempX=getMercatorXFromLon(getLonFromRawLon(routedata->value(5).toString()));
+	tempY=getMercatorYFromLat(getLatFromRawLat(routedata->value(4).toString()));
 	//ui.textInformation->append(QString::number(tempX)+' '+QString::number(tempY));
 
 	/* schöne Variante
@@ -1105,9 +1111,9 @@ void TEA::addPath(ActiveRouteListItem *route, QSqlQuery *routedata, QSqlRecord *
 		//qDebug(QString::number(x)+" "+QString::number(y)+" "+QString::number(getMercatorXFromLon(getLonFromRawLon(routeData.value(5).toString())))+","+QString::number(getMercatorYFromLat(getLatFromRawLat(routeData.value(4).toString()))));
 	    }
 	}*/
-        /* schnelle Variante */
+	/* schnelle Variante */
 		if( ( tempX != 0 ) || ( tempY != 0) ) {
-                    path.lineTo(tempX, tempY);
+		    path.lineTo(tempX, tempY);
 		}
     }
 
@@ -1142,44 +1148,44 @@ bool TEA::save(QList<QListWidgetItem*> routes, TEA::Save behaviour)
     if (routesModified())
     {
 
-        if(routes.isEmpty())
-        {
-            ui.textInformation->append(tr("No Item selected"));
-            return true;
-        }
+	if(routes.isEmpty())
+	{
+	    ui.textInformation->append(tr("No Item selected"));
+	    return true;
+	}
 
-        TEA::Save newBehaviour;
-        if (routes.count() != 1) {
-            if (behaviour != TEA::AskToSave) newBehaviour=behaviour;
-            else
-            {
-                QMessageBox saveModeBox(QMessageBox::Warning,"Closing routes", "There are unsaved changes in your routes.");
-                QPushButton *SaveAllButton = saveModeBox.addButton(QMessageBox::SaveAll);
-                QPushButton *PromptForEachButton = saveModeBox.addButton(tr("Prompt for each"), QMessageBox::AcceptRole);
-                QPushButton *DiscardAllButton = saveModeBox.addButton(tr("Discard all"), QMessageBox::DestructiveRole);
-                QPushButton *CancelButton = saveModeBox.addButton(tr("Cancel"), QMessageBox::RejectRole);
+	TEA::Save newBehaviour;
+	if (routes.count() != 1) {
+	    if (behaviour != TEA::AskToSave) newBehaviour=behaviour;
+	    else
+	    {
+		QMessageBox saveModeBox(QMessageBox::Warning,"Closing routes", "There are unsaved changes in your routes.");
+		QPushButton *SaveAllButton = saveModeBox.addButton(QMessageBox::SaveAll);
+		QPushButton *PromptForEachButton = saveModeBox.addButton(tr("Prompt for each"), QMessageBox::AcceptRole);
+		QPushButton *DiscardAllButton = saveModeBox.addButton(tr("Discard all"), QMessageBox::DestructiveRole);
+		QPushButton *CancelButton = saveModeBox.addButton(tr("Cancel"), QMessageBox::RejectRole);
 
-                saveModeBox.exec();
+		saveModeBox.exec();
 
-                if (saveModeBox.clickedButton() == SaveAllButton) newBehaviour = TEA::ForceSave;
-                else if (saveModeBox.clickedButton() == PromptForEachButton) newBehaviour = TEA::AskToSave;
-                else if (saveModeBox.clickedButton() == DiscardAllButton) newBehaviour = TEA::DoNotSave;
-                else if (saveModeBox.clickedButton() == CancelButton) return false;
-            }
-        } else newBehaviour = behaviour;
+		if (saveModeBox.clickedButton() == SaveAllButton) newBehaviour = TEA::ForceSave;
+		else if (saveModeBox.clickedButton() == PromptForEachButton) newBehaviour = TEA::AskToSave;
+		else if (saveModeBox.clickedButton() == DiscardAllButton) newBehaviour = TEA::DoNotSave;
+		else if (saveModeBox.clickedButton() == CancelButton) return false;
+	    }
+	} else newBehaviour = behaviour;
 
-        //for (int i=0; i<selectedItems.count(); i++)
-        //for (int i=routes.count()-1; i>-1; i--)
-        int i = routes.count()-1;
-        bool accepted = true;
-        while (i>-1 && accepted == true)
-        {
-            //get ActiveRouteListItem
-            ActiveRouteListItem *route = dynamic_cast<ActiveRouteListItem *>(routes.at(i));
-            accepted = save(route,newBehaviour);
-            i--;
-        }
-        return accepted;
+	//for (int i=0; i<selectedItems.count(); i++)
+	//for (int i=routes.count()-1; i>-1; i--)
+	int i = routes.count()-1;
+	bool accepted = true;
+	while (i>-1 && accepted == true)
+	{
+	    //get ActiveRouteListItem
+	    ActiveRouteListItem *route = dynamic_cast<ActiveRouteListItem *>(routes.at(i));
+	    accepted = save(route,newBehaviour);
+	    i--;
+	}
+	return accepted;
     } else return true;
 }
 
@@ -1191,40 +1197,40 @@ bool TEA::save(ActiveRouteListItem *route, TEA::Save behaviour)
     if(route->isModified() && behaviour==TEA::AskToSave)
     {
 
-            ret = QMessageBox::warning(this, tr("Closing route "+route->getName()),
-                                       tr("There are unsaved changes in your route "+route->getName()+"!"),
-                                       QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+	    ret = QMessageBox::warning(this, tr("Closing route "+route->getName()),
+				       tr("There are unsaved changes in your route "+route->getName()+"!"),
+				       QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
 
     }
-                if (ret==QMessageBox::Save || behaviour == TEA::ForceSave) saveRoute(route->getAuid());
-                //uninitialised ret is always != QMessageBox::Cancel
-                if (ret != QMessageBox::Cancel) return true; else return false;
+		if (ret==QMessageBox::Save || behaviour == TEA::ForceSave) saveRoute(route->getAuid());
+		//uninitialised ret is always != QMessageBox::Cancel
+		if (ret != QMessageBox::Cancel) return true; else return false;
 }
 
 void TEA::unload(ActiveRouteListItem *route)
 {
     if (route != 0)
     {
-        //routendaten löschen
-        //aus active_metadata löschen
-        route->getCurve()->detach();
-        deleteRoute(route->getAuid(), "adb");
+	//routendaten löschen
+	//aus active_metadata löschen
+	route->getCurve()->detach();
+	deleteRoute(route->getAuid(), "adb");
 
-        //pfad löschen
-        //pfadumrandung löschen
-        //kurve löschen
-        //eintrag löschen
-        delete route->getCurve();
-        delete route->getPath();
-        delete route->getPathOutline();
-        delete route;
+	//pfad löschen
+	//pfadumrandung löschen
+	//kurve löschen
+	//eintrag löschen
+	delete route->getCurve();
+	delete route->getPath();
+	delete route->getPathOutline();
+	delete route;
 
-        ui.qwtPlot->replot();
+	ui.qwtPlot->replot();
 
     }
     else
     {
-        qDebug("Route is null.");
+	qDebug("Route is null.");
     }
 }
 
@@ -1252,8 +1258,8 @@ void TEA::unload(QList<QListWidgetItem*> routes)
     //for (int i=0; i<selectedItems.count(); i++)
     for (int i=routes.count()-1; i>-1; i--)
     {
-        ActiveRouteListItem *route = dynamic_cast<ActiveRouteListItem *>(routes.at(i));
-        unload(route);
+	ActiveRouteListItem *route = dynamic_cast<ActiveRouteListItem *>(routes.at(i));
+	unload(route);
     }
 }
 
@@ -1273,9 +1279,9 @@ void TEA::addNewRoutes(QSqlQuery auidQuery, bool modified)
     QString auid;
     while (auidQuery.next())
     {
-        auid = auidQuery.value(0).toString();
-        qDebug("Auid: "+auid);
-        if (!routeAdded(auid)) {qDebug("Adding new route "+auid); addRoute(auid, modified);}
+	auid = auidQuery.value(0).toString();
+	qDebug("Auid: "+auid);
+	if (!routeAdded(auid)) {qDebug("Adding new route "+auid); addRoute(auid, modified);}
     }
 }
 
@@ -1291,18 +1297,18 @@ bool TEA::routesModified()
     QList<QListWidgetItem*> allItems = ui.lwActiveRoutes->findItems("", Qt::MatchContains);
     if(!allItems.isEmpty())
     {
-        for (int i=0; i<allItems.count(); i++)
-        {
-            //get ActiveRouteListItem
-            ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(allItems.at(i));
+	for (int i=0; i<allItems.count(); i++)
+	{
+	    //get ActiveRouteListItem
+	    ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(allItems.at(i));
 
-            //save all changes from adb to rdb
-            if (Entry != 0)
-            {
-                if(Entry->isModified()) return true;
-            }
-        }
-        return false;
+	    //save all changes from adb to rdb
+	    if (Entry != 0)
+	    {
+		if(Entry->isModified()) return true;
+	    }
+	}
+	return false;
     }
 }
 
@@ -1318,7 +1324,7 @@ bool TEA::maybeExit()
     {
 	    ret = QMessageBox::warning(this, tr("TEA exit dialog"),
 				       tr("There are unsaved changes!"),
-                                       QMessageBox::SaveAll | QMessageBox::Discard | QMessageBox::Cancel);
+				       QMessageBox::SaveAll | QMessageBox::Discard | QMessageBox::Cancel);
 	}
     else
     {
@@ -1331,7 +1337,7 @@ bool TEA::maybeExit()
 	//TODO check if this makes sense
 	//save every route from ADB in RDB
 
-        //Falki: use 'saveAllToDatabase'
+	//Falki: use 'saveAllToDatabase'
 	QSqlQuery adbquery(QSqlDatabase::database("adb"));
 	QString auid;
 	adbquery.exec("SELECT * FROM active_metadata");	//get all active routes
