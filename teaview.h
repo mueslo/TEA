@@ -10,6 +10,10 @@
 
 #include <QObject>
 #include <QGraphicsView>
+#include <QGraphicsScene>
+#include <QMouseEvent>
+#include <QWheelEvent>
+
 
 class TEAView : public QGraphicsView {
 	Q_OBJECT
@@ -19,9 +23,11 @@ public:
 
 signals:
 	void wheelZoom(int);
+        void viewChanged();
 
 protected:
 	void wheelEvent(QWheelEvent *event);
+        virtual void mouseReleaseEvent(QMouseEvent *event);
 };
 
 #endif /* TEAVIEW_H_ */
