@@ -20,6 +20,7 @@
 #include "db.h"
 #include "metadatadialog.h"
 #include "finddialog.h"
+#include "settingsdialog.h"
 #include "databaseviewer.h"
 #include "qwt_plot.h"
 #include "qwt_data.h"
@@ -32,6 +33,8 @@
 using namespace std;
 
 //Most important TODO: Split maintea.cpp to make it less painful to search for a specific function
+
+//big TODO: implement a sort of 'route manager' class
 
 //TODO: Either *always* address routes by ActiveRouteListItem OR *always* by auid.
 
@@ -52,8 +55,6 @@ using namespace std;
 TEA::TEA(QWidget *parent) :
         QMainWindow(parent)
 {
-        init = true;
-
         if (!initialiseDBs())
         {
             QMessageBox::critical(this, tr("A critical error occured!"),
@@ -61,28 +62,13 @@ TEA::TEA(QWidget *parent) :
                                   QMessageBox::Abort | QMessageBox::Ignore);
         }
 
-        currentRequests = 0;
-        networkManager = new QNetworkAccessManager(this);
-        connect(networkManager, SIGNAL(finished(QNetworkReply*)),
-                 this, SLOT(downloaded(QNetworkReply*)));
-
         ui.setupUi(this);
         ui.textInformation->append("<b>TEA console</b>");
-        scene = new QGraphicsScene(ui.graphicsView);
-        ui.graphicsView->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-
-        //tile size: 256px x 256px, in coordinates: 2*PI x 2*PI
-        ui.graphicsView->scale(128/PI,128/PI);
 
         //todo: rewrite map source selection strategy to make it more elegant
         mapSource = "http://tile.opencyclemap.org/cycle/";
+        ui.mapView->setMapSource(OCM);
 
-        getTile(0,0,0);
-
-        //initially zoom always = 0
-        zoomOld = 0;
-
-        ui.graphicsView->setScene(scene);
 
         connectSignalsAndSlots();
         createToolBar();
@@ -135,125 +121,18 @@ void TEA::fillTrainerViewCBoxes()
         }
 }
 
-void TEA::resizeEvent(QResizeEvent* event)
+void TEA::dragEnterEvent(QDragEnterEvent *event)
 {
-        if (init == false)
-        {
-                scene->setSceneRect(-PI,-PI,2*PI,2*PI);
-        } else {
-                ui.textInformation->append("graphicsView initialised"); //todo rm
-                init = false;
-        }
-
+    const QMimeData *mimeData = event->mimeData();
+    if (mimeData->hasText() && mimeData->text().endsWith(".tea")) event->acceptProposedAction();
 }
 
-void TEA::viewChange()
+void TEA::dropEvent(QDropEvent *event)
 {
-        getTilesInRange();
-}
-
-void TEA::getTilesInRange()
-{
-        //TODO: extend this function so that the tiles are not requested from upper left to lower right
-        // corner, but from the center outward.
-        QRectF viewRect = ui.graphicsView->mapToScene(0,0,ui.graphicsView->width(),ui.graphicsView->height()).boundingRect();
-        QList<QPoint> XYTileList = getXYTileInRange(ui.sldZoom->value(),
-                                                                        getLongFromMercatorX(viewRect.x()+viewRect.width()),
-                                                                        getLongFromMercatorX(viewRect.x()),
-                                                                        getLatFromMercatorY(viewRect.y()+viewRect.height()),
-                                                                        getLatFromMercatorY(viewRect.y()));
-        for(int i=0;i<XYTileList.size();i++){ getTile(XYTileList.at(i).x(),XYTileList.at(i).y(),ui.sldZoom->value());
-        }
-}
-
-
-void TEA::placeTile(QByteArray tile, int tileX, int tileY, int zoomLevel)
-{
-        QPixmap tilePixmap;
-        tilePixmap.loadFromData(tile);
-        QGraphicsPixmapItem *tilePixmapItem = new QGraphicsPixmapItem(tilePixmap);
-        //TAT: could the tiles create dangling/orphaned pointers? i thought so, but they don't seem to
-        // because the error only occurs when you have loaded a route
-        tilePixmapItem->setPos(tileToCoord(tileX,tileY,zoomLevel));
-        tilePixmapItem->scale(PI / pow(2.0, 7 + zoomLevel),PI / pow(2.0, 7 + zoomLevel));
-        tilePixmapItem->setZValue(zoomLevel);
-        scene->addItem(tilePixmapItem);
-}
-
-void TEA::getTile(int tileX, int tileY, int zoomLevel)
-{
-    //TODO: check if present in DB
-    QByteArray tile = getTileFromDB(zoomLevel,tileX,tileY,mapSource);
-    //if ((QString::fromAscii(tile)!="0") ) placeTile(tile, tileX, tileY, zoomLevel);
-    if (QString::fromAscii(tile)!="0"){
-        placeTile(tile, tileX, tileY, zoomLevel);
-    } else if (ui.sldZoom->value() == zoomLevel)
-    {   QNetworkRequest request(QUrl(qPrintable(
-                                         mapSource+QString::number(zoomLevel)+"/"+
-                                         QString::number(tileX)+"/"+
-                                         QString::number(tileY)+".png")));
-
-
-        //POI: another possibility would be to save all requests in a variable of type
-        // QStack<QQueue<QNetworkRequest>>. This way, the order in which the tiles are downloaded
-        // and subsequently displayed could be kept, but the redundant downloading below would be a bit
-        // less easy to implement.
-
-        if (currentRequests<5)
-        {
-            //POI: a problem in the current system would be that the same data could be downloaded twice,
-            // for example when one request is put in the stack then you zoom somewhere else, then you go back to the tile that is in the stack
-            // and it is put in the stack again. I'm not sure if it is worth the computational effort here to check every time whether this
-            // request is already in the request stack:
-            // if (newTileRequest(request)) { ... }
-            networkManager->get(request);
-            ++currentRequests;
-        } else {
-        requestStack.push(request);
-        }
-        qDebug(QString::number(currentRequests)+" "+QString::number(requestStack.count()));
-    }
-}
-
-void TEA::downloaded(QNetworkReply* reply)
-{
-    //NYI: limit maximum number of current downloads to 2 as specified in the CycleMap tileserver terms,
-    //this would severely degrade download performance, though. Maybe keep limit at ~5?
-
-
-    --currentRequests;
-    if (!requestStack.isEmpty())
-    {
-    networkManager->get(requestStack.pop());
-    ++currentRequests;
-    }
-    qDebug(QString::number(currentRequests)+" "+QString::number(requestStack.count()));
-
-    QByteArray data = reply->readAll();
-    QString path = reply->url().path();
-
-    QString noNetworkMessage("Tileserver is not reachable.");
-
-    //Format/Meanings: http://domain.tld/path
-    //The following assumes that the path has the following form */zoomLevel/tileX/tileY.end
-
-    path.chop(4); //removes suffix (.end)
-    int zoomLevel = path.section('/',-3,-3).toInt();
-    int tileX = path.section('/',-2,-2).toInt();
-    int tileY = path.section('/',-1,-1).toInt();
-
-    //actual data returned
-    if (data.length()!=0) //check whether tile request returned data, TODO: check if >= arbitrary value
-    {
-        addTileToDB(zoomLevel,tileX,tileY,data,mapSource); //this method also checks presence of tile in db
-        ui.textInformation->append("Tile image file size:" + QString::number(data.length()) + " bits"
-                                   "(x:"+QString::number(tileX)+" y:"+QString::number(tileY)+" z:"+QString::number(zoomLevel)+")");
-    } //if warning message not yet displayed
-    else if (!ui.textInformation->text().endsWith(noNetworkMessage)) ui.textInformation->append("<font color=red>Warning: </font>"+noNetworkMessage);
-
-    if( ui.sldZoom->value() == zoomLevel ) placeTile(data, tileX, tileY, zoomLevel);
-
-    reply->deleteLater();
+    QString path = event->mimeData()->text();
+    qDebug(path+" dropped on MainWindow.");
+    if (path.startsWith("file://")) path.remove(0,7);
+    loadFromFile(path);
 }
 
 void TEA::createToolBar()
@@ -267,15 +146,15 @@ void TEA::createToolBar()
         ui.tbMain->addAction(ui.actionEdit_metadata);
         ui.tbMain->addAction(ui.actionCenter_Map);
 }
-
+//mapview
 void TEA::rotateClockwise()
 {
-        ui.graphicsView->rotate(-20);
+        ui.mapView->rotate(-45);
 }
-
+//mapview
 void TEA::rotateCClockwise()
 {
-        ui.graphicsView->rotate(20);
+        ui.mapView->rotate(45);
 }
 
 void TEA::exportSelected(QString format)
@@ -283,8 +162,8 @@ void TEA::exportSelected(QString format)
         for(int i=0;i<ui.lwActiveRoutes->selectedItems().count();++i)
         {
             ActiveRouteListItem *item = dynamic_cast<ActiveRouteListItem *>(ui.lwActiveRoutes->selectedItems().at(i));
-            if (format.compare("kml",Qt::CaseInsensitive)==0) exportKML(item->getAuid());
-            else qDebug("No such export format available.");
+            if (format.compare("kml",Qt::CaseInsensitive)==0) exportKML(item->auid());
+            else ui.textInformation->append("No such export format available.");
         }
 
 
@@ -293,8 +172,6 @@ void TEA::exportSelected(QString format)
 
 void TEA::exportKML(QString auid)
 {
-    qDebug("exportKML");
-
     QString filePath = QFileDialog::getSaveFileName(this, tr("Export route as KML file"),
                                                        QDir::homePath(),
                                                        tr("Keyhole markup language files (*.kml)"));
@@ -358,7 +235,7 @@ void TEA::exportKML(QString auid)
                 file.close();
                 templateFile.close();
             }
-        } else qDebug("KML template missing.");
+        } else ui.textInformation->append("KML template missing.");
 
     }
 
@@ -367,7 +244,7 @@ void TEA::exportKML(QString auid)
 
 void TEA::exportTEA(QString auid)
 {
-    qDebug("exportTEA");
+    //NYI
 }
 
 /* Uninteresting functions */
@@ -384,10 +261,12 @@ void TEA::connectSignalsAndSlots()
         connect(ui.loadFromDatabaseAction, SIGNAL(triggered()), this, SLOT(loadFromDatabase()));
         connect(ui.exitAction, SIGNAL(triggered()), this, SLOT(close()));
         connect(ui.aboutAction, SIGNAL(triggered()), this, SLOT(About()));
+        connect(ui.settingsAction, SIGNAL(triggered()), this, SLOT(settings()));
+
         connect(ui.btnZoomIn, SIGNAL(clicked()), this, SLOT(zoomIn()));
         connect(ui.btnZoomOut, SIGNAL(clicked()), this, SLOT(zoomOut()));
-        connect(ui.sldZoom, SIGNAL(valueChanged(int)), this, SLOT(sldChanged(int)));
-        connect(ui.refreshMapAction, SIGNAL(triggered()), this, SLOT(viewChange()));
+        //connect(ui.sldZoom, SIGNAL(valueChanged(int)), this, SLOT(sldChanged(int)));
+        //connect(ui.refreshMapAction, SIGNAL(triggered()), this, SLOT(viewChange()));
         connect(ui.cbtnRotateClockwise, SIGNAL(clicked()), this, SLOT(rotateClockwise()));
         connect(ui.cbtnRotateCClockwise, SIGNAL(clicked()), this, SLOT(rotateCClockwise()));
         connect(ui.dwBottom, SIGNAL(visibilityChanged(bool)), this, SLOT(consoleChanged()));
@@ -399,8 +278,9 @@ void TEA::connectSignalsAndSlots()
         connect(ui.cboxY, SIGNAL(currentIndexChanged(int)), this, SLOT(trainerSelectionChange()));
         connect(ui.rbNode, SIGNAL(toggled(bool)), this, SLOT(trainerModeChanged()));
 
-        connect(ui.graphicsView, SIGNAL(wheelZoom(int)), this, SLOT(zoom(int)));
-        connect(ui.graphicsView, SIGNAL(viewChanged()), this, SLOT(viewChange()));
+        connect(ui.mapView, SIGNAL(zoomChanged(int)), this, SLOT(zoomChanged(int)));
+        connect(ui.mapView, SIGNAL(mapSourceChanged(int,int)), this, SLOT(mapSourceChanged(int, int)));
+        connect(ui.sldZoom, SIGNAL(valueChanged(int)), this, SLOT(sldChanged(int)));
 
         connect(ui.btnGeneralSettings, SIGNAL(clicked()), this, SLOT(setGeneralSettings()));
         connect(ui.databaseViewAction, SIGNAL(triggered()), this, SLOT(actionViewDatabase()));
@@ -412,11 +292,14 @@ void TEA::connectSignalsAndSlots()
         connect(ui.lwActiveRoutes, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showListContextMenu(const QPoint &)));
         connect(ui.saveAllAction, SIGNAL(triggered()), this, SLOT(saveAllToDatabase()));
         connect(ui.actionClose_route, SIGNAL(triggered()), this, SLOT(unloadSelected()));
-        //connect(ui.graphicsView, SIGNAL(resizeEvent()), this, SLOT(graphicsViewResized()));
-        //connect(ui.graphicsView, SIGNAL(mousePressed()), this, SLOT(grphPressed()));
-        //ui.tbMain->addAction(QIcon("icons/32x32_0560/map.png"), "Something with maps", this, "mapAction");
+        //connect(ui.mapView, SIGNAL(resizeEvent()), this, SLOT(graphicsViewResized()));
 }
 
+void TEA::mapSourceChanged(int minZoom, int maxZoom)
+{
+    ui.sldZoom->setMinimum(minZoom);
+    ui.sldZoom->setMaximum(maxZoom);
+}
 
 void TEA::showListContextMenu(const QPoint &pos)
 {
@@ -435,30 +318,31 @@ void TEA::showListContextMenu(const QPoint &pos)
     //ui.lwActiveRoutesResult->item(t.row())->setSelected(true); //select despite right click
 
     contextMenu->exec(ui.lwActiveRoutes->mapToGlobal(pos));
+    delete contextMenu;
 
 }
 
+//updates the visibility of curves and paths
 void TEA::updatePath(QListWidgetItem *Item)
 {
     qDebug("updatePath");
 
     ActiveRouteListItem *ListItem = dynamic_cast<ActiveRouteListItem *>(Item);
 
-    if(ListItem == 0) {qDebug("listitem is null"); return; }  //check if ListItem is actually valid
+    if(ListItem == 0) return;  //check if ListItem is actually valid
 
-    QGraphicsPathItem *path = ListItem->getPath();
-    QGraphicsPathItem *pathOutline = ListItem->getPathOutline();
+    QGraphicsPathItem *path = ListItem->path();
+    QGraphicsPathItem *pathOutline = ListItem->pathOutline();
 
-    if (path != 0 && pathOutline != 0) //check if paths have not yet been set
+    if (pathOutline != 0 && path != 0) //check if paths have not yet been set
     {
     path->setVisible( ListItem->checkState() == Qt::Checked );
     pathOutline->setVisible(ListItem->checkState()==Qt::Checked);
-    } else qDebug("updatePath path or pathoutline null");
+    }
 
-    QwtPlotCurve *curve = ListItem->getCurve();
+    QwtPlotCurve *curve = ListItem->curve();
 
-    if (curve == 0) {qDebug("updatePath curve null"); return;} //check if curve has not yet been set
-    qDebug("All routes and paths non-null.");
+    if (curve == 0) return; //check if curve has not yet been set
     if(ListItem->checkState()==Qt::Checked)
     {
         curve->attach(ui.qwtPlot);
@@ -471,7 +355,7 @@ void TEA::updatePath(QListWidgetItem *Item)
 }
 
 void TEA::centerMapOnSelectedRoute()
-{   //TODO redundanz entfernen, siehe editMetadata (extra funkt.?)
+{
     if( ui.lwActiveRoutes->selectedItems().size() == 0 )
     {
         ui.textInformation->append(QString("No Item selected."));
@@ -480,48 +364,7 @@ void TEA::centerMapOnSelectedRoute()
     QListWidgetItem *Item = ui.lwActiveRoutes->selectedItems().first();
     ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(Item);
 
-    //if the item has no path data, abort
-    if(Entry->getPath()->boundingRect().width() == 0.0)
-    {
-        ui.textInformation->append("This Item has no valid path");
-        return;
-    }
-
-    QSqlRecord adbrecord=getRouteMetadata(Entry->getAuid(),"adb");//QSqlDatabase::database("adb"));
-   // adbquery.exec(qPrintable("Select * FROM active_metadata WHERE auid="+QString::number(Entry->getAuid())));
-   // adbquery.first();
-
-    //TODO: implement nicer version of below
-
-    double latdiff = fabs(adbrecord.value(13).asDouble() - adbrecord.value(14).asDouble())/(PI*10000000);
-    double londiff = fabs(adbrecord.value(15).asDouble() - adbrecord.value(16).asDouble())/(PI*10000000);
-    double height = ui.graphicsView->mapToScene(0,0,ui.graphicsView->width(),ui.graphicsView->height()).boundingRect().height();
-    double width = ui.graphicsView->mapToScene(0,0,ui.graphicsView->width(),ui.graphicsView->height()).boundingRect().width();
-    int zoom = 0;
-    if((latdiff < height) || (londiff < width))
-    {
-        do{
-            zoom++;
-            height = height / 2;
-            width = width / 2;
-        }while((latdiff < height) || (londiff < width));
-        zoom--;
-    }
-    else
-    {
-        do{
-            zoom--;
-            height = height * 2;
-            width = width * 2;
-        }while((latdiff > height) || (londiff > width));
-    }
-    //center on selected Path
-    ui.graphicsView->centerOn(dynamic_cast<QGraphicsItem *>(Entry->getPath()));
-    //zoom and load tiles
-    ui.sldZoom->setValue(zoom+zoomOld);
-    ui.tabwCentre->setCurrentIndex(0);
-    if (zoom==0) getTilesInRange();     //why? getTiles is called when the zoom changes,
-                                        //when it doesn't change (zoom==0), the tiles should already be loaded
+    ui.mapView->centerMapOnRoute(Entry);
 }
 
 void TEA::editMetadata()
@@ -533,19 +376,25 @@ void TEA::editMetadata()
     }
     QListWidgetItem *Item = ui.lwActiveRoutes->selectedItems().first();
     ActiveRouteListItem *Entry = dynamic_cast<ActiveRouteListItem *>(Item);
-    MetadataDialog d(Entry->getAuid(), 1);
-    d.exec();
-
-    QSqlRecord adbrecord=getRouteMetadata(Entry->getAuid(),"adb");
-    Entry->setName(adbrecord.value(6).toString());
-    Entry->setModified();
+    MetadataDialog d(Entry->auid(), 1);
+    if (d.exec()) { //returns true if positive response, i.e. modification (apply, ok, save...)
+        QSqlRecord adbrecord=getRouteMetadata(Entry->auid(),"adb");
+        Entry->setName(adbrecord.value(6).toString());
+        Entry->setModified();
+    }
     //adbquery.finish();
 }
 
 void TEA::actionViewDatabase()
 {
-DatabaseViewer d;
-d.exec();
+    DatabaseViewer d;
+    d.exec();
+}
+
+void TEA::settings()
+{
+    SettingsDialog d;
+    d.exec();
 }
 
 void TEA::updateADB()
@@ -556,7 +405,7 @@ void TEA::updateADB()
     QString Name = Entry->text();
     Name.append("'").prepend("'");
     QSqlQuery adbquery(QSqlDatabase::database("adb"));
-    adbquery.exec(qPrintable("UPDATE active_metadata SET name="+Name+" WHERE auid="+Entry->getAuid()));
+    adbquery.exec(qPrintable("UPDATE active_metadata SET name="+Name+" WHERE auid="+Entry->auid()));
 
     adbquery.finish();
 }
@@ -571,10 +420,10 @@ void TEA::setGeneralSettings()
         QString ip = address.section(":",0,0);
         int port = address.section(":", -1).toInt();
         QNetworkProxy proxy = QNetworkProxy(QNetworkProxy::HttpCachingProxy,ip,port);
-        networkManager->setProxy(proxy);
+        //networkManager->setProxy(proxy); //todo reimp this
     } else {
         QNetworkProxy proxy = QNetworkProxy(QNetworkProxy::NoProxy);
-        networkManager->setProxy(proxy);
+        //networkManager->setProxy(proxy); //todo reimp this
     }
 
     //TODO: Save to DB
@@ -695,7 +544,7 @@ void TEA::redrawTrainer()
 
                         //todo use largest and not last path diagram
                         //trainerScene->setSceneRect(path.boundingRect());
-                        //ui.graphicsViewTrainer->fitInView(path.boundingRect(),Qt::IgnoreAspectRatio);
+                        //ui.mapViewTrainer->fitInView(path.boundingRect(),Qt::IgnoreAspectRatio);
                         routeNum++;
                         */
                     //}//new
@@ -752,129 +601,72 @@ ActiveRouteListItem* TEA::find(QString auid)
     while (i<allItems.count() && route==0)
     {
         ActiveRouteListItem* item = dynamic_cast<ActiveRouteListItem*>(allItems.at(i));
-        if (item->getAuid()==auid) route=item;
+        if (item->auid()==auid) route=item;
         ++i;
     }
     return route;
 }
 
+//map view
 void TEA::mapSourceChanged()
 {
-        if (ui.rbMapnik->isChecked()) mapSource = "http://tile.openstreetmap.org/";
-        else mapSource = "http://tile.opencyclemap.org/cycle/";
-        int i = 0;
-        while (scene->items().size()>i)
-        {
-                if (round(scene->items().at(i)->zValue()) != 19 && round(scene->items().at(i)->zValue()) != 20) //routes are at these zvalues
-                        scene->removeItem(scene->items().at(i));
-                else i++;
-        }
-        getTilesInRange();
-        ui.textInformation->append("now using "+mapSource);
+        if (ui.rbMapnik->isChecked()) ui.mapView->setMapSource(Mapnik);
+        else ui.mapView->setMapSource(OCM);
+
+        //todo reimp this
+        ui.textInformation->append("now using --");
 }
 
 void TEA::consoleButtonTriggered()
 {
-        ui.dwBottom->setVisible(!ui.dwBottom->isVisible());
+    ui.dwBottom->setVisible(!ui.dwBottom->isVisible());
 }
 
 void TEA::consoleChanged()
 {
-        ui.consoleAction->setChecked(ui.dwBottom->isVisible());
+    ui.consoleAction->setChecked(ui.dwBottom->isVisible());
 }
 
-void TEA::zoom(int steps)
+void TEA::zoomChanged(int zoomLevel)
 {
-        cout << "steps" << endl;
-        if (((ui.sldZoom->value()+steps) <= 18) && ((ui.sldZoom->value()+steps) >= 0 ))
-                ui.sldZoom->setValue(ui.sldZoom->value()+steps);
+    if (ui.sldZoom->value() != zoomLevel) ui.sldZoom->setValue(zoomLevel);
+}
+
+void TEA::sldChanged(int zoomLevel)
+{
+    if (ui.mapView->zoomLevel() != zoomLevel) ui.mapView->zoomTo(zoomLevel);
 }
 
 void TEA::zoomIn()
 {
-        if (ui.sldZoom->value()<18) ui.sldZoom->setValue(ui.sldZoom->value()+1);
+    ui.mapView->zoom(1);
 }
 
 void TEA::zoomOut()
 {
-        if (ui.sldZoom->value()>0) ui.sldZoom->setValue(ui.sldZoom->value()-1);
-}
-
-void TEA::sldChanged(int value)
-{
-
-        int zoomNew = ui.sldZoom->value();
-        int dZoom = zoomNew-zoomOld;
-        //QRectF oldSceneRect = scene->sceneRect();
-        ui.graphicsView->scale(pow(2,(dZoom)),pow(2,(dZoom)));
-        /*
-        scene->setSceneRect(oldSceneRect.x()+oldSceneRect.width()*(0.5 - pow(2.0,-dZoom-1)),
-                                                oldSceneRect.y()+oldSceneRect.height()*(0.5 - pow(2.0,-dZoom-1)),
-                                                oldSceneRect.width()*pow(2.0,-dZoom),
-                                                oldSceneRect.height()*pow(2.0,-dZoom));
-                                                */
-
-        QRectF viewRect = ui.graphicsView->mapToScene(0,0,ui.graphicsView->width(),ui.graphicsView->height()).boundingRect();
-        /*
-        cout << "x,y,w,h: " << QString::number(viewRect.x()).toStdString() << " "
-                                                << QString::number(viewRect.y()).toStdString() << " "
-                                                << QString::number(viewRect.width()).toStdString() << " "
-                                                << QString::number(viewRect.height()).toStdString() << endl;
-        */
-        int i = 0;
-        //Iterate through items and delete it if it is in the wrong zoom layer, if not, add 1 to counter.
-        //The next time in the while loop it will skip the items already in the correct zoom layer.
-        //Once the number of items is equal to the number of skips, all offending tiles have been deleted.
-
-        //todo: unload all tiles (that are not in new zoom layer), always get tiles from the database
-
-        while (scene->items().size()>i)
-        {
-            //ZLevel 19: Path Outlines, ZLevel 20: Paths
-            //limiting the number of layers that are above each other at any given moment
-            // increases performance (at least on linux) extremely
-            //TODO: implement that if tiles at a given zoom layer are not available,
-            // the ones in the zoom layer above will be loaded, current: workaround, 4 layers are shown
-            // maybe you should be able to choose maxLayers as a sort of performance setting
-            // another possibility would be to have one 'master' background which always gets the last recent
-            // map data and only the newest tiles are displayed
-            int z = round(scene->items().at(i)->zValue());
-            int maxLayers = 4;
-                if ((z > ui.sldZoom->value() || z<ui.sldZoom->value()-(maxLayers-1)) &&
-                        z != 19 && z != 20) //routes are at these zvalues
-                        scene->removeItem(scene->items().at(i));
-                else i++;
-        }
-
-        for (int i = 0; i<(ui.lwActiveRoutes->count());++i)
-        {
-            QListWidgetItem *Item = ui.lwActiveRoutes->item(i);
-            ActiveRouteListItem *ListItem = dynamic_cast<ActiveRouteListItem *>(Item);
-            ListItem->setOutlineZoom(zoomNew);
-        }
-
-        getTilesInRange();
-        zoomOld = ui.sldZoom->value();
+    ui.mapView->zoom(-1);
 }
 
 TEA::~TEA()
 {
+    closeDBs();
 }
 
 void TEA::About()
 {
-    QMessageBox::about(this, tr("About TEA"),
+    QMessageBox::about(this, tr("About TEA v0.02"),
              tr("<b>TEA</b> is an application which is used for the evaluation "
                 "and analysis of tracked routes in the TEA data format."));
 
 }
 
-void TEA::loadFromFile()
+void TEA::loadFromFile(QString TEAFilePath)
 {
-
-        QString TEAFilePath = QFileDialog::getOpenFileName(this, tr("Open TEA route file"),
+        if (TEAFilePath == "") {
+        TEAFilePath = QFileDialog::getOpenFileName(this, tr("Open TEA route file"),
                         QDir::homePath(),
-                        tr("TEA route files (*.tea)"));
+                        tr("TEA route files (*.tea)")); }
+        qDebug(TEAFilePath);
         if (TEAFilePath != "" && QFile::exists(TEAFilePath))
         {
                 ui.textInformation->append("Path chosen: " + TEAFilePath);
@@ -887,14 +679,11 @@ void TEA::loadFromFile()
 
                         QString auid = importRoute(TEAFilePath);
                         ui.textInformation->append("Route loaded. Requesting metadata...");
-                        qDebug("Requesting metadata");
                         if(!getMetadata(auid))	//if the user rejected to load the file
                         {
                             deleteRoute(auid, "adb");
                             return;
                         }
-                        ui.textInformation->append("Metadata written.");
-                        qDebug("Metadata written");
 
                         addRoute(auid, true);
 
@@ -905,6 +694,7 @@ void TEA::loadFromFile()
 
 }
 
+//todo: as with addpath: make some sort of 'path factory' class or function
 bool TEA::nodeNextSkip(QSqlQuery routeData, int timesToSkip)
 {
         int i;
@@ -949,11 +739,11 @@ void TEA::saveToDatabase(QList<QListWidgetItem*> chosenItems)
         //save all changes from adb to rdb
         if (Entry != 0)
         {
-            QString next_uid = saveRoute(Entry->getAuid()); //save occurs here
+            QString next_uid = saveRoute(Entry->auid()); //save occurs here
             if(!next_uid.isEmpty()) //should work
             {
                 QSqlQuery adbquery(QSqlDatabase::database("adb"));
-                adbquery.exec(qPrintable("UPDATE active_metadata SET uid="+next_uid+" WHERE auid="+Entry->getAuid()));
+                adbquery.exec(qPrintable("UPDATE active_metadata SET uid="+next_uid+" WHERE auid="+Entry->auid()));
                 Entry->setModified(0);
             }
 
@@ -982,7 +772,6 @@ void TEA::loadFromDatabase()
 
 void TEA::addRoute(QString auid, bool modified)
 {
-    qDebug("addRoute");
     QSqlQuery *routedata = new QSqlQuery(getRouteData(auid, "adb"));
     QSqlRecord *metadata = new QSqlRecord(getRouteMetadata(auid, "adb"));
     ActiveRouteListItem *route = new ActiveRouteListItem(metadata->value(6).toString(), auid.toInt(), modified, ui.lwActiveRoutes);
@@ -1002,13 +791,10 @@ void TEA::addRoute(QString auid, bool modified)
 
 void TEA::addCurve(ActiveRouteListItem *route, QSqlQuery *routedata, QSqlRecord *metadata)
 {
-    qDebug("Generating curve.");
-
     //todo: implement route comparison mode
     //todo: check if new trainer value differs from old one
 
     if (ui.rbNode->isChecked()){
-        qDebug("Node comparison");
         int value = 0; double factor = 1.0;
 
         switch (ui.cboxY->currentIndex()) {
@@ -1025,7 +811,7 @@ void TEA::addCurve(ActiveRouteListItem *route, QSqlQuery *routedata, QSqlRecord 
         }
 
         QwtArray<double> x,y;
-        if (route->getCurve()!=0) {qDebug("Deleting old curve"); route->getCurve()->detach(); delete route->getCurve();}
+        if (route->curve()!=0) {route->curve()->detach(); delete route->curve();}
 
         QwtPlotCurve *curve = new QwtPlotCurve;
         int i=0;
@@ -1049,18 +835,18 @@ void TEA::addCurve(ActiveRouteListItem *route, QSqlQuery *routedata, QSqlRecord 
         route->setCurve(curve);
         if(route->checkState() == Qt::Checked)
         {
-            route->getCurve()->attach(ui.qwtPlot);
+            route->curve()->attach(ui.qwtPlot);
         }
 
         ui.qwtPlot->replot();
-    } else qDebug("Route comparison not yet implemented");
+    } else ui.textInformation->append("Route comparison not yet implemented");
     routedata->first();
 
 }
 
 void TEA::addPath(ActiveRouteListItem *route, QSqlQuery *routedata, QSqlRecord *metadata)
 {
-    qDebug("Generating path.");
+    //Todo: Add a 'path factory' function or class
     int nodeSkips = metadata->value(20).toInt()/2500+1;
     QPainterPath path;
 
@@ -1075,7 +861,6 @@ void TEA::addPath(ActiveRouteListItem *route, QSqlQuery *routedata, QSqlRecord *
     if (routedata->isValid()) {
         x=getMercatorXFromLon(getLonFromRawLon(routedata->value(5).toString()));
         y=getMercatorYFromLat(getLatFromRawLat(routedata->value(4).toString()));
-        qDebug("First coordinate: "+QString::number(x)+"; "+QString::number(y));
         path.moveTo(x,y);
     }
 
@@ -1106,27 +891,16 @@ void TEA::addPath(ActiveRouteListItem *route, QSqlQuery *routedata, QSqlRecord *
 
     /*Add Path and Outline to the Scene */
     QGraphicsPathItem *pathItem = new QGraphicsPathItem;
-    QGraphicsPathItem *pathItemOutline = new QGraphicsPathItem;
 
-    route->setPath(pathItem);
-    route->setPathOutline(pathItemOutline);
-    route->setOutlineZoom(ui.sldZoom->value()); //to get outline
     pathItem->setPath(path);
-    pathItemOutline->setPath(path);
+    route->setPath(pathItem);
 
-    pathItem->setZValue(20);
-    pathItemOutline->setZValue(19);
-    pathItemOutline->setOpacity(0.7);
-
-    scene->addItem(route->getPath());
-    scene->addItem(route->getPathOutline());
-    scene->setSceneRect(-PI,-PI,2*PI,2*PI);
+    ui.mapView->add(route);
 
     ui.lwActiveRoutes->setCurrentItem(route);
-    centerMapOnSelectedRoute();
-    //TODO: implement centerMapOnRoute(QString auid);
-
+    ui.mapView->centerMapOnRoute(route);
     prgBar->reset();
+
     routedata->first();
 }
 
@@ -1184,12 +958,12 @@ bool TEA::save(ActiveRouteListItem *route, TEA::Save behaviour)
     if(route->isModified() && behaviour==TEA::AskToSave)
     {
 
-            ret = QMessageBox::warning(this, tr("Closing route "+route->getName()),
-                                       tr("There are unsaved changes in your route "+route->getName()+"!"),
+            ret = QMessageBox::warning(this, tr("Closing route "+route->name()),
+                                       tr("There are unsaved changes in your route "+route->name()+"!"),
                                        QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
 
     }
-                if (ret==QMessageBox::Save || behaviour == TEA::ForceSave) saveRoute(route->getAuid());
+                if (ret==QMessageBox::Save || behaviour == TEA::ForceSave) saveRoute(route->auid());
                 //uninitialised ret is always != QMessageBox::Cancel
                 if (ret != QMessageBox::Cancel) return true; else return false;
 }
@@ -1200,24 +974,20 @@ void TEA::unload(ActiveRouteListItem *route)
     {
         //routendaten l?schen
         //aus active_metadata l?schen
-        route->getCurve()->detach();
-        deleteRoute(route->getAuid(), "adb");
+        route->curve()->detach();
+        deleteRoute(route->auid(), "adb");
 
         //pfad l?schen
         //pfadumrandung l?schen
         //kurve l?schen
         //eintrag l?schen
-        delete route->getCurve();
-        delete route->getPath();
-        delete route->getPathOutline();
+
+        delete route->curve(); //todo 'ui.trainerView->remove(route)'
+        ui.mapView->remove(route);
         delete route;
 
         ui.qwtPlot->replot();
 
-    }
-    else
-    {
-        qDebug("Route is null.");
     }
 }
 
@@ -1262,21 +1032,17 @@ bool TEA::routeAdded(QString auid)
 
 void TEA::addNewRoutes(QSqlQuery auidQuery, bool modified)
 {
-    qDebug("Adding new routes.");
     QString auid;
     while (auidQuery.next())
     {
         auid = auidQuery.value(0).toString();
-        qDebug("Auid: "+auid);
-        if (!routeAdded(auid)) {qDebug("Adding new route "+auid); addRoute(auid, modified);}
+        if (!routeAdded(auid)) addRoute(auid, modified);
     }
 }
 
 void TEA::closeEvent(QCloseEvent *event)
 {
-        if (maybeExit()) {
-                closeDBs();
-                event->accept();} else event->ignore();
+        if (maybeExit()) {event->accept();} else event->ignore();
 }
 
 bool TEA::routesModified()
@@ -1296,49 +1062,11 @@ bool TEA::routesModified()
             }
         }
         return false;
-    }
+    } else return false;
 }
 
 bool TEA::maybeExit()
 {
     QList<QListWidgetItem*> allItems = ui.lwActiveRoutes->findItems("", Qt::MatchContains);
     return save(allItems);
-    /*
-    QList<QListWidgetItem*> allItems = ui.lwActiveRoutes->findItems("", Qt::MatchContains);
-    bool modified = routesModified();
-    QMessageBox::StandardButton ret;
-    if(modified)
-    {
-            ret = QMessageBox::warning(this, tr("TEA exit dialog"),
-                                       tr("There are unsaved changes!"),
-                                       QMessageBox::SaveAll | QMessageBox::Discard | QMessageBox::Cancel);
-        }
-    else
-    {
-        ret = QMessageBox::warning(this, tr("TEA exit dialog"),
-                                   tr("Do you really want to quit?"),
-                                   QMessageBox::Yes | QMessageBox::Cancel);
-    }
-    if (ret ==QMessageBox::SaveAll)
-    {
-        //TODO check if this makes sense
-        //save every route from ADB in RDB
-
-        //Falki: use 'saveAllToDatabase'
-        QSqlQuery adbquery(QSqlDatabase::database("adb"));
-        QString auid;
-        adbquery.exec("SELECT * FROM active_metadata");	//get all active routes
-        while(adbquery.next())
-        {
-            auid=adbquery.record().value(0).toString();	//get uid from query
-            saveRoute(auid);	//save route
-        }
-        adbquery.finish();
-        return true;
-    }
-    if ((ret == QMessageBox::Discard) || (ret == QMessageBox::Yes)) return true;
-    else if (ret == QMessageBox::Cancel) return false;
-
-    return false;
-    */
 }

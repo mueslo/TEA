@@ -126,10 +126,10 @@ inline QList<QPoint> getXYTileInRange(int zoomLevel, double max_longitude, doubl
 	int i,j;
 	QList<QPoint> XYList;
 
-	//cout << "minlon " << min_longitude << endl;
-	//cout << "maxlon " << max_longitude << endl;
-	//cout << "minlat " << min_latitude << endl;
-	//cout << "maxlat " << max_latitude << endl;
+        //cout << "minlon " << min_longitude << endl;
+        //cout << "maxlon " << max_longitude << endl;
+        //cout << "minlat " << min_latitude << endl;
+        //cout << "maxlat " << max_latitude << endl;
 
 	if (max_latitude < -85.0511  || min_latitude > 85.0511) {max_latitude = 0; min_latitude = 0;}
 	if (max_latitude >= 85.0511) max_latitude = 85.0511;
@@ -143,8 +143,8 @@ inline QList<QPoint> getXYTileInRange(int zoomLevel, double max_longitude, doubl
         //cout << "minlat " << min_latitude << endl;
         //cout << "maxlat " << max_latitude << endl;
 
-	int max_ytile = (latitudeToYTile(max_latitude, zoomLevel));
-	int min_ytile = (latitudeToYTile(min_latitude, zoomLevel));
+        int max_ytile = (latitudeToYTile(min_latitude, zoomLevel));
+        int min_ytile = (latitudeToYTile(max_latitude, zoomLevel));
 	int max_xtile = (longitudeToXTile(max_longitude, zoomLevel));
 	int min_xtile = (longitudeToXTile(min_longitude, zoomLevel));
 
@@ -153,7 +153,7 @@ inline QList<QPoint> getXYTileInRange(int zoomLevel, double max_longitude, doubl
         //cout << "max_xtile=" << max_xtile << endl;
         //cout << "min_xtile=" << min_xtile << endl;
 
-	cout << "Zoom level: " << zoomLevel << endl;
+        //cout << "Zoom level: " << zoomLevel << endl;
 	for (i=min_xtile;i<=max_xtile;i++)
 	{
 		for (j=min_ytile;j<=max_ytile;j++)
@@ -164,4 +164,15 @@ inline QList<QPoint> getXYTileInRange(int zoomLevel, double max_longitude, doubl
 	}
 	return XYList;
 }
+/*
+bool ShorterThan(const QPointF & a, const QPointF & b)
+{
+    return a.x()*a.x() + a.y()*a.y() < b.x()*b.x() + b.y()*b.y();
+}*/
+
+inline qreal lengthSquared(const QPointF & a)
+{
+    return a.x()*a.x()+a.y()*a.y();
+}
+
 #endif /* COORDINATES_H_ */

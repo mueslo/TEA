@@ -202,7 +202,6 @@ void FindDialog::load()
 {
 	bool exception = false;
 	QList<QListWidgetItem*> itemSelection = ui.lwResult->selectedItems();
-	cout << "UID" << itemSelection.at(0)->data(Qt::UserRole).toString().toStdString() << endl;
 
 	for (int i = 0; i<itemSelection.length(); i++)
 	{

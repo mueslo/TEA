@@ -24,5 +24,6 @@
         <file>icons/32x32_0320/cup_edit.png</file>
         <file>icons/16x16_0320/cup_edit.png</file>
         <file>icons/32x32_0060/arrow_in.png</file>
+        <file>icons/32x32_1000/wrench_orange.png</file>
     </qresource>
 </RCC>

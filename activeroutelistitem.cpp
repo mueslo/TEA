@@ -1,23 +1,22 @@
 #include "activeroutelistitem.h"
 #include "tea.h"
 
-ActiveRouteListItem::ActiveRouteListItem(const QString &name, int Auid, bool mod, QListWidget *parent) : QListWidgetItem(name,parent)
+ActiveRouteListItem::ActiveRouteListItem(const QString &newName, int newAuid, bool mod, QListWidget *parent) : QListWidgetItem(newName,parent)
 {
     colors << Qt::darkBlue << Qt::darkRed
            << Qt::darkGreen << Qt::darkCyan
            << Qt::darkMagenta << Qt::darkYellow;
 
     //initialise pointers to null
-    curve = 0;
-    path = 0;
-    pathOutline = 0;
+    Curve = 0;
+    Path = 0;
+    PathOutline = 0;
 
     setTextColor(Qt::black);
     setModified(mod);
-    setName(name);
-    setAuid(Auid);
+    setName(newName);
+    setAuid(newAuid);
 
-    outlinePen.setBrush(Qt::white);
     setCheckState(Qt::Checked);
     setFlags( Qt::ItemIsEditable | flags() );
 }
@@ -25,54 +24,43 @@ ActiveRouteListItem::ActiveRouteListItem(const QString &name, int Auid, bool mod
 ActiveRouteListItem::~ActiveRouteListItem()
 {
     //The QGraphicsScene deletes all items on it, and the QwtPlot too.
+
 }
 
-QGraphicsPathItem* ActiveRouteListItem::getPath()
+QGraphicsPathItem* ActiveRouteListItem::path() const
 {
-    if (path != 0)
+    if (Path != 0)
     {
     QPen pen;
     pen.setBrush(this->textColor());
-    path->setPen(pen);
+    Path->setPen(pen);
     }
-    return path;
+    return Path;
 }
 
-QGraphicsPathItem* ActiveRouteListItem::getPathOutline()
+QGraphicsPathItem* ActiveRouteListItem::pathOutline() const
 {
-    if (pathOutline != 0)
-    {
-    pathOutline->setPen(outlinePen);
-    }
-
-    return pathOutline;
+    return PathOutline;
 }
 
-void ActiveRouteListItem::setOutlineZoom(int zoomLevel)
+QString ActiveRouteListItem::auid() const
 {
-   outlinePen.setWidthF(pow(2.0, -zoomLevel-2));
-   pathOutline->setPen(outlinePen);
+    return QString::number(Auid);
 }
 
-QString ActiveRouteListItem::getAuid()
+void ActiveRouteListItem::setPath( QGraphicsPathItem *newPath)
 {
-    return QString::number(auid);
+   Path = newPath;
 }
 
-void ActiveRouteListItem::setPath( QGraphicsPathItem *Path)
+void ActiveRouteListItem::setPathOutline(QGraphicsPathItem *newPathOutline)
 {
-   path = Path;
+    PathOutline = newPathOutline;
 }
 
-void ActiveRouteListItem::setPathOutline(QGraphicsPathItem *PathOutline)
+void ActiveRouteListItem::setAuid(int newAuid)
 {
-    pathOutline = PathOutline;
-    pathOutline->setPen(outlinePen);
-}
-
-void ActiveRouteListItem::setAuid(int Auid)
-{
-    auid = Auid;
+    Auid = newAuid;
     QColor color = colors.at(Auid%colors.count());
     setTextColor(color);
 }
@@ -89,41 +77,41 @@ void ActiveRouteListItem::setModified(bool mod)
 
     if (mod!=Modified)
     {
-     if (mod) setText(name+"*");
-     else setText(name);
+     if (mod) setText(Name+"*");
+     else setText(Name);
     }
     Modified = mod;
 }
 
 void ActiveRouteListItem::setName(QString newName)
 {
-    name = newName;
+    Name = newName;
     if (Modified) newName.append("*");
     setText(newName);
 }
 
-QString ActiveRouteListItem::getName()
+QString ActiveRouteListItem::name() const
 {
-    return name;
+    return Name;
 }
 
-bool ActiveRouteListItem::isModified()
+bool ActiveRouteListItem::isModified() const
 {
     return Modified;
 }
 
-void ActiveRouteListItem::setCurve(QwtPlotCurve *Curve)
+void ActiveRouteListItem::setCurve(QwtPlotCurve *newCurve)
 {
-    curve=Curve;
+    Curve=newCurve;
 }
 
-QwtPlotCurve* ActiveRouteListItem::getCurve()
+QwtPlotCurve* ActiveRouteListItem::curve() const
 {
-    if (curve != 0)
+    if (Curve != 0)
     {
     QPen pen;
     pen.setBrush(textColor());
-    curve->setPen(pen);
+    Curve->setPen(pen);
     }
-    return curve;
+    return Curve;
 }

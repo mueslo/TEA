@@ -21,6 +21,7 @@
 //TODO: map DB
 //TODO: delete DB elements
 //TODO: check if file is valid before import
+//TODO: implement db manager class
 
 
 /*inline QSqlRecord dbqry_out(QString query)

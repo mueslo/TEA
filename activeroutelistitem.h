@@ -14,35 +14,33 @@ class ActiveRouteListItem : public QObject, public QListWidgetItem
     Q_OBJECT
 
 public:
-    explicit ActiveRouteListItem(const QString &name, int auid, bool mod = 0, QListWidget *parent = 0);
+    explicit ActiveRouteListItem(const QString &newName, int newAuid, bool mod = 0, QListWidget *parent = 0);
     ~ActiveRouteListItem();
 
-    QGraphicsPathItem* getPath();
-    QGraphicsPathItem* getPathOutline();
-    QwtPlotCurve* getCurve();
-    QString getAuid();
-    QString getName();
-    bool isModified();
+    QGraphicsPathItem* path() const;
+    QGraphicsPathItem* pathOutline() const;
+    QwtPlotCurve* curve() const;
+    QString auid() const;
+    QString name() const;
+    bool isModified() const;
 
-    void setOutlineZoom(int zoomLevel);
     void setName(QString newName);
-    void setPath( QGraphicsPathItem *Path); //TODO: rename setPath to setPathItem
-    void setPathOutline(QGraphicsPathItem *PathOutline);
-    void setAuid(int Auid);
+    void setPath( QGraphicsPathItem *newPath); //TODO: rename setPath to setPathItem
+    void setPathOutline(QGraphicsPathItem *newPathOutline);
+    void setAuid(int newAuid);
     void setModified(bool mod=true);
-    void setCurve(QwtPlotCurve *Curve);
+    void setCurve(QwtPlotCurve *newCurve);
 
 
 private:
     //Ui::MainWin ui;
-    QGraphicsPathItem *path;	//Pointer to PathItem in Memory (which is a child of QGraphicsView)
-    QGraphicsPathItem *pathOutline;  //Pointer to PathItem in Memory
-    QwtPlotCurve *curve;
-    QPen outlinePen;
+    QGraphicsPathItem *Path;	//Pointer to PathItem in Memory (which is a child of QGraphicsView)
+    QGraphicsPathItem *PathOutline;  //Pointer to PathItem in Memory
+    QwtPlotCurve *Curve;
 
     QList<QColor> colors;
-    int auid;
-    QString name;
+    int Auid;
+    QString Name;
     bool Modified;
 
 };

@@ -16,6 +16,9 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
+  <property name="acceptDrops">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>Tour Evaluation and Analysis</string>
   </property>
@@ -84,7 +87,7 @@
            <number>5</number>
           </property>
           <item>
-           <widget class="TEAView" name="graphicsView">
+           <widget class="MapView" name="mapView">
             <property name="sizePolicy">
              <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
               <horstretch>0</horstretch>
@@ -227,7 +230,7 @@
              </size>
             </property>
             <property name="maximum">
-             <number>18</number>
+             <number>17</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -373,6 +376,7 @@
     </property>
     <addaction name="consoleAction"/>
     <addaction name="databaseViewAction"/>
+    <addaction name="settingsAction"/>
     <addaction name="separator"/>
     <addaction name="refreshMapAction"/>
    </widget>
@@ -416,8 +420,8 @@
    </property>
    <property name="minimumSize">
     <size>
-     <width>80</width>
-     <height>95</height>
+     <width>82</width>
+     <height>107</height>
     </size>
    </property>
    <property name="windowIcon">
@@ -967,6 +971,18 @@
     <string>&amp;Centre Map On Selected Route</string>
    </property>
   </action>
+  <action name="settingsAction">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/icons/32x32_1000/wrench_orange.png</normaloff>:/icons/icons/32x32_1000/wrench_orange.png</iconset>
+   </property>
+   <property name="text">
+    <string>Settings</string>
+   </property>
+   <property name="toolTip">
+    <string>Change settings</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -976,9 +992,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>TEAView</class>
+   <class>MapView</class>
    <extends>QGraphicsView</extends>
-   <header location="global">teaview.h</header>
+   <header location="global">mapview.h</header>
   </customwidget>
  </customwidgets>
  <resources>

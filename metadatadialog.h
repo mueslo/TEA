@@ -3,6 +3,8 @@
 
 #include <QtGui/QDialog>
 #include "ui_metadatadialog.h"
+#include <mapview.h>
+#include <activeroutelistitem.h>
 #include <QSqlQuery>
 
 class MetadataDialog : public QDialog
@@ -15,8 +17,6 @@ public:
     void fillKnownMetadata();
 
 private slots:
-	void zoomIn();
-	void zoomOut();
 	void cancel();
 	void save();
 	void enableLoadButton(const QString &text);
@@ -26,10 +26,12 @@ private:
 	void connectSignalsAndSlots();
 	void renderRoute();
 	bool nodeNextSkip(QSqlQuery routeData, int timesToSkip);
-	void rerenderRoute(double zoomX, double zoomY);
-	QGraphicsScene *mvpScene;
+        ActiveRouteListItem* route;
 	QPolygon mpRoute;
 	QString mpAuid;
+
+protected:
+        virtual void resizeEvent(QResizeEvent *event);
     };
 
 #endif // METADATADIALOG_H

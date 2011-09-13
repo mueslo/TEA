@@ -8,7 +8,7 @@
 #include <QProgressBar>
 #include <QtSql>
 #include "activeroutelistitem.h"
-class QFile;
+#include <QObject>
 
 class TEA : public QMainWindow
 {
@@ -16,19 +16,20 @@ class TEA : public QMainWindow
 
 public:
     TEA(QWidget *parent = 0);
-    ~TEA();
+    virtual ~TEA();
     enum Save { ForceSave, AskToSave, DoNotSave };
 
 public slots:
 
 private slots:
-    void downloaded(QNetworkReply* reply);
-    void zoom(int steps);
 
-    void sldChanged(int value);
-    void viewChange();
+    //MapView
+    void zoomChanged(int zoomLevel);
+    void sldChanged(int zoomLevel);
+    void mapSourceChanged(int minZoom, int maxZoom);
     void rotateClockwise();
     void rotateCClockwise();
+
     void consoleButtonTriggered();
     void consoleChanged();
     void mapSourceChanged();
@@ -46,12 +47,14 @@ private slots:
 
     void saveAllToDatabase();
     void saveSelectedToDatabase();
-    void loadFromFile();
+    void loadFromFile(QString TEAFilePath = "");
     void loadFromDatabase();
     void saveToDatabase(QList<QListWidgetItem*> chosenItems);
 
     void About();
     void showListContextMenu(const QPoint &);
+
+    void settings();
 
     /* Uninteresting functions */
     void exportSelectedTEA();
@@ -67,17 +70,12 @@ private slots:
     //void grphPressed();
     //void grphReleased();
 
-
 private:
     Ui::MainWin ui;
     int getMetadata(QString auid);
     bool nodeNextSkip(QSqlQuery routeData, int timesToSkip);
     bool nodeNextSkip(QSqlQuery* routeData, int timesToSkip);
     bool maybeExit();
-
-
-    void getTile(int tileX, int tileY, int zoomLevel);
-    void getTilesInRange();
 
     void unload(ActiveRouteListItem* route);
     void unload(QList<QListWidgetItem*> routes);
@@ -100,25 +98,18 @@ private:
     void addPath(ActiveRouteListItem *route, QSqlQuery *routeData, QSqlRecord *metadata);
     void addCurve(ActiveRouteListItem *route, QSqlQuery *routeData, QSqlRecord *metadata);
     void redrawTrainer();
-    void placeTile(QByteArray tile, int tileX, int tileY, int zoomLevel);
     void createToolBar();
     bool routeAdded(QString auid);
     bool routesModified();
     ActiveRouteListItem* find(QString auid);
 
-
-    int zoomOld;
     QProgressBar *prgBar;
     QString mapSource;
-    QNetworkAccessManager *networkManager;
-    QStack<QNetworkRequest> requestStack;
-    int currentRequests;
-    QGraphicsScene *scene;
-    bool init;
 
 protected:
-    void closeEvent(QCloseEvent *event);
-    void resizeEvent(QResizeEvent *event);
+    virtual void closeEvent(QCloseEvent *event);
+    virtual void dropEvent(QDropEvent *event);
+    virtual void dragEnterEvent(QDragEnterEvent *event);
 
 
 };
