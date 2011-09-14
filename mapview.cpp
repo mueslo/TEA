@@ -143,13 +143,11 @@ void MapView::tileDownloaded(QNetworkReply *reply)
     if (data->length()!=0) //todo: check if data is valid
     {
 
-        AddTileToDBThread* t = new AddTileToDBThread(finishedRequest.z(),finishedRequest.x(),finishedRequest.y(),cpData,finishedRequest.mapSource().url);
-        t->start();
-
-        //t->addTileToDB(finishedRequest.z(),finishedRequest.x(),finishedRequest.y(),cpData,finishedRequest.mapSource().url);
+        //AddTileToDBThread* t = new AddTileToDBThread(finishedRequest.z(),finishedRequest.x(),finishedRequest.y(),cpData,finishedRequest.mapSource().url);
+        //t->start();
 
         //the method below also checks presence of tile in db
-        //addTileToDB(finishedRequest.z(),finishedRequest.x(),finishedRequest.y(),data,finishedRequest.mapSource().url);
+        addTileToDB(finishedRequest.z(),finishedRequest.x(),finishedRequest.y(),data,finishedRequest.mapSource().url);
         //qDebug(qPrintable("Tile image file size:" + QString::number(data.length()) + " bits"
         //                           "(x:"+QString::number(x)+" y:"+QString::number(y)+" z:"+QString::number(z)+")"));
     }
