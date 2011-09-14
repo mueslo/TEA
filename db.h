@@ -16,6 +16,7 @@
 #include <QtSql>
 #include <coordinates.h>
 #include <QMessageBox>
+#include <QThread>
 
 //TODO: main DB
 //TODO: map DB
@@ -38,6 +39,23 @@ inline void dbqry_in(QString query)
 	dbquery.exec(qPrintable(query));
 }
 */
+
+class AddTileToDBThread : public QThread
+{
+    Q_OBJECT
+
+public:
+    AddTileToDBThread(int zoomLevel, int tileX, int tileY, QByteArray *tile, QString mapsource, QObject *parent = 0);
+    virtual ~AddTileToDBThread();
+
+protected:
+    void run();
+
+private:
+    int x, y, z;
+    QString MapSource;
+    QByteArray *Tile;
+};
 
 QSqlQuery customRDBQuery(QString query);
 bool prepareActiveRoutesDB();
@@ -66,6 +84,6 @@ void setRouteTags(QString auid, QString tags);
 void setRouteID(QString auid, QString id);
 void setRouteLocation(QString auid, QString location);
 void setRoutePicture(QString auid, QByteArray picture);
-void addTileToDB(int zoomLevel, int tileX, int tileY, QByteArray tile, QString mapsource);
-QByteArray getTileFromDB(int zoomLevel, int tileX, int tileY, QString mapsource);
+void addTileToDB(int zoomLevel, int tileX, int tileY, QByteArray *tile, QString mapsource);
+QByteArray* getTileFromDB(int zoomLevel, int tileX, int tileY, QString mapsource);
 #endif /* DB_H_ */

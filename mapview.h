@@ -34,17 +34,6 @@
 #include <math.h>
 #include <coordinates.h>
 
-
-class OSMTile : public QGraphicsPixmapItem
-{
-public:
-    explicit OSMTile(QPixmap & pixmap, const QPoint & coords, int z);
-    QPoint coords() const;
-
-private:
-    const QPoint Coordinates;
-};
-
 //todo namespace
 enum sourceName{None, Mapnik, OCM};
 
@@ -56,7 +45,41 @@ struct osmMapSource {
     int maxzoom;
 };
 
-//TAT: private QGraphicsView
+class OSMTile : public QGraphicsPixmapItem
+{
+public:
+    explicit OSMTile(QPixmap & pixmap, const QPoint & coords, int z);
+    QPoint coords() const;
+
+private:
+    const QPoint Coordinates;
+};
+
+class TileRequest : public QNetworkRequest
+{
+public:
+    explicit TileRequest(const int &x, const int &y, const int &z, const osmMapSource & source);
+    explicit TileRequest(const int &x, const int &y, const int &z, sourceName source);
+    explicit TileRequest(const int &x, const int &y, const int &z, const QString & sourceURL);
+    explicit TileRequest(const QNetworkReply *reply);
+
+    bool operator==(const TileRequest & request) const;
+
+    int x() const;
+    int y() const;
+    int z() const;
+    osmMapSource mapSource() const;
+
+
+private:
+    int X;
+    int Y;
+    int Z;
+    osmMapSource MapSource;
+
+};
+
+//TAT: private QGraphicsView, probably nonsense
 class MapView : public QGraphicsView {
 	Q_OBJECT
 
@@ -73,9 +96,10 @@ public:
 
         void setMapSource(sourceName source);
         osmMapSource mapSource();
+        osmMapSource mapSource(sourceName source);
 
-        bool isZoomable() const;
-        void setZoomable(bool zoomable);
+        bool isInteractable() const;
+        void setInteractable(bool interactive);
 
         void zoom(int steps);
         void zoomTo(int level);
@@ -93,8 +117,11 @@ private slots:
 
 protected:
         virtual void wheelEvent(QWheelEvent *event);
+        virtual void mousePressEvent(QMouseEvent *event);
+        virtual void mouseMoveEvent(QMouseEvent *event);
         virtual void mouseReleaseEvent(QMouseEvent *event);
         virtual void resizeEvent(QResizeEvent *event);
+        virtual void keyPressEvent(QKeyEvent *event);
 
 private:
         void connectSignalsAndSlots();
@@ -102,13 +129,10 @@ private:
         void getTilesInView();
         void getTile(int x, int y, int z);
         void requestTile(int x, int y, int z);
-        void placeTile(QByteArray tile, int x, int y, int z); //todo byte array pointer
+        void placeTile(QByteArray* tile, int x, int y, int z); //todo byte array pointer
         void placeTile(OSMTile* tile);
 
         bool tilePlaced(const QPoint & coords, int z);
-        bool tileRequested(int x, int y, int z);
-
-        int* getXYZFromUrl(const QString & url);
 
         void removeTile(OSMTile* tile);
         void removeTiles(int z);
@@ -117,20 +141,22 @@ private:
 
         void updateOutlines();
 
-        bool Zoomable;
+        bool Interactive;
 
         QList<OSMTile*>* tiles;
         QList<ActiveRouteListItem*> routes;
 
-
         QNetworkAccessManager* networkManager;
-        QStack<QNetworkRequest> requestStack;
-        int currentRequests;
-        QList<QVector3D> allRequests;
+        QList<TileRequest> requestStack;
+        QList<TileRequest> currentRequests;
 
         int requestLimit;
+        int maxReqStackSize;
 
         QPen outlinePen;
+
+        QTime lastTileUpdate;
+        QTime *currentTime;
 
         osmMapSource MapSource;
         QMap<sourceName,osmMapSource> mapSources;

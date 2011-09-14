@@ -14,9 +14,7 @@ MetadataDialog::MetadataDialog(QString auid, int type, QWidget *parent)
 	if(type==1) ui.OKButton->setText(tr("&Apply"));
 	connectSignalsAndSlots();
         ui.graphRoute->setMapSource(Mapnik);
-        ui.graphRoute->setZoomable(false);          //prevents zooming
-        ui.graphRoute->setFocusPolicy(Qt::NoFocus); //prevents scrolling by keyboard
-        ui.graphRoute->setMouseTracking(false);     //prevents scrolling by mouse
+        ui.graphRoute->setInteractable(false);          //prevents interaction
         fillKnownMetadata();
 }
 

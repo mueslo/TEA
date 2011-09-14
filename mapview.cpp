@@ -1,7 +1,61 @@
 #include <mapview.h>
 #define PI 3.1415926535897932384626433832795
 
-OSMTile::OSMTile(QPixmap & pixmap, const QPoint & coords, int z) : QGraphicsPixmapItem(pixmap), Coordinates(coords)
+TileRequest::TileRequest(const int &x, const int &y, const int &z, const osmMapSource & source)
+    : X(x), Y(y), Z(z), MapSource(source)
+{
+    if (source.id != None)
+        setUrl(QUrl(qPrintable(
+                        source.url+
+                        QString::number(Z)+"/"+
+                        QString::number(X)+"/"+
+                        QString::number(Y)+".png")));
+
+    //contains actual request if mapSource is valid
+}
+
+TileRequest::TileRequest(const int &x, const int &y, const int &z, sourceName source)
+    : X(x), Y(y), Z(z), MapSource({source,"","",0,0})
+{
+    //no actual request
+}
+
+TileRequest::TileRequest(const int &x, const int &y, const int &z, const QString &sourceURL)
+    : X(x), Y(y), Z(z), MapSource({None,"",sourceURL,0,0})
+{
+    //no actual request
+}
+
+TileRequest::TileRequest(const QNetworkReply *reply)
+{
+    QString url = reply->url().toString();
+
+    //Format/Meanings: http://domain.tld/path/filename.end
+    //The following assumes that the path has the following form */zoomLevel/tileX/tileY.end
+    Z = url.section('/',-3,-3).toInt(); //z
+    X = url.section('/',-2,-2).toInt(); //x
+    Y = url.section('/',-1,-1).remove(-4,4).toInt(); //y
+
+    url.remove(QString::number(Z)+"/"+QString::number(X)+"/"+QString::number(Y)+url.right(4));
+
+    MapSource = {None,"",url,0,0};
+
+}
+
+bool TileRequest::operator==(const TileRequest & request) const
+{
+    if (X == request.x() && Y == request.y() && Z == request.z() &&
+            (MapSource.url == request.mapSource().url || MapSource.id ==request.mapSource().id) )
+        return true; else return false;
+}
+
+int TileRequest::x() const { return X;}
+int TileRequest::y() const { return Y;}
+int TileRequest::z() const { return Z;}
+osmMapSource TileRequest::mapSource() const { return MapSource;}
+
+OSMTile::OSMTile(QPixmap & pixmap, const QPoint & coords, int z)
+    : QGraphicsPixmapItem(pixmap), Coordinates(coords)
 {
     setPos(tileToCoord(coords.x(),coords.y(),z));
     scale(PI / pow(2.0, 7 + z),PI / pow(2.0, 7 + z));
@@ -16,12 +70,12 @@ QPoint OSMTile::coords() const
 MapView::MapView(QWidget *parent) : QGraphicsView(parent)
 {
     outlinePen.setBrush(Qt::white);
-    Zoomable = 1;
+    setInteractable(true);
 
     //NYI: limit maximum number of current downloads to 2 as specified in the CycleMap tileserver terms,
     // this would severely degrade download performance, though. Maybe keep limit at ~5?
-    currentRequests = 0;
     requestLimit = 5;
+    maxReqStackSize = 30;
     networkManager = new QNetworkAccessManager(this);
 
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -29,6 +83,9 @@ MapView::MapView(QWidget *parent) : QGraphicsView(parent)
 
     setScene(new QGraphicsScene(this)); //no delete necessary, parent set
     setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+
+    lastTileUpdate = QTime(0,0);
+    currentTime = new QTime(QTime::currentTime());
 
     //tile size: 256px x 256px, in coordinates: 2*PI x 2*PI
     scale(128/PI,128/PI); //default zoom == 0
@@ -46,7 +103,7 @@ MapView::MapView(QWidget *parent) : QGraphicsView(parent)
 
 MapView::~MapView()
 {
-
+    delete currentTime;
 }
 
 void MapView::connectSignalsAndSlots()
@@ -56,45 +113,70 @@ void MapView::connectSignalsAndSlots()
 
 }
 
-
 void MapView::tileDownloaded(QNetworkReply *reply)
 {
-    --currentRequests;
+    //recreate original request from reply and delete it from the current requests
+
+    QElapsedTimer timer; timer.start();
+
+
+    TileRequest finishedRequest(reply);
+    currentRequests.removeAll(finishedRequest);
+
+    //check to see if any requests are left in stack
     if (!requestStack.isEmpty())
     {
-        networkManager->get(requestStack.pop());
-        ++currentRequests;
+        //pop the last request in the stack
+        TileRequest request = requestStack.takeLast();
+
+        //proceed to download the request
+        networkManager->get(request);
+        currentRequests.append(request);
     }
-    qDebug(QString::number(currentRequests)+" "+QString::number(requestStack.count()));
+    QByteArray *data = new QByteArray(reply->readAll());
+    QByteArray *cpData = new QByteArray(*data);
 
-    QByteArray data = reply->readAll();
-    QString path = reply->url().toString();
+    qDebug("curreq"+QString::number(currentRequests.size())+
+           " reqstck"+QString::number(requestStack.size()));
 
-    int *x = getXYZFromUrl(path);
-    allRequests.removeAll(QVector3D(x[0],x[1],x[2]));
-    qDebug("allrequests size"+QString::number(allRequests.size()));
-
-    path.remove(QString::number(x[2])+"/"+QString::number(x[0])+"/"+QString::number(x[1])+path.right(4));
-
-    //actual data returned
-    if (data.length()!=0) //check whether tile request returned valid data, TODO: check if >= arbitrary value
+    //check if actual data was returned
+    if (data->length()!=0) //todo: check if data is valid
     {
-        addTileToDB(x[2],x[0],x[1],data,path); //this method also checks presence of tile in db
+
+        AddTileToDBThread* t = new AddTileToDBThread(finishedRequest.z(),finishedRequest.x(),finishedRequest.y(),cpData,finishedRequest.mapSource().url);
+        t->start();
+
+        //t->addTileToDB(finishedRequest.z(),finishedRequest.x(),finishedRequest.y(),cpData,finishedRequest.mapSource().url);
+
+        //the method below also checks presence of tile in db
+        //addTileToDB(finishedRequest.z(),finishedRequest.x(),finishedRequest.y(),data,finishedRequest.mapSource().url);
         //qDebug(qPrintable("Tile image file size:" + QString::number(data.length()) + " bits"
         //                           "(x:"+QString::number(x)+" y:"+QString::number(y)+" z:"+QString::number(z)+")"));
     }
     else emit noNetwork();
 
+    qDebug("adding tile to db took "+QString::number(timer.elapsed())); timer.restart();
+
     //check if zoomlevel and map source did not change while downloading
-    if( currentZoom == x[2] && path == MapSource.url) placeTile(data, x[0], x[1], x[2]);
-    delete[] x;
+    if( currentZoom == finishedRequest.z() && finishedRequest.mapSource().url == MapSource.url)
+        placeTile(data, finishedRequest.x(), finishedRequest.y(), finishedRequest.z());
+
+    qDebug("placing tile took "+QString::number(timer.elapsed()));
+
     reply->deleteLater(); //do not 'delete reply;'
 }
 
 void MapView::resizeEvent(QResizeEvent *event)
 {
     QGraphicsView::resizeEvent(event);
-    getTilesInView();
+
+    *currentTime = QTime::currentTime();
+
+    if (lastTileUpdate.msecsTo(*currentTime) > 250)
+    {
+        lastTileUpdate = *currentTime;
+        getTilesInView();
+    }
 }
 
 void MapView::wheelEvent(QWheelEvent *event)
@@ -103,7 +185,7 @@ void MapView::wheelEvent(QWheelEvent *event)
     int numSteps = numDegrees/15;
 
 
-    if (event->orientation() == Qt::Vertical && isZoomable())
+    if (event->orientation() == Qt::Vertical && isInteractable())
     {
         QPoint centre = QPoint(width()/2,height()/2);
         QPoint mouse = event->pos();
@@ -115,20 +197,49 @@ void MapView::wheelEvent(QWheelEvent *event)
     }
 }
 
+void MapView::mousePressEvent(QMouseEvent *event)
+{
+    qDebug("mouse pressed");
+    QGraphicsView::mousePressEvent(event);
+}
+
+void MapView::mouseMoveEvent(QMouseEvent *event)
+{
+    *currentTime = QTime::currentTime();
+
+    if (event->state() == Qt::LeftButton && lastTileUpdate.msecsTo(*currentTime) > 250)
+    {
+        lastTileUpdate = *currentTime;
+        getTilesInView();
+    }
+    QGraphicsView::mouseMoveEvent(event);
+}
+
 void MapView::mouseReleaseEvent(QMouseEvent *event)
 {
+    qDebug("mouse released");
     QGraphicsView::mouseReleaseEvent(event);
     getTilesInView();
     removeDistantTiles(4);
 }
 
+void MapView::keyPressEvent(QKeyEvent *event)
+{
+    if (!Interactive) return;
+    QGraphicsView::keyPressEvent(event);
 
+    switch (event->key()) {
+    case Qt::Key_R: rotate(-5); break;
+    case Qt::Key_L: rotate(5); break;
+    case Qt::Key_Plus: zoom(1); break;
+    case Qt::Key_Minus: zoom(-1); break;
+    }
+}
 
 void MapView::getTilesInView()
 {
     if (MapSource.id == None) return;
-    //TODO: extend this function so that the tiles are not requested from upper left to lower right
-    // corner, but from the center outward.
+
     QRectF viewRect = mapToScene(0,0,width(),height()).boundingRect();
     QList<QPoint> XYTileList = getXYTileInRange(currentZoom,
                                                 getLongFromMercatorX(viewRect.x()+viewRect.width()),
@@ -148,18 +259,13 @@ void MapView::getTilesInView()
     QPoint p;
     while(XYTileList.size()>0)
     {
-        if (currentRequests<requestLimit) p = XYTileList.takeFirst();
+        if (currentRequests.count()<requestLimit) p = XYTileList.takeFirst();
         else p = XYTileList.takeLast();
 
         if (!tilePlaced(p,currentZoom)) getTile(p.x(),p.y(),currentZoom);
     }
 
     qDebug("Number of items in scene: "+QString::number(scene()->items().count()));
-}
-
-bool MapView::tileRequested(int x, int y, int z)
-{
-    if (allRequests.contains(QVector3D(x,y,z))) return true; else return false;
 }
 
 bool MapView::tilePlaced(const QPoint & coords, int z)
@@ -174,53 +280,43 @@ bool MapView::tilePlaced(const QPoint & coords, int z)
 void MapView::getTile(int x, int y, int z)
 {
     if (MapSource.id == None) return;
+    TileRequest request(x,y,z,MapSource);
 
-    //TODO: check if present in DB
-    QByteArray tile = getTileFromDB(z,x,y,MapSource.url);
-    if (QString::fromAscii(tile)!="0"){ //checks if tile is actually in DB
+    QByteArray *tile = getTileFromDB(z,x,y,MapSource.url);
+    if (tile != 0){ //checks if tile is actually in DB
         placeTile(tile, x, y, z);
-    } else if (currentZoom == z && !tileRequested(x,y,z)) //why currentZoom == z?
-    {   QNetworkRequest request(QUrl(qPrintable(
+    } else if (currentZoom == z && !currentRequests.contains(request)) //why currentZoom == z?
+    { /*  QNetworkRequest request(QUrl(qPrintable(
                                          MapSource.url+QString::number(z)+"/"+
                                          QString::number(x)+"/"+
-                                         QString::number(y)+".png")));
+                                         QString::number(y)+".png"))); */
+        QElapsedTimer timer; timer.start();
 
+        requestStack.removeAll(request); //removes all previous occurences of the request
 
-        if (currentRequests<requestLimit)
+        //check if concurrent download count has been reached
+        if (currentRequests.count()<requestLimit)
         {
+            //if not, proceed to download request
             networkManager->get(request);
-            ++currentRequests;
+            currentRequests.append(request);
         } else {
-            requestStack.push(request);
-            if (requestStack.count() > 30) {
-                int* x = getXYZFromUrl(requestStack.at(0).url().toString());
-                allRequests.removeAll(QVector3D(x[0],x[1],x[2]));
-
-                delete[] x;
-
-                requestStack.remove(0);
+            //if it has, put request on stack
+            requestStack.append(request);
+            if (requestStack.count() > maxReqStackSize) {
+                requestStack.removeAt(0);
             }
         }
-        allRequests.append(QVector3D(x,y,z));
+
+        qDebug("queueing took "+QString::number(timer.elapsed()));
     }
 }
 
-int* MapView::getXYZFromUrl(const QString & url)
-{
-    int *ret = new int[3];
-
-    //Format/Meanings: http://domain.tld/path/filename.end
-    //The following assumes that the path has the following form */zoomLevel/tileX/tileY.end
-    ret[2] = url.section('/',-3,-3).toInt(); //z
-    ret[0] = url.section('/',-2,-2).toInt(); //x
-    ret[1] = url.section('/',-1,-1).remove(-4,4).toInt(); //y
-    return ret;
-}
-
-void MapView::placeTile(QByteArray tileData, int x, int y, int z)
+void MapView::placeTile(QByteArray *tileData, int x, int y, int z)
 {
         QPixmap tilePixmap;
-        tilePixmap.loadFromData(tileData);
+        tilePixmap.loadFromData(*tileData); delete tileData;
+        if (tilePixmap.isNull()) {qDebug("tile pixmap null"); return; }
         OSMTile *tile = new OSMTile(tilePixmap, QPoint(x,y), z);
 
         placeTile(tile);
@@ -368,16 +464,22 @@ void MapView::remove(ActiveRouteListItem *route)
     delete route->pathOutline();
 }
 
+osmMapSource MapView::mapSource(sourceName source)
+{
+    osmMapSource noSource = {None,"None","",0,20};
+    QMap<sourceName,osmMapSource>::const_iterator it = mapSources.find(source);
+    if (it != mapSources.end() && it.key() == source) return it.value();
+    else return noSource;
+}
+
 void MapView::setMapSource(sourceName source)
 {
-    osmMapSource newSource = {None,"None","",0,20};
-    QMap<sourceName,osmMapSource>::const_iterator it = mapSources.find(source);
-
-    //check if new map source is valid
-    if (it != mapSources.end() && it.key() == source) newSource = it.value();
+    //get new map source struct
+    osmMapSource newSource = mapSource(source);
 
     //check if map source changed, if it did not, abort
     if (newSource.id == MapSource.id) return;
+
     emit mapSourceChanged(newSource.minzoom, newSource.maxzoom);
 
     //remove all tiles, resize tilemanager
@@ -399,12 +501,14 @@ int MapView::zoomLevel() const
     return currentZoom;
 }
 
-bool MapView::isZoomable() const
+bool MapView::isInteractable() const
 {
-    return Zoomable;
+    return Interactive;
 }
 
-void MapView::setZoomable(bool zoomable)
+void MapView::setInteractable(bool interactive)
 {
-    Zoomable = zoomable;
+    Interactive = interactive;
+    if (Interactive) setDragMode(ScrollHandDrag);
+    else setDragMode(NoDrag);
 }

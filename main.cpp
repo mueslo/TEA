@@ -9,7 +9,7 @@ using namespace std;
 int main(int argc, char *argv[])
 {
         QApplication::setGraphicsSystem("raster");
-	QApplication a(argc, argv);
+        QApplication a(argc, argv);
         QPixmap splashImage("splash.png");
         QSplashScreen splash(splashImage);
         splash.setMask(splashImage.mask());

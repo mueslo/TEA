@@ -69,7 +69,6 @@ TEA::TEA(QWidget *parent) :
         mapSource = "http://tile.opencyclemap.org/cycle/";
         ui.mapView->setMapSource(OCM);
 
-
         connectSignalsAndSlots();
         createToolBar();
         createStatusBar();
@@ -266,7 +265,7 @@ void TEA::connectSignalsAndSlots()
         connect(ui.btnZoomIn, SIGNAL(clicked()), this, SLOT(zoomIn()));
         connect(ui.btnZoomOut, SIGNAL(clicked()), this, SLOT(zoomOut()));
         //connect(ui.sldZoom, SIGNAL(valueChanged(int)), this, SLOT(sldChanged(int)));
-        //connect(ui.refreshMapAction, SIGNAL(triggered()), this, SLOT(viewChange()));
+
         connect(ui.cbtnRotateClockwise, SIGNAL(clicked()), this, SLOT(rotateClockwise()));
         connect(ui.cbtnRotateCClockwise, SIGNAL(clicked()), this, SLOT(rotateCClockwise()));
         connect(ui.dwBottom, SIGNAL(visibilityChanged(bool)), this, SLOT(consoleChanged()));

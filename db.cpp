@@ -750,44 +750,120 @@ void setRoutePicture(QString auid, QByteArray picture)
 	adbquery.exec(qPrintable("UPDATE active_metadata SET picture="+pictureString));
 }
 
-void addTileToDB(int zoomLevel, int tileX, int tileY, QByteArray tile, QString mapsource)
+//todo, put this in new thread
+
+
+
+void AddTileToDBThread::run()
 {
-    QString tileString = tile.toBase64();
+    qDebug("tilethread run called");
+
+
+    QString tileString = Tile->toBase64();
+
     QSqlQuery mdbquery(QSqlDatabase::database("mdb"));
+
+    if (!mdbquery.isValid()) qDebug("mdbquery not valid");
+
+
+    mdbquery.exec(qPrintable(	"SELECT * FROM zoom"+QString::number(z)+
+                                " WHERE xtile="+QString::number(x)+
+                                " AND ytile="+QString::number(y)+
+                                " AND mapsource="+MapSource.append("\"").prepend("\"")));
+
+    QElapsedTimer timer; timer.start();
+
+    qDebug("inserting tile");
+
+    if(!mdbquery.first()) //Check if tile does not yet exist in db
+    {
+        mdbquery.exec(qPrintable(	"INSERT INTO zoom"+QString::number(z)+" VALUES("
+                                        +QString::number(x)+","
+                                        +QString::number(y)+","
+                                        +tileString.append("\"").prepend("\"")+","
+                                        +MapSource+")"));
+    }
+
+    qDebug("inserting tile"+QString::number(z)+":("
+           +QString::number(x)+","
+           +QString::number(y)+") into table took "+QString::number(timer.elapsed())+"ms");
+
+    mdbquery.finish();
+
+    qDebug("tilethread finishing");
+
+    exit(0);
+}
+
+AddTileToDBThread::~AddTileToDBThread()
+{
+    delete Tile;
+}
+
+AddTileToDBThread::AddTileToDBThread(int zoomLevel, int tileX, int tileY, QByteArray *tile, QString mapsource, QObject *parent)
+    : QThread(parent), z(zoomLevel), x(tileX), y(tileY), MapSource(mapsource), Tile(tile)
+{
+    qDebug("tilethread created");
+}
+
+void addTileToDB(int zoomLevel, int tileX, int tileY, QByteArray *tile, QString mapsource)
+{
+    QElapsedTimer timer; timer.start();
+    QString tileString = tile->toBase64();
+    qDebug("converting took "+QString::number(timer.elapsed())); timer.restart();
+
+    QSqlQuery mdbquery(QSqlDatabase::database("mdb"));
+
+    if (!mdbquery.isValid()) qDebug("mdbquery not valid"); else qDebug("mdbq valid");
+
+    if (mdbquery.isActive()) qDebug("mdbquery active");else qDebug("mdbq inactive");
+
+
+
+    qDebug("creating mdbquery "+QString::number(timer.elapsed())); timer.restart();
+
     mdbquery.exec(qPrintable(	"SELECT * FROM zoom"+QString::number(zoomLevel)+
 				" WHERE xtile="+QString::number(tileX)+
 				" AND ytile="+QString::number(tileY)+
                                 " AND mapsource="+mapsource.append("\"").prepend("\"")));
-    if(!mdbquery.first()) //Check if tile does not yet exist in db
+
+    qDebug("checking mdb for tile took "+QString::number(timer.elapsed())); timer.restart();
+
+    if(!mdbquery.first()) //Check if tile does not yet exist in db: returns false if mdbquery result is empty
     {
 	mdbquery.exec(qPrintable(	"INSERT INTO zoom"+QString::number(zoomLevel)+" VALUES("
 					+QString::number(tileX)+","
 					+QString::number(tileY)+","
 					+tileString.append("\"").prepend("\"")+","
 					+mapsource+")"));
+
+
     }
+
+
+    qDebug("inserting tile into table took "+QString::number(timer.elapsed())); timer.restart();
+
     mdbquery.finish();
+
+    qDebug("finishing took "+QString::number(timer.elapsed())); timer.restart();
 }
 
-QByteArray getTileFromDB(int zoomLevel, int tileX, int tileY, QString mapsource)
+QByteArray* getTileFromDB(int zoomLevel, int tileX, int tileY, QString mapsource)
 {
+    QElapsedTimer timer; timer.start();
+
 	QSqlQuery mdbquery(QSqlDatabase::database("mdb"));
 	mdbquery.exec(qPrintable(	"SELECT * FROM zoom"+QString::number(zoomLevel)+
 								" WHERE xtile="+QString::number(tileX)+
 								" AND ytile="+QString::number(tileY)+
 								" AND mapsource="+mapsource.append("\"").prepend("\"")));
+
+        qDebug("getting tile from db took "+QString::number(timer.elapsed()));
         if (mdbquery.first()) //Check if tile exists in db
 	{
-	    QByteArray temparray;
-	    QString tile = mdbquery.record().value(2).toString();
-	    temparray = tile.toAscii();
-	    QByteArray array = QByteArray::fromBase64(temparray);
-	    //array.fromBase64(temparray);
-	    tile = array.toBase64();
-	    tile.truncate(10);
-	    return array;
+
+            QByteArray *tile = new QByteArray(QByteArray::fromBase64(mdbquery.record().value(2).toByteArray()));
+            return tile;
 	}
-	else return QString::number(0).toAscii();
+        else {qDebug("tile not in db"); return 0;}
 }
-
-
